@@ -15,6 +15,8 @@ final class SelftestRunner {
     private var fail = 0
     private var last: [String: Any] = [:]
     private var marks: [String: Double] = [:]
+    /// Autorisation et envoi simulés pour les boutons de lecture (aucun Apple event, aucune invite).
+    private let flow = FlowSimulator()
 
     private func numeric(_ any: Any?) -> Double {
         switch any { case let d as Double: return d; case let i as Int: return Double(i); case let s as String: return Double(s) ?? .nan; default: return .nan }
@@ -117,12 +119,29 @@ final class SelftestRunner {
         case "perm-answer": c.model.musicPermissionAnswered(arg == "granted" ? .granted : .denied)
         case "click-permission": c.requestMusicAccess()          // même chemin que le bouton « Autoriser » / « Ouvrir les Réglages »
         case "spotify-access": c.model.spotifyAccess = Self.status(arg)
+        // 1.0.1, point C : les boutons passent par le VRAI déroulé d'autorisation, avec sonde et envoi simulés
+        case "spotify-flow":
+            c.playbackFlowUnderTest = on
+            if on {
+                let sim = flow
+                c.permissionFlow = PlaybackPermissionFlow(probe: { player, ask in sim.probe(player, ask: ask) }, statusTimeout: 2, askTimeout: 8)
+                c.commandSender = { command, player in sim.send(command, player) }
+            } else {
+                c.permissionFlow = PlaybackPermissionFlow()
+                c.commandSender = { AppleEventClient(timeout: 1).send($0, to: $1) }
+            }
+        case "flow-status": flow.setStatus(Self.status(arg) ?? .notDetermined)       // réponse à la lecture SANS demande
+        case "flow-hold": flow.hold(on)                                               // la demande (ask = true) attend `flow-release`
+        case "flow-release": flow.release(Self.status(arg) ?? .granted)
+        case "flow-answer": flow.setAnswer(Self.status(arg) ?? .granted)              // réponse immédiate à la demande
+        case "notice-action": if let action = c.model.noticeAction { action.perform() } else { fail += 1 }
         case "wake": NSWorkspace.shared.notificationCenter.post(name: NSWorkspace.didWakeNotification, object: NSWorkspace.shared)
         case "reducemotion": c.model.reduceMotionOverride = arg == "auto" ? nil : on
         case "visible-height":
             c.settingsController.visibleHeightOverride = Double(arg)
             c.settingsController.resizeToFit()
         case "ax-audit": axAudit(arg)
+        case "ax-press": axPress(arg)                       // `ax-press settings Fermer les réglages` : appuie sur le bouton par son libellé AX
         case "measure-sync": await measureSync(offsetArg: arg)
         case "state": await settle(); record(arg)
         case "expect": await settle(); expect(arg)
@@ -137,6 +156,7 @@ final class SelftestRunner {
         case "granted": return .granted
         case "denied": return .denied
         case "notdetermined": return .notDetermined
+        case "notrunning": return .notRunning
         case "hung": return .unknown(-1)
         default: return nil
         }
@@ -197,6 +217,38 @@ final class SelftestRunner {
         DiagLog.shared.write(["action": "ax-audit", "fenetre": which, "elements": count, "controles": controls,
                               "sansLibelle": unlabeled.count, "sansLibelleListe": unlabeled.joined(separator: ","),
                               "arbre": rows.joined(separator: "\n")])
+    }
+
+    /// `ax-press <main|settings|about> <libellé>` : trouve dans l'arbre d'accessibilité (ce que lit VoiceOver) le bouton portant ce libellé
+    /// et lui envoie l'action « appuyer » : même chemin que VoiceOver, donc la vraie action du bouton SwiftUI.
+    private func axPress(_ arg: String) {
+        let words = arg.split(separator: " ", maxSplits: 1).map(String.init)
+        guard words.count == 2 else { fail += 1; return }
+        let panel: NSPanel = words[0] == "settings" ? c.settingsController.panel : (words[0] == "about" ? c.aboutController.panel : c.panelController.panel)
+        guard let root = panel.contentView else { fail += 1; return }
+        NSApp.accessibilitySetValue(true as NSNumber, forAttribute: .init(rawValue: "AXManualAccessibility"))
+        NSApp.accessibilitySetValue(true as NSNumber, forAttribute: .init(rawValue: "AXEnhancedUserInterface"))
+        root.layoutSubtreeIfNeeded()
+        func ask(_ o: NSObject, _ name: String) -> Any? {
+            let sel = Selector(name)
+            guard o.responds(to: sel) else { return nil }
+            return o.perform(sel)?.takeUnretainedValue()
+        }
+        var found: NSObject?
+        var count = 0
+        func walk(_ obj: Any, _ depth: Int) {
+            guard found == nil, depth < 40, count < 800, let el = obj as? NSObject else { return }
+            count += 1
+            if (ask(el, "accessibilityLabel") as? String) == words[1], (ask(el, "accessibilityRole") as? String) == "AXButton" { found = el; return }
+            for child in (ask(el, "accessibilityChildren") as? [Any]) ?? [] { walk(child, depth + 1) }
+        }
+        walk(root, 0)
+        var pressed = false
+        if let el = found {
+            pressed = (el as AnyObject).accessibilityPerformPress?() ?? false
+        }
+        DiagLog.shared.write(["action": "ax-press", "fenetre": words[0], "libelle": words[1], "trouve": found != nil, "appui": pressed, "elements": count])
+        if found != nil && pressed { pass += 1 } else { fail += 1 }
     }
 
     private func move(_ arg: String) {
@@ -541,13 +593,19 @@ final class SelftestRunner {
             "lrclibID": m.lyrics?.lrclibID ?? 0, "usesNetwork": c.usesNetwork,
             // J5
             "reduceMotion": m.reduceMotion, "animationsOn": m.animation(.linear) != nil, "wakeCount": m.wakeCount,
-            "openedURLs": c.openedURLs.count, "forcedReadings": c.fakePlayer?.forcedReadings ?? -1, "openedURLLast": c.openedURLs.last?.absoluteString ?? "",
+            "openedURLs": c.openedURLs.count, "forcedReadings": c.fakePlayer?.forcedReadings ?? -1, "openedURLLast": c.openedURLs.last?.absoluteString ?? "", "openedAutomationPane": c.openedURLs.last?.absoluteString.hasSuffix("Privacy_Automation") ?? false,
             "permissionRefused": m.permissionRefused, "spotifyAccess": m.spotifyAccess.map { "\($0)" } ?? "nil",
             "settingsH": Int(sp.frame.height.rounded()), "settingsContentH": Int(m.settingsContentHeight.rounded()),
             "settingsMaxH": Int(m.settingsMaxHeight.rounded()), "settingsFitsVisible": sp.frame.height <= c.settingsController.visibleFrame.height + 0.5,
             "settingsScrolls": m.settingsContentHeight > m.settingsMaxHeight + 0.5, "settingsVisibleH": Int(c.settingsController.visibleFrame.height.rounded()),
             "barText": m.barText.title + (m.barText.artist.map { " | \($0)" } ?? ""),
             "stateTitle": m.display.stateText?.title ?? "", "stateBody": m.display.stateText?.body ?? "",
+            "noticeVisible": m.notice != nil, "noticeText": m.notice ?? "", "noticesShown": m.noticesShown.count,
+            "stateAction": m.stateActionLabel ?? "", "settingsIsKey": sp.isKeyWindow, "settingsKeyRequests": c.settingsController.keyRequests, "unavailableEntries": m.unavailableEntries,
+            "noticeAction": m.noticeAction?.label ?? "",
+            "playbackRefused": m.playbackAvailability.refused, "playbackHint": m.playbackAvailability.hint ?? "",
+            "spotifyLine": m.spotifyAccess.map { SettingsView.spotifyLine($0) } ?? "",
+            "flowStatusProbes": flow.statusProbes, "flowAsks": flow.asks, "flowSent": flow.sent.count, "flowSentLast": flow.sent.last ?? "none",
         ]
         // Fonctions 1.0
         d["lineCount"] = s.lineCount; d["visibleSlots"] = visible.count; d["fontTheme"] = s.fontTheme.rawValue; d["fontWeight"] = s.fontWeight.rawValue
@@ -599,6 +657,42 @@ final class SelftestRunner {
             if ok { pass += 1 } else { fail += 1 }
             DiagLog.shared.write(["expect": kv[0], "attendu": expectedValue, "obtenu": actual, "ok": ok])
         }
+    }
+}
+
+
+/// Sonde et envoi simulés pour l'autotest des boutons de lecture. Thread-safe (la sonde tourne hors du fil principal).
+final class FlowSimulator: @unchecked Sendable {
+    private let lock = NSLock()
+    private var status: AutomationStatus = .notDetermined
+    private var answer: AutomationStatus = .granted
+    private var holding = false
+    private var gate = DispatchSemaphore(value: 0)
+    private(set) var statusProbes = 0
+    private(set) var asks = 0
+    private var sentCommands: [String] = []
+    var sent: [String] { lock.withLock { sentCommands } }
+
+    func setStatus(_ s: AutomationStatus) { lock.withLock { status = s } }
+    func setAnswer(_ s: AutomationStatus) { lock.withLock { answer = s } }
+    func hold(_ on: Bool) { lock.withLock { holding = on } }
+    func release(_ s: AutomationStatus) { lock.withLock { answer = s; holding = false }; gate.signal() }
+
+    func probe(_ player: PlayerID, ask: Bool) -> AutomationStatus {
+        let (isHolding, current, reply): (Bool, AutomationStatus, AutomationStatus) = lock.withLock {
+            if ask { asks += 1 } else { statusProbes += 1 }
+            return (holding, status, answer)
+        }
+        if !ask { return current }
+        if isHolding { _ = gate.wait(timeout: .now() + 20) }             // l'invite reste ouverte jusqu'à `flow-release`
+        let final = lock.withLock { answer }
+        _ = reply
+        return final
+    }
+
+    func send(_ command: PlaybackCommand, _ player: PlayerID) -> Result<Void, ScriptError> {
+        lock.withLock { sentCommands.append("\(player.rawValue):\(command.rawValue)") }
+        return .success(())
     }
 }
 #endif

@@ -16,7 +16,7 @@ public enum AppIdentity {
     public static let nameIsProvisional = false
 
     /// Version publiée (doit égaler `CFBundleShortVersionString` de `Resources/Info.plist` : un test le vérifie).
-    public static let version = "1.0.0"
+    public static let version = "1.0.1"
     /// Adresse du dépôt public (dans le User-Agent, pour que le service LRCLIB sache qui l'appelle).
     public static let projectURL = "https://github.com/MalikMoussaoui/lyra-lyrics"
 

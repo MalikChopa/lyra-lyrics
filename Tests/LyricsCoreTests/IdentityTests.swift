@@ -11,7 +11,7 @@ struct IdentityTests {
         #expect(AppIdentity.token(from: "Écho d'été — Plus") == "EchoDEtePlus")
         #expect(AppIdentity.token(from: "Lyrics") == "Lyrics")
         #expect(AppIdentity.userAgentToken.allSatisfy { $0.isASCII })
-        #expect(AppIdentity.userAgent == "LyraLyrics/1.0.0 (+https://github.com/MalikMoussaoui/lyra-lyrics)")
+        #expect(AppIdentity.userAgent == "LyraLyrics/1.0.1 (+https://github.com/MalikMoussaoui/lyra-lyrics)")
         #expect(AppIdentity.userAgent.allSatisfy { $0.isASCII })
     }
 
@@ -38,15 +38,15 @@ struct IdentityTests {
     }
 
     /// Identifiant, version et exécutable : ce que `Resources/Info.plist` fige doit rester cohérent avec le code.
-    @Test("Info.plist : identifiant, version 1.0.0 et exécutable cohérents avec le code")
+    @Test("Info.plist : identifiant, version 1.0.1 et exécutable cohérents avec le code")
     func infoPlistIdentity() throws {
         let root = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
         let plist = try String(contentsOf: root.appendingPathComponent("Resources/Info.plist"), encoding: .utf8)
         #expect(plist.contains("<key>CFBundleIdentifier</key><string>io.github.malikmoussaoui.lyra-lyrics</string>"))
         #expect(plist.contains("<key>CFBundleShortVersionString</key><string>\(AppIdentity.version)</string>"))
-        #expect(plist.contains("<key>CFBundleVersion</key><string>1</string>"))
+        #expect(plist.contains("<key>CFBundleVersion</key><string>2</string>"))
         #expect(plist.contains("<key>CFBundleExecutable</key><string>LyraLyrics</string>"))
-        #expect(AppIdentity.version == "1.0.0")
+        #expect(AppIdentity.version == "1.0.1")
         #expect(!AppIdentity.nameIsProvisional)
     }
 

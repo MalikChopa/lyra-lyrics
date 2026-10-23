@@ -14,6 +14,7 @@
   {"id": "lenteur", "title": "Lenteur de plomb", "artist": "Artiste fictif", "album": "Album fictif", "duration": 100},
   {"id": "canari", "title": "Chant du canari", "artist": "Artiste fictif", "album": "Album fictif", "duration": 90},
   {"id": "decale", "title": "Horloge décalée", "artist": "Artiste fictif", "album": "Album fictif", "duration": 122, "artwork": "violet", "artworkMode": "spotify-lent"},
+  {"id": "tres-decale", "title": "Pendule très décalée", "artist": "Artiste fictif", "album": "Album fictif", "duration": 160},
   {"id": "remaster", "title": "Rivière remasterisée - Remastered 2031", "artist": "Artiste fictif", "album": "Album fictif (édition 2031)", "duration": 140},
   {"id": "sans-duree", "title": "Café sous la pluie", "artist": "Quatuor fictif", "album": null, "duration": null}
  ],

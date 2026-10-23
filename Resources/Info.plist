@@ -10,8 +10,8 @@
 	<key>CFBundleName</key><string>@APP_NAME@</string>
 	<key>CFBundleDisplayName</key><string>@APP_NAME@</string>
 	<key>CFBundlePackageType</key><string>APPL</string>
-	<key>CFBundleShortVersionString</key><string>1.0.0</string>
-	<key>CFBundleVersion</key><string>1</string>
+	<key>CFBundleShortVersionString</key><string>1.0.1</string>
+	<key>CFBundleVersion</key><string>2</string>
 	<key>LSMinimumSystemVersion</key><string>26.0</string>
 	<!-- Pas de LSUIElement (décision utilisateur du 2026-10-22 : icône dans le Dock) ; la politique .regular/.accessory dépend du réglage showsDockIcon. -->
 	<key>CFBundleIconFile</key><string>AppIcon</string>

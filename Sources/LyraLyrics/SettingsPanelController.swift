@@ -26,6 +26,8 @@ final class SettingsPanelController {
     private let model: AppModel
     private(set) var side: Side = .right
     var isOpen: Bool { model.settingsOpen }
+    /// Demandes de focus clavier à l'ouverture (autotest : Échap doit fonctionner sans clic préalable).
+    private(set) var keyRequests = 0
 
     init(parent: PanelController, model: AppModel, store: SettingsStore, recorder: ShortcutRecorder, actions: SettingsActions) {
         self.parent = parent
@@ -69,6 +71,7 @@ final class SettingsPanelController {
     func open() {
         guard !isOpen else { return }
         model.settingsOpen = true
+        model.onSettingsOpened?()
         model.settingsMaxHeight = maxHeight
         let content = model.settingsContentHeight
         panel.setContentSize(NSSize(width: SettingsView.width, height: content > 0 ? min(content, maxHeight) : maxHeight))
@@ -77,6 +80,8 @@ final class SettingsPanelController {
         parent.panel.addChildWindow(panel, ordered: .above)
         place()
         panel.orderFrontRegardless()
+        keyRequests += 1
+        panel.makeKey()                  // Échap ferme le volet dès l'ouverture (panneau non activant : l'app n'est pas activée)
     }
 
     func close() {

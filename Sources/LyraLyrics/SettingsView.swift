@@ -2,6 +2,7 @@ import AppKit
 import SwiftUI
 import AppSupport
 import LyricsCore
+import PlayerKit
 
 struct SettingsActions {
     var setStyle: @MainActor (BackgroundStyle) -> Void
@@ -23,6 +24,10 @@ struct SettingsActions {
     var resetHotKey: @MainActor () -> Void
     var openAbout: @MainActor () -> Void
     var requestSpotifyAccess: @MainActor () -> Void
+    /// Bouton × du volet (1.0.1) : en clic-à-travers, le ⚙ de la barre au survol n'est plus cliquable.
+    var closeSettings: @MainActor () -> Void
+    /// Volet Automatisation des Réglages Système (autorisation refusée).
+    var openAutomationSettings: @MainActor () -> Void
 }
 
 private let accent = Color(red: 10 / 255, green: 132 / 255, blue: 1)
@@ -46,6 +51,19 @@ struct SettingsView: View {
             content
         }
         .scrollBounceBehavior(.basedOnSize)
+        .overlay(alignment: .topTrailing) {
+            // × toujours visible (ne défile pas) ; Échap ferme aussi (`KeyablePanel.onEscape`).
+            Button { actions.closeSettings() } label: {
+                Image(systemName: "xmark").font(.system(size: 9.5, weight: .bold)).foregroundStyle(.white.opacity(0.85))
+                    .frame(width: 22, height: 22).background(Circle().fill(.white.opacity(0.14)))
+                    .contentShape(Circle())
+            }
+            .buttonStyle(.plain)
+            .padding(.top, 10).padding(.trailing, 10)
+            .help("Fermer les réglages (Échap)")
+            .accessibilityLabel("Fermer les réglages")
+            .accessibilityIdentifier("settings-close")
+        }
         .frame(width: Self.width)
         .frame(maxHeight: .infinity, alignment: .top)
         .background {
@@ -172,12 +190,17 @@ struct SettingsView: View {
             Text("Le cache ne garde jamais de paroles : seulement l'identifiant LRCLIB de chaque titre déjà cherché, 24 h.")
                 .font(.system(size: 11)).foregroundStyle(txtMid)
             if let access = model.spotifyAccess, access != .granted {
-                // §3.7 point 3 : Spotify marche SANS autorisation (notification) ; l'accord n'ajoute que la position après un saut.
+                // 1.0.1 : l'état dit la vérité pour CETTE identité d'app (l'autorisation Automatisation est liée à l'identifiant de bundle).
+                // Spotify marche sans autorisation (notification) ; l'accord ajoute la synchro précise et les boutons de lecture.
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Synchro réduite : autorisation non accordée").font(.system(size: 11)).foregroundStyle(txtMid)
-                    if access != .unknown(-1) && access != .denied {
-                        Button("Améliorer la précision (autoriser l'accès à Spotify)") { actions.requestSpotifyAccess() }
-                            .buttonStyle(.bordered).controlSize(.small)
+                    Text(Self.spotifyLine(access)).font(.system(size: 11)).foregroundStyle(txtMid).fixedSize(horizontal: false, vertical: true)
+                    switch access {
+                    case .notDetermined, .unknown:
+                        Button("Autoriser l'accès à Spotify") { actions.requestSpotifyAccess() }.buttonStyle(.bordered).controlSize(.small)
+                    case .denied:
+                        Button("Ouvrir les Réglages") { actions.openAutomationSettings() }.buttonStyle(.bordered).controlSize(.small)
+                    case .notRunning, .granted:
+                        EmptyView()
                     }
                 }.padding(.top, 10)
             }
@@ -231,6 +254,17 @@ struct SettingsView: View {
         .onGeometryChange(for: Double.self) { Double($0.size.height) } action: { h in
             model.settingsContentHeight = h
             model.onSettingsContentHeight?()
+        }
+    }
+
+    /// Phrase du volet pour l'état de l'autorisation Automatisation de Spotify.
+    static func spotifyLine(_ access: AutomationStatus) -> String {
+        switch access {
+        case .granted: return "Spotify : autorisé (synchro précise et boutons de lecture)."
+        case .notDetermined: return "Spotify : autorisation non demandée. Elle sert à la synchro précise et aux boutons de lecture."
+        case .denied: return "Spotify : autorisation refusée. Synchro réduite, boutons de lecture désactivés."
+        case .notRunning: return "Spotify : ouvre Spotify pour vérifier l'autorisation."
+        case .unknown: return "Spotify : état de l'autorisation inconnu pour l'instant."
         }
     }
 

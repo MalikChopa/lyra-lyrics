@@ -16,7 +16,8 @@ public struct DisplayState: Sendable, Equatable {
         case instrumental
         /// 404, aucun candidat, budget dépassé par lenteur sans erreur.
         case unavailable
-        /// Tout 429/503 : « Service de paroles occupé » / « Nouvel essai dans N s. »
+        /// Tout 429/503/délai dépassé : « Service de paroles occupé » / « Nouvel essai dans N s. » (`retryIn` ≤ 0 : les reprises
+        /// automatiques sont épuisées, « Le service ne répond pas pour l'instant » ; dans les deux cas, bouton « Réessayer »).
         case busy(retryIn: Double)
         /// `NWPathMonitor` : « Hors connexion ».
         case offline
@@ -57,6 +58,8 @@ public struct DisplayState: Sendable, Equatable {
         case serviceBusy(retryIn: Double)
         /// Compte à rebours de « Service occupé » (N s restantes).
         case busyCountdown(retryIn: Double)
+        /// Erreurs passagères qui durent après toutes les reprises automatiques : reste « Service occupé » (jamais « indisponible »).
+        case serviceStalled
         /// Fin de l'attente ou du disjoncteur : nouvel essai pour le titre courant.
         case waitEnded
         case wentOffline
@@ -109,6 +112,10 @@ public struct DisplayState: Sendable, Equatable {
             guard s.hasTrack else { return s }
             if case .offline = s.screen { return s }                       // hors connexion prime sur un compte à rebours
             s.screen = .busy(retryIn: max(0, retryIn))
+        case .serviceStalled:
+            guard s.hasTrack else { return s }
+            if case .offline = s.screen { return s }
+            s.screen = .busy(retryIn: 0)
         case .waitEnded:
             if case .busy = s.screen { s.screen = s.hasTrack ? .searching(hint: false) : .nothing }
         case .wentOffline:
@@ -144,8 +151,10 @@ public struct DisplayState: Sendable, Equatable {
         case .nothing: return ("Rien en lecture", "Lance un titre dans Spotify ou Apple Music : ses paroles apparaîtront ici.")
         case .searching, .synced, .unsynced: return nil
         case .instrumental: return ("Morceau instrumental", "")
-        case .unavailable: return ("Paroles indisponibles", "Aucune parole trouvée pour ce titre. (Remix, titre rare ou service momentanément occupé.)")
-        case .busy(let retryIn): return ("Service de paroles occupé", "Nouvel essai dans \(Int(retryIn.rounded(.up))) s.")
+        case .unavailable: return ("Paroles indisponibles", "Aucune parole trouvée pour ce titre. (Remix, titre rare ou pas encore référencé.)")
+        case .busy(let retryIn):
+            if retryIn <= 0 { return ("Service de paroles occupé", "Le service ne répond pas pour l'instant. Réessaie dans un moment.") }
+            return ("Service de paroles occupé", "Nouvel essai dans \(Int(retryIn.rounded(.up))) s.")
         case .offline: return ("Hors connexion", "Les paroles reviendront avec le réseau.")
         case .permissionNeeded(let refused):
             return ("Autorisation nécessaire", refused ? AppIdentity.permissionRefusedBody : AppIdentity.permissionBody)

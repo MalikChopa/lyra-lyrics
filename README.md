@@ -20,14 +20,14 @@ No account, no sign-in, no server of ours: the app talks to your music player an
 - **Always on top**, draggable anywhere, also over other apps' windows (but see the [Dock icon trade-off](#the-dock-icon-and-full-screen-apps)). **Resizable with the mouse**: drag any edge or corner (6 pt grab zone, 280 x 110 pt minimum, 90 % of the visible screen at most); the text **adapts automatically**: the font size is the largest at which the visible lines fit the window in width and height (the "Max size" setting is the upper limit), so a bigger window means bigger text. A line wraps only if it does not fit even at 14 pt. The size is remembered; "Default size" in the settings resets it. Disabled in click-through mode.
 - **Smooth scrolling** like Apple Music: on each line change the lines glide up, the new current line scales up and brightens, the neighbours fade and get a light blur. Done with Core Animation layer animations (no per-frame redraw), smooth at 60 and 120 Hz; with "Reduce motion" on, a simple cross-fade replaces the glide.
 - **Colours from the album cover** (on by default, can be switched off): the background tint and the current-line colour come from the cover of the song playing, with a contrast of at least 4.5:1 for the current line against the tint. Apple Music: the cover is read from the Music app. Spotify: the cover is downloaded once per song (see [Privacy](#privacy)). Off, or no cover: the plain styles.
-- **Playback buttons** in the bar that appears when the pointer is over the window: previous, play/pause, next, for the player that is playing. They are greyed out, with an explanation in the tooltip, when the Automation permission is missing.
+- **Playback buttons** in the bar that appears when the pointer is over the window: previous, play/pause, next, for the player that is playing. The first time, if macOS has not been asked yet, the first click asks for the Automation permission (a one-line explanation appears in the window, then the system prompt) and then sends the command; if you refused it, the buttons stay greyed and a click offers "Open Settings" (nothing is ever asked twice).
 - **One, three or five lines** (setting "Lines"); the window height adapts, long lines still wrap and shrink the font as needed.
 - **Font themes**: Classic, Elegant (New York serif), Neon (rounded bold with a glow), Minimal (light), each setting font, weight, colour, glow and neighbour size in one click. Changing any single control afterwards shows "Custom".
 - **Synchronised lyrics**: current line highlighted, neighbours dimmed. When LRCLIB only has plain text, it is shown as a slowly scrolling block, with a notice that it is not synchronised.
 - **Three backgrounds**: solid, frosted glass, transparent (text with a soft shadow).
 - **Settings**: font, weight, max size, text colour, glow, background opacity.
 - **Manual offset** from -5 s to +5 s, for the current song only, when a lyrics file is slightly early or late.
-- **Click-through mode**: clicks go through the window to the app below. To leave it, press the shortcut (see [Keyboard shortcut](#keyboard-shortcut)): it turns click-through off and shows the window. The menu bar icon also works, but on a MacBook with a notch it can be hidden behind the notch when the menu bar is full; the shortcut is the way back.
+- **Click-through mode**: clicks go through the window to the app below. Turning it on closes the settings panel and a 3-second notice in the window reminds you how to come back. To leave it, press the shortcut (see [Keyboard shortcut](#keyboard-shortcut)): it turns click-through off and shows the window. The menu bar icon also works, but on a MacBook with a notch it can be hidden behind the notch when the menu bar is full; the shortcut is the way back.
 - **Global shortcut**: Control-Option-Command-L by default, can be changed in the settings.
 - **Menu bar icon**, optional Dock icon (off by default).
 - **"Clear cache"** button, and a clear message for every situation: nothing playing, searching, no lyrics, instrumental, service busy, offline, permission needed, unreadable title.
@@ -66,7 +66,7 @@ No account, no sign-in, no server of ours: the app talks to your music player an
 
 ## Install
 
-1. Download `Lyra-Lyrics-1.0.0-macOS.zip` from the [Releases page](https://github.com/MalikMoussaoui/lyra-lyrics/releases) and unzip it.
+1. Download `Lyra-Lyrics-1.0.1-macOS.zip` from the [Releases page](https://github.com/MalikMoussaoui/lyra-lyrics/releases) and unzip it.
 2. Move **Lyra Lyrics.app** to your **Applications** folder.
 3. Open it. The first time, macOS **blocks** it ("Apple could not verify..."). This is expected: the app is **not notarised** by Apple (notarisation needs a paid developer account, and this project is free and spare-time). To allow it:
    - open **System Settings > Privacy & Security**,
@@ -76,7 +76,7 @@ No account, no sign-in, no server of ours: the app talks to your music player an
    The exact wording of these screens may differ on your version of macOS. A right-click > Open is no longer enough on recent versions of macOS.
 4. A music-note icon appears in the menu bar, and a window "Nothing playing" appears. Start a song.
 
-The SHA-256 of each zip is in the release notes: compare it with `shasum -a 256 Lyra-Lyrics-1.0.0-macOS.zip` if you want to check your download.
+The SHA-256 of each zip is in the release notes: compare it with `shasum -a 256 Lyra-Lyrics-1.0.1-macOS.zip` if you want to check your download.
 
 If you would rather not trust a binary, [build it yourself](#build-from-source).
 
@@ -128,10 +128,10 @@ scripts/package.sh          # zip -> .build/dist/Lyra-Lyrics-<version>-macOS.zip
 - **Apple Music streaming tracks: not verified.** It was not established whether Music reports a usable position for tracks streamed from the catalogue (as opposed to your library); synchronisation may be missing or off for them.
 - **Spotify: reading its position needs the Automation permission** (see above); without it the app follows song changes only.
 - **Cover colours: not verified with a real cover.** They were tested with invented images (Apple Music path, and the Spotify path against a local test server). The Spotify image host (`i.scdn.co`) and the Apple events used to read the cover and to control playback were taken from the apps' scripting dictionaries and have not been tried on a real player. The 4.5:1 contrast is computed against the tint as an opaque colour; on the glass and transparent styles the real background behind the window is unknown.
-- **Playback buttons: not verified on a real player.**
+- **Playback buttons and the permission prompt from the buttons: not verified on a real player** (tested with a simulated permission and a simulated sender; the real prompt and the real Apple events are to be checked by hand).
 - **Resizing**: the cursor shape on the grab zones and a real mouse drag were not checked on screen (the automated test sends synthetic mouse events).
 - **Plain-text lyrics** (not synchronised) scroll in a block that costs about 2 % CPU while it moves.
-- **LRCLIB availability.** The service is community-run and free: it sometimes answers "busy" (HTTP 503) or has no lyrics for a song. The app then shows a message and retries politely.
+- **LRCLIB availability.** The service is community-run and free: it sometimes answers "busy" (HTTP 503, measured on 7 of 22 well-known songs on a first request) or has no lyrics for a song. Since 1.0.1 a failed request moves on to the search endpoint straight away and the app retries by itself ("Lyrics service busy", with a countdown and a **Retry** button); "Lyrics unavailable" now only means that LRCLIB really has nothing.
 - **Interface in French only**; **Apple silicon only**; **macOS 26+ only**; no Windows version yet.
 - **How well it is tested**: the logic is covered by unit tests and by automated runs with a simulated player and a simulated server. Real players were tested on one Mac (macOS 27). The synchronisation was checked **by ear** on Spotify by the author, without a numeric measurement. The CPU figures come from a simulated player on one Mac.
 - Not notarised: macOS asks you to confirm the first launch.

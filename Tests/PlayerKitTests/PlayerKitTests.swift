@@ -194,3 +194,74 @@ struct PlaybackCommandTests {
         }
     }
 }
+
+
+/// Déroulé de l'autorisation avant une commande de lecture : sonde injectée, aucune invite ni Apple event réels.
+final class ProbeLog: @unchecked Sendable {
+    private let lock = NSLock()
+    private var items: [String] = []
+    func add(_ s: String) { lock.withLock { items.append(s) } }
+    var all: [String] { lock.withLock { items } }
+}
+
+@Suite("PlaybackPermissionFlow (1.0.1)")
+struct PlaybackPermissionFlowTests {
+    @Test("accordée : la commande peut partir, aucune invite, aucune explication")
+    func granted() async {
+        let log = ProbeLog()
+        let flow = PlaybackPermissionFlow(probe: { p, ask in log.add("\(p.rawValue) ask=\(ask)"); return .granted })
+        let outcome = await flow.prepare(.spotify) { log.add("explication") }
+        #expect(outcome == .granted(asked: false))
+        #expect(log.all == ["spotify ask=false"])
+    }
+
+    @Test("non déterminée : explication, puis demande (ask = true) ; accordée → envoi")
+    func notDeterminedThenGranted() async {
+        let log = ProbeLog()
+        let flow = PlaybackPermissionFlow(probe: { p, ask in log.add("\(p.rawValue) ask=\(ask)"); return ask ? .granted : .notDetermined })
+        let outcome = await flow.prepare(.spotify) { log.add("explication") }
+        #expect(outcome == .granted(asked: true))
+        #expect(log.all == ["spotify ask=false", "explication", "spotify ask=true"])
+    }
+
+    @Test("non déterminée puis refusée à l'invite : refus")
+    func notDeterminedThenDenied() async {
+        let flow = PlaybackPermissionFlow(probe: { _, ask in ask ? .denied : .notDetermined })
+        #expect(await flow.prepare(.music) {} == .refused)
+    }
+
+    @Test("déjà refusée : on ne redemande JAMAIS (aucune explication, aucun ask)")
+    func deniedNeverAsks() async {
+        let log = ProbeLog()
+        let flow = PlaybackPermissionFlow(probe: { p, ask in log.add("ask=\(ask)"); return .denied })
+        #expect(await flow.prepare(.spotify) { log.add("explication") } == .refused)
+        #expect(log.all == ["ask=false"])
+    }
+
+    @Test("lecteur fermé (−600) : rien n'est demandé")
+    func notRunning() async {
+        let log = ProbeLog()
+        let flow = PlaybackPermissionFlow(probe: { _, ask in log.add("ask=\(ask)"); return .notRunning })
+        #expect(await flow.prepare(.spotify) { log.add("explication") } == .notRunning)
+        #expect(log.all == ["ask=false"])
+    }
+
+    @Test("lecture d'état bloquée (J1) : l'explication est affichée et la demande est tentée ; sans réponse dans le délai → noAnswer")
+    func hungStatusThenNoAnswer() async {
+        let log = ProbeLog()
+        let flow = PlaybackPermissionFlow(probe: { _, ask in
+            log.add("ask=\(ask)")
+            Thread.sleep(forTimeInterval: 0.6)                      // bloque plus longtemps que les délais ci-dessous
+            return .granted
+        }, statusTimeout: 0.1, askTimeout: 0.1)
+        let outcome = await flow.prepare(.spotify) { log.add("explication") }
+        #expect(outcome == .noAnswer)
+        #expect(log.all.prefix(3) == ["ask=false", "explication", "ask=true"])
+    }
+
+    @Test("délais par défaut : 4 s pour l'état, 180 s pour l'invite")
+    func defaultTimeouts() {
+        #expect(PlaybackPermissionFlow.statusTimeout == 4)
+        #expect(PlaybackPermissionFlow.askTimeout == 180)
+    }
+}

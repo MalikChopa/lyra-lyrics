@@ -124,14 +124,31 @@ public struct LRCLIBClient: Sendable {
         return record
     }
 
-    /// `/api/search` (`track_name` + `artist_name`) : tableau (vide si rien).
-    public func search(track: TrackInfo, timeout: Double = RequestGate.perRequestTimeout) async throws -> [LRCLIBRecord] {
-        let query = [("track_name", TrackMatcher.normalizeTitle(track.title)), ("artist_name", track.artist)]
-        let response = try await transport.send(makeRequest(path: "/api/search", query: query), timeout: timeout)
+    /// Requête de `/api/search` : champs séparés (`track_name` + `artist_name`) ou recherche combinée (`q`).
+    public enum SearchQuery: Sendable, Equatable {
+        case fields(title: String, artist: String)
+        case combined(String)
+
+        var items: [(String, String)] {
+            switch self {
+            case .fields(let title, let artist): return [("track_name", title), ("artist_name", artist)]
+            case .combined(let q): return [("q", q)]
+            }
+        }
+    }
+
+    /// `/api/search` : tableau (vide si rien).
+    public func search(_ query: SearchQuery, timeout: Double = RequestGate.perRequestTimeout) async throws -> [LRCLIBRecord] {
+        let response = try await transport.send(makeRequest(path: "/api/search", query: query.items), timeout: timeout)
         if response.status == 404 { return [] }
         try Self.check(response)
         guard let records = Self.decodeMany(response.body) else { throw LRCLIBError.invalidJSON }
         return records
+    }
+
+    /// `/api/search` (`track_name` = titre sans « feat. » ni « remaster », `artist_name`) pour un titre joué.
+    public func search(track: TrackInfo, timeout: Double = RequestGate.perRequestTimeout) async throws -> [LRCLIBRecord] {
+        try await search(.fields(title: TrackMatcher.queryTitle(track.title), artist: track.artist), timeout: timeout)
     }
 
     /// `get` puis, si 404, `search` ; `betweenRequests` laisse la porte imposer l'espacement.
@@ -147,19 +164,23 @@ public struct LRCLIBClient: Sendable {
         }
     }
 
-    /// Paroles à afficher pour une entrée : instrumental ; LRC parsé si la durée colle (≤ 5 s) ou est inconnue ; sinon texte
-    /// seul (bloc « non synchronisées ») ; `nil` s'il n'y a aucun texte.
+    /// Paroles à afficher pour une entrée : instrumental ; LRC parsé si la durée colle (≤ 5 s) ou est inconnue, ou si l'écart est de
+    /// 5 à 15 s avec un artiste concordant (1.0.1, consigné dans la provenance) ; sinon texte seul (bloc « non synchronisées ») ;
+    /// `nil` s'il n'y a aucun texte.
     public static func lyrics(from record: LRCLIBRecord, for track: TrackInfo, provenance: String) -> Lyrics? {
         if record.instrumental { return Lyrics(kind: .instrumental, lrclibID: record.id, provenance: provenance) }
         let verdict = TrackMatcher.durationVerdict(track: track.duration, candidate: record.duration)
         let lines = record.syncedLyrics.map(LRCParser.parse) ?? []
         var why = provenance
+        var toleratedGap = false
         switch verdict {
         case .unknown: why += ", durée inconnue"
         case .close(let d): why += String(format: ", durée %+.0f s", d)
-        case .far(let d): why += String(format: ", durée %+.0f s (> 5 s)", d)
+        case .far(let d):
+            toleratedGap = TrackMatcher.syncToleratesGap(d, artistMatches: TrackMatcher.artistMatches(record.artistName, track))
+            why += String(format: ", durée %+.0f s (> 5 s%@)", d, toleratedGap ? ", toléré ≤ 15 s" : "")
         }
-        if !lines.isEmpty, case .far = verdict {
+        if !lines.isEmpty, case .far = verdict, !toleratedGap {
             let text = (record.plainLyrics?.trimmingCharacters(in: .whitespacesAndNewlines)).flatMap { $0.isEmpty ? nil : $0 }
                 ?? LRCParser.plainText(from: lines)
             return Lyrics(kind: .plain(text), lrclibID: record.id, provenance: why)

@@ -17,11 +17,17 @@ state non-synchronisees
 play instrumental
 wait-for mode=instrumental 5
 state instrumental
-# écart de durée 8 s (get 404 à ± 2 s, search trouve l'entrée) → bloc non synchronisé
+# écart de durée 8 s (get 404 à ± 2 s, search trouve l'entrée) → synchronisé depuis 1.0.1 (toléré jusqu'à 15 s, consigné)
 play decale
-wait-for mode=unsynced 5
-expect lyricsKind=plain lrclibID=109
+wait-for mode=synced 5
+expect lyricsKind=synced lrclibID=109
+expect lookup=search,_id_109,_score_19,_durée_+8_s_(>_5_s,_toléré_≤_15_s)
 state decale
+# écart de durée 30 s (au-delà de 15 s) → bloc non synchronisé
+play tres-decale
+wait-for mode=unsynced 5
+expect lyricsKind=plain lrclibID=111
+state tres-decale
 # titre « - Remastered 2031 » : get 404, search avec titre normalisé → synchronisées
 play remaster
 wait-for mode=synced 5
@@ -68,13 +74,16 @@ state hors-connexion
 offline off
 wait-for mode=synced 5
 state retour-reseau
-# 503 en série : nouvel essai après ~2 s puis disjoncteur 30 s, puis 60 s
+# 503 en série (1.0.1) : get 503 → search tout de suite, reprises, puis « Service occupé » avec compte à rebours ; JAMAIS « indisponible »
+mark unavailableEntries
 play panne
-wait-for mode=busy 10
-expect retryInCeil=30
-state panne-30
-wait 27
-wait-for retryInCeil=60 10
-state panne-60
+wait-for mode=busy 20
+expect stateTitle=Service_de_paroles_occupé
+expect-eq unavailableEntries
+state panne-occupe
+wait 25
+wait-for mode=busy 20
+expect-eq unavailableEntries
+state panne-reprises
 stop
 expect mode=nothing

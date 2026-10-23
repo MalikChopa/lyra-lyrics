@@ -9,6 +9,8 @@ struct PanelActions {
     var toggleSettings: @MainActor () -> Void
     var openAbout: @MainActor () -> Void
     var requestMusicAccess: @MainActor () -> Void
+    /// « Réessayer » (états « Paroles indisponibles » et « Service occupé »).
+    var retryLookup: @MainActor () -> Void
 }
 
 private let accent = Color(red: 10 / 255, green: 132 / 255, blue: 1)
@@ -51,20 +53,45 @@ struct LyricsView: View {
                     StateView(title: text.title, message: Self.message(text.body))
                 }
             }
-            .padding(.top, LyricsMetrics.paddingTop).padding(.bottom, LyricsMetrics.paddingBottom + (model.mode == .permission ? 44 : 0)).padding(.horizontal, LyricsMetrics.paddingSide)
+            .padding(.top, LyricsMetrics.paddingTop).padding(.bottom, LyricsMetrics.paddingBottom + (model.stateActionLabel != nil ? 44 : 0)).padding(.horizontal, LyricsMetrics.paddingSide)
             .allowsHitTesting(false)
-            if model.mode == .permission {
-                // §3.6/§3.7 : « Autoriser » déclenche l'invite du système ; après un refus, « Ouvrir les Réglages ».
-                Button(action: { actions.requestMusicAccess() }) {
-                    Text(model.permissionRefused ? "Ouvrir les Réglages" : "Autoriser")
+            if let label = model.stateActionLabel {
+                // §3.6/§3.7 : « Autoriser » déclenche l'invite du système ; après un refus, « Ouvrir les Réglages ». 1.0.1 : « Réessayer »
+                // dans « Paroles indisponibles » et « Service occupé ».
+                Button(action: { model.mode == .permission ? actions.requestMusicAccess() : actions.retryLookup() }) {
+                    Text(label)
                         .font(.system(size: 13, weight: .semibold)).foregroundStyle(.white)
                         .padding(.horizontal, 16).padding(.vertical, 6)
                         .background(Capsule().fill(Color(red: 10 / 255, green: 132 / 255, blue: 1)))
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel(model.permissionRefused ? "Ouvrir les Réglages Système" : AppIdentity.allowAccessibilityLabel)
+                .accessibilityLabel(model.stateActionAccessibilityLabel ?? label)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
                 .padding(.bottom, 26)
+            }
+            if let notice = model.notice {
+                HStack(spacing: 8) {
+                    Text(notice)
+                        .font(.system(size: 12, weight: .medium)).foregroundStyle(.white)
+                        .multilineTextAlignment(.center).lineLimit(3).minimumScaleFactor(0.85)
+                    if let action = model.noticeAction {
+                        Button(action: { action.perform() }) {
+                            Text(action.label).font(.system(size: 12, weight: .semibold)).foregroundStyle(.white)
+                                .padding(.horizontal, 10).padding(.vertical, 3)
+                                .background(Capsule().fill(Color(red: 10 / 255, green: 132 / 255, blue: 1)))
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel(action.label)
+                    }
+                }
+                .padding(.horizontal, 14).padding(.vertical, 7)
+                .background(Capsule().fill(Color.black.opacity(0.62)).overlay(Capsule().strokeBorder(.white.opacity(0.2), lineWidth: 1)))
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                .padding(.top, 10).padding(.horizontal, 12)
+                .allowsHitTesting(model.noticeAction != nil)
+                .transition(.opacity)
+                .accessibilityElement(children: .contain)
+                .accessibilityLabel(notice)
             }
             VStack {
                 HoverBar(model: model, onStyle: actions.cycleStyle, onGear: actions.toggleSettings)
@@ -81,6 +108,7 @@ struct LyricsView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .environment(\.colorScheme, .dark)
         .animation(model.animation(.easeOut(duration: 0.2)), value: showBar)
+        .animation(model.animation(.easeOut(duration: 0.2)), value: model.notice)
         .animation(model.animation(.easeOut(duration: 0.3)), value: style)
         .animation(model.animation(.easeInOut(duration: 0.6)), value: model.palette?.tint)
     }
@@ -261,12 +289,12 @@ struct HoverBar: View {
 }
 
 extension HoverBar {
-    @ViewBuilder fileprivate func transportButton(_ command: PlaybackCommand, name: String, playback: (enabled: Bool, reason: String?)) -> some View {
+    @ViewBuilder fileprivate func transportButton(_ command: PlaybackCommand, name: String, playback: AppModel.PlaybackAvailability) -> some View {
         let isPlayPause = command == .playPause
         let showsPlay = model.isPaused || model.track == nil
         let symbol: String = isPlayPause ? (showsPlay ? "play.fill" : "pause.fill") : (command == .previous ? "backward.fill" : "forward.fill")
         let label: String = isPlayPause ? (showsPlay ? "Lecture" : "Pause") : command.accessibilityLabel
-        let help: String = playback.enabled ? label : (playback.reason ?? label)
+        let help: String = playback.enabled ? (playback.hint.map { "\(label) — \($0)" } ?? label) : (playback.reason ?? label)
         BarButton(glyph: nil, symbol: symbol, label: label, disabled: !playback.enabled, help: help, hovered: model.hoveredButton == name,
                   onHover: { model.hoveredButton = $0 ? name : nil }, action: { model.sendPlayback(command) })
     }

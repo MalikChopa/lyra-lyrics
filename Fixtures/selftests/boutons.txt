@@ -1,0 +1,62 @@
+# 1.0.1, point C : boutons de lecture et autorisation Automatisation de Spotify.
+# Faux lecteur « demo » (joue en tant que Spotify) ; la sonde d'autorisation et l'envoi sont SIMULÉS : aucune invite, aucun Apple event,
+# aucun lecteur réel, les Réglages Système ne sont jamais ouverts (l'ouverture demandée est seulement notée).
+play phares
+wait-for mode=synced 8
+hover on
+spotify-flow on
+# 1. NON DÉTERMINÉE : boutons d'apparence active (avec infobulle), le 1er clic demande l'autorisation avec l'explication d'une ligne
+spotify-access notdetermined
+flow-status notdetermined
+flow-hold on
+expect playbackEnabled=true playbackRefused=false flowAsks=0 flowSent=0
+expect playbackHint=Le_premier_clic_demande_l'autorisation_de_piloter_Spotify.
+playback next
+wait-for noticeText=Autorise_Lyra_Lyrics_à_piloter_Spotify_pour_utiliser_les_boutons 5
+expect flowAsks=1 flowSent=0 noticeVisible=true
+state explication-visible
+# un second clic pendant l'invite est ignoré (pas de seconde demande)
+playback previous
+expect flowAsks=1
+# l'utilisateur accepte : la commande part, l'explication disparaît, l'état devient « accordée »
+flow-release granted
+wait-for flowSent=1 5
+expect flowSentLast=spotify:next spotifyAccess=granted noticeVisible=false flowAsks=1 playbackRefused=false
+# 2. ACCORDÉE : envoi direct, sans nouvelle lecture ni demande
+playback playPause
+wait-for flowSent=2 5
+expect flowSentLast=spotify:playPause flowAsks=1 flowStatusProbes=1
+# 3. REFUSÉE à l'invite : boutons grisés, proposition « Ouvrir les Réglages »
+spotify-access notdetermined
+flow-hold on
+playback previous
+wait-for noticeVisible=true 3
+flow-release denied
+wait-for spotifyAccess=denied 5
+expect flowSent=2 flowAsks=2 playbackEnabled=false playbackRefused=true noticeAction=Ouvrir_les_Réglages
+state refus-propose
+# 4. REFUSÉE : un clic ne redemande JAMAIS ; il propose les Réglages ; le bouton ouvre le volet Automatisation (simulé)
+playback next
+expect flowAsks=2 flowSent=2 noticeAction=Ouvrir_les_Réglages openedURLs=0
+notice-action
+expect openedURLs=1 openedAutomationPane=true
+# 5. Spotify fermé : rien n'est demandé, simple avis
+spotify-access notdetermined
+flow-status notrunning
+playback next
+wait-for noticeText=Spotify_n'est_pas_ouvert. 5
+expect flowAsks=2 flowSent=2
+# 6. volet de réglages : la ligne Spotify dit la vérité pour chaque état
+settings open
+spotify-access granted
+expect spotifyLine=Spotify_:_autorisé_(synchro_précise_et_boutons_de_lecture).
+spotify-access notdetermined
+expect spotifyLine=Spotify_:_autorisation_non_demandée._Elle_sert_à_la_synchro_précise_et_aux_boutons_de_lecture.
+spotify-access denied
+expect spotifyLine=Spotify_:_autorisation_refusée._Synchro_réduite,_boutons_de_lecture_désactivés.
+state volet-refuse
+spotify-access hung
+expect spotifyLine=Spotify_:_état_de_l'autorisation_inconnu_pour_l'instant.
+settings close
+spotify-flow off
+stop

@@ -8,12 +8,14 @@ enum LyricsServiceEvent: Sendable {
     case searching
     /// Fin d'une attente (429 / disjoncteur) : nouvel essai pour le titre courant.
     case retrying
-    /// 429 ou disjoncteur : « Service occupé », nouvel essai dans `retryIn` s (répété chaque seconde).
+    /// 429, disjoncteur ou reprise espacée après des erreurs passagères : « Service occupé », nouvel essai dans `retryIn` s (chaque seconde).
     case busy(retryIn: Double, reason: String)
     case offline
     case found(Lyrics, cached: Bool)
-    /// 404, aucun candidat, 429 répété, budget de 15 s dépassé par lenteur (`budget` vrai).
-    case notFound(reason: String, budget: Bool)
+    /// 404, aucun candidat : la recherche a abouti et il n'y a pas de paroles (état « Paroles indisponibles »).
+    case notFound(reason: String)
+    /// Erreurs passagères du service qui durent (reprises automatiques épuisées) : « Service occupé » + « Réessayer », JAMAIS « indisponible ».
+    case stalled(reason: String)
 }
 
 /// Transport réel : `URLSession` ÉPHÉMÈRE, `urlCache = nil` (D3), aucun cookie, `User-Agent` de l'app (D8).
@@ -55,12 +57,15 @@ final class URLSessionTransport: LRCLIBTransport, @unchecked Sendable {
     }
 }
 
-/// Service des paroles (§3.3) : `LRCLIBClient` + `RequestGate` + `LyricsCache` (mémoire) + `LookupIndex` (disque, sans
+/// Service des paroles (§3.3) : `LookupRunner` (déroulé d'un titre, LyricsCore) + `LyricsCache` (mémoire) + `LookupIndex` (disque, sans
 /// texte). Requêtes séquentielles ; un changement de titre annule la recherche en cours (`Task.cancel`).
 actor LyricsService {
     static let bundleID = Bundle.main.bundleIdentifier ?? "io.github.malikmoussaoui.lyra-lyrics"
     /// ASCII seulement (décision du 2026-10-22) : CFNetwork encode un en-tête non ASCII en ISO-8859-1 (mesuré à J3). Pas de contact pour l'instant.
     static let userAgent = AppIdentity.userAgent
+    /// Révision des règles de recherche : fait partie de la clé de l'index disque, pour que les « non trouvé » de la 1.0.0 (dus au
+    /// 503 et à la durée) ne bloquent pas un titre pendant 24 h après la mise à jour.
+    static let matchingRevision = "2"
 
     /// `~/Library/Application Support/<bundle id>/lookup-index.json` (D4).
     static func defaultIndexURL() -> URL? {
@@ -85,20 +90,20 @@ actor LyricsService {
         }
     }
 
-    private let client: LRCLIBClient
-    private var gate: RequestGate
+    private let runner: LookupRunner
     private var cache = LyricsCache()
     private var index: LookupIndex
     private let indexURL: URL?
     private let hasher: @Sendable (String) -> String
     private let log: @Sendable ([String: String]) -> Void
     private var currentTask: Task<Void, Never>?
-    private var onlineWaiters: [CheckedContinuation<Void, Never>] = []
 
     init(client: LRCLIBClient, indexURL: URL?, hasher: @escaping @Sendable (String) -> String,
-         titlesBeforeBreaker: Int = 1, log: @escaping @Sendable ([String: String]) -> Void = { _ in }) {
-        self.client = client
-        self.gate = RequestGate(titlesBeforeBreaker: titlesBeforeBreaker)
+         titlesBeforeBreaker: Int = 1, minSpacing: Double = RequestGate.minSpacing,
+         config: LookupRunner.Config = LookupRunner.Config(), log: @escaping @Sendable ([String: String]) -> Void = { _ in }) {
+        self.runner = LookupRunner(client: client, gate: RequestGate(titlesBeforeBreaker: titlesBeforeBreaker, minSpacing: minSpacing),
+                                   config: config, clock: { ProcessClock.seconds() },
+                                   sleep: { seconds in try? await Task.sleep(for: .seconds(max(0, seconds))) }, log: log)
         self.indexURL = indexURL
         self.index = indexURL.map(LookupIndex.load(from:)) ?? LookupIndex()
         self.hasher = hasher
@@ -106,22 +111,14 @@ actor LyricsService {
         index.purge(now: Date())
     }
 
-    private enum Step { case get, getByID(Int), search
-        var name: String { switch self { case .get: return "get"; case .getByID: return "get/{id}"; case .search: return "search" } }
-    }
-
     var indexCount: Int { index.count }
     var cacheCount: Int { cache.count }
-    var isOffline: Bool { gate.isOffline }
+    var isOffline: Bool { get async { await runner.isOffline } }
 
     /// Hors connexion (`NWPathMonitor`) : aucune requête ; au retour, la recherche du titre courant reprend.
     func setOnline(_ online: Bool) {
-        gate.isOffline = !online
-        if online {
-            let waiters = onlineWaiters
-            onlineWaiters = []
-            waiters.forEach { $0.resume() }
-        }
+        let runner = runner
+        Task { await runner.setOnline(online) }
     }
 
     /// « Vider le cache » : index disque vidé (et fichier réécrit), cache mémoire vidé.
@@ -140,194 +137,79 @@ actor LyricsService {
     /// Lance la recherche d'un titre (annule la précédente). `report` est appelé pour chaque étape visible.
     func lookup(_ track: TrackInfo, report: @escaping @Sendable (LyricsServiceEvent) -> Void) {
         currentTask?.cancel()
-        currentTask = Task { await self.run(track, report: report) }
+        currentTask = Task { await self.run(track, forced: false, report: report) }
+    }
+
+    /// Bouton « Réessayer » : oublie le « non trouvé » noté pour ce titre (index et cache) et recommence de zéro.
+    func retry(_ track: TrackInfo, report: @escaping @Sendable (LyricsServiceEvent) -> Void) {
+        currentTask?.cancel()
+        index.remove(key: indexKey(for: track))
+        cache.remove(track.identity)
+        log(["lookup": "reessayer"])
+        currentTask = Task { await self.run(track, forced: true, report: report) }
     }
 
     // MARK: - Déroulé d'un titre
 
-    private func now() -> Double { ProcessClock.seconds() }
+    private func indexKey(for track: TrackInfo) -> String {
+        LookupIndex.key(for: track, hasher: { [hasher] in hasher(Self.matchingRevision + "\u{1F}" + $0) })
+    }
 
-    private func run(_ track: TrackInfo, report: @escaping @Sendable (LyricsServiceEvent) -> Void) async {
+    private func run(_ track: TrackInfo, forced: Bool, report: @escaping @Sendable (LyricsServiceEvent) -> Void) async {
         let key = track.identity
-        if let hit = cache.fetch(key) {
+        if !forced, let hit = cache.fetch(key) {
             log(["lookup": "cache", "resultat": hit.isSynced ? "synced" : (hit.plainText != nil ? "plain" : "instrumental")])
             report(.found(hit, cached: true))
             return
         }
-        gate.beginTitle()
-        let indexKey = LookupIndex.key(for: track, hasher: hasher)
-        var step: Step = .get
-        switch index.lookup(key: indexKey, now: Date()) {
+        let indexKey = indexKey(for: track)
+        var knownID: Int?
+        switch forced ? nil : index.lookup(key: indexKey, now: Date()) {
         case .notFound?:
             log(["lookup": "index", "resultat": "non trouvé (< 24 h)"])
-            report(.notFound(reason: "index : non trouvé il y a moins de 24 h", budget: false))
+            report(.notFound(reason: "index : non trouvé il y a moins de 24 h"))
             return
         case .found(let id)?:
             log(["lookup": "index", "resultat": "id \(id)"])
-            step = .getByID(id)
+            knownID = id
         case nil:
             break
         }
-        report(.searching)
-        var gaveUpRateLimit = false
-
-        while !Task.isCancelled {
-            switch gate.admit(now: now()) {
-            case .offline:
-                report(.offline)
-                log(["lookup": "hors-connexion", "etape": step.name])
-                await waitForOnline()
-                continue
-            case .busy:
-                try? await Task.sleep(for: .milliseconds(50))
-                continue
-            case .wait(let s):
-                try? await Task.sleep(for: .seconds(s))
-                continue
-            case .closed(let until, let reason):
-                await countdown(until: until, reason: reason.rawValue, report: report)
-                if Task.isCancelled { return }
-                if gaveUpRateLimit {
-                    report(.notFound(reason: "service occupé (429 répété)", budget: false))
-                    return
-                }
-                gate.beginAttempt()
-                report(.retrying)
-                log(["lookup": "nouvel-essai", "etape": step.name, "raison": reason.rawValue])
-                continue
-            case .budgetExhausted:
-                log(["lookup": "budget-epuise", "etape": step.name])
-                report(.notFound(reason: "budget de 15 s dépassé (lenteur)", budget: true))
-                return
-            case .attemptExhausted:
-                report(.notFound(reason: "3 requêtes sans résultat", budget: false))
-                return
-            case .proceed(let timeout):
-                let started = now()
-                gate.requestStarted(now: started)
-                log(["lookup": "requete", "etape": step.name, "timeout": String(format: "%.1f", timeout)])
-                do {
-                    switch step {
-                    case .get, .getByID:
-                        let record: LRCLIBRecord
-                        if case .getByID(let id) = step { record = try await client.get(id: id, timeout: timeout) }
-                        else { record = try await client.get(track: track, timeout: timeout) }
-                        _ = gate.requestFinished(now: now(), outcome: .success)
-                        let provenance = step.name
-                        if let lyrics = LRCLIBClient.lyrics(from: record, for: track, provenance: provenance) {
-                            deliver(lyrics, key: key, indexKey: indexKey, step: step, started: started, report: report)
-                            return
-                        }
-                        log(["lookup": "reponse", "etape": step.name, "statut": "200", "ms": ms(since: started), "resultat": "sans texte"])
-                        step = .search
-                    case .search:
-                        let records = try await client.search(track: track, timeout: timeout)
-                        _ = gate.requestFinished(now: now(), outcome: .success)
-                        let decision = TrackMatcher.choose(for: track, among: records.map(\.candidate))
-                        if let candidate = decision.candidate, let record = records.first(where: { $0.id == candidate.id }),
-                           let lyrics = LRCLIBClient.lyrics(from: record, for: track, provenance: "search, \(decision.reason)") {
-                            log(["lookup": "reponse", "etape": "search", "statut": "200", "ms": ms(since: started), "candidats": "\(records.count)", "choix": decision.reason])
-                            deliver(lyrics, key: key, indexKey: indexKey, step: step, started: started, report: report)
-                        } else {
-                            log(["lookup": "reponse", "etape": "search", "statut": "200", "ms": ms(since: started), "candidats": "\(records.count)", "choix": decision.reason])
-                            index.record(key: indexKey, outcome: .notFound, now: Date())
-                            saveIndex()
-                            report(.notFound(reason: "aucun candidat (\(decision.reason))", budget: false))
-                        }
-                        return
-                    }
-                } catch LRCLIBError.notFound {
-                    _ = gate.requestFinished(now: now(), outcome: .notFound)
-                    log(["lookup": "reponse", "etape": step.name, "statut": "404", "ms": ms(since: started)])
-                    switch step {
-                    case .get: step = .search
-                    case .getByID: step = .get
-                    case .search: return
-                    }
-                } catch LRCLIBError.rateLimited(let retryAfter) {
-                    let seconds = RequestGate.parseRetryAfter(retryAfter, now: Date())
-                    let verdict = gate.requestFinished(now: now(), outcome: .rateLimited(retryAfter: seconds))
-                    log(["lookup": "reponse", "etape": step.name, "statut": "429", "ms": ms(since: started),
-                         "retryAfter": retryAfter ?? "", "verdict": describe(verdict)])
-                    if case .giveUp = verdict { gaveUpRateLimit = true }
-                } catch LRCLIBError.serverError(let status, let retryAfter) {
-                    let seconds = RequestGate.parseRetryAfter(retryAfter, now: Date())
-                    let verdict = gate.requestFinished(now: now(), outcome: .serverError(status: status, retryAfter: seconds))
-                    log(["lookup": "reponse", "etape": step.name, "statut": "\(status)", "ms": ms(since: started),
-                         "retryAfter": retryAfter ?? "", "verdict": describe(verdict)])
-                    if case .giveUp = verdict, gate.closedUntil == nil {
-                        // J4 : titre abandonné après 3 essais en 5xx, porte restée ouverte (le titre suivant sera cherché normalement).
-                        report(.notFound(reason: "service occupé (5xx répété pour ce titre)", budget: false))
-                        return
-                    }
-                } catch LRCLIBError.timeout {
-                    if timeout < RequestGate.perRequestTimeout - 0.001 {
-                        _ = gate.requestFinished(now: now(), outcome: .budgetCut)
-                        log(["lookup": "reponse", "etape": step.name, "statut": "coupée par le budget", "ms": ms(since: started)])
-                    } else {
-                        let verdict = gate.requestFinished(now: now(), outcome: .timeout)
-                        log(["lookup": "reponse", "etape": step.name, "statut": "délai dépassé", "ms": ms(since: started), "verdict": describe(verdict)])
-                    }
-                } catch LRCLIBError.cancelled {
-                    _ = gate.requestFinished(now: now(), outcome: .cancelled)
-                    return
-                } catch is CancellationError {
-                    _ = gate.requestFinished(now: now(), outcome: .cancelled)
-                    return
-                } catch {
-                    if Task.isCancelled {
-                        _ = gate.requestFinished(now: now(), outcome: .cancelled)
-                        return
-                    }
-                    let verdict = gate.requestFinished(now: now(), outcome: .transportFailure)
-                    log(["lookup": "reponse", "etape": step.name, "statut": "panne de transport", "ms": ms(since: started),
-                         "erreur": String(describing: error).prefix(80).description, "verdict": describe(verdict)])
-                }
+        let outcome = await runner.run(track: track, knownID: knownID) { event in
+            switch event {
+            case .searching: report(.searching)
+            case .retrying: report(.retrying)
+            case .busy(let seconds, let reason): report(.busy(retryIn: seconds, reason: reason))
+            case .offline: report(.offline)
             }
         }
-    }
-
-    private func deliver(_ lyrics: Lyrics, key: String, indexKey: String, step: Step, started: Double,
-                         report: @escaping @Sendable (LyricsServiceEvent) -> Void) {
-        let kind = lyrics.isSynced ? "synced" : (lyrics.plainText != nil ? "plain" : "instrumental")
-        log(["lookup": "reponse", "etape": step.name, "statut": "200", "ms": ms(since: started), "resultat": kind,
-             "id": lyrics.lrclibID.map(String.init) ?? "", "provenance": lyrics.provenance])
-        cache.store(lyrics, for: key)
-        if let id = lyrics.lrclibID {
-            index.record(key: indexKey, outcome: .found(id: id), now: Date())
-            saveIndex()
+        if Task.isCancelled { return }
+        switch outcome {
+        case .found(let lyrics):
+            let kind = lyrics.isSynced ? "synced" : (lyrics.plainText != nil ? "plain" : "instrumental")
+            log(["lookup": "livre", "resultat": kind, "id": lyrics.lrclibID.map(String.init) ?? "", "provenance": lyrics.provenance])
+            cache.store(lyrics, for: key)
+            if let id = lyrics.lrclibID {
+                index.record(key: indexKey, outcome: .found(id: id), now: Date())
+                saveIndex()
+            }
+            report(.found(lyrics, cached: false))
+        case .notFound(let reason, let definitive):
+            if definitive {
+                index.record(key: indexKey, outcome: .notFound, now: Date())
+                saveIndex()
+            }
+            report(.notFound(reason: reason))
+        case .stalled(let reason):
+            log(["lookup": "service-occupe", "raison": reason])
+            report(.stalled(reason: reason))
+        case .cancelled:
+            break
         }
-        report(.found(lyrics, cached: false))
-    }
-
-    /// « Service occupé » : rapporte le temps restant chaque seconde jusqu'à la réouverture.
-    private func countdown(until: Double, reason: String, report: @escaping @Sendable (LyricsServiceEvent) -> Void) async {
-        log(["lookup": "porte-fermee", "raison": reason, "secondes": String(format: "%.1f", until - now())])
-        while !Task.isCancelled {
-            let remaining = until - now()
-            if remaining <= 0 { return }
-            report(.busy(retryIn: remaining, reason: reason))
-            try? await Task.sleep(for: .seconds(min(1, remaining)))
-        }
-    }
-
-    private func waitForOnline() async {
-        guard gate.isOffline else { return }
-        await withCheckedContinuation { (c: CheckedContinuation<Void, Never>) in onlineWaiters.append(c) }
     }
 
     private func saveIndex() {
         guard let url = indexURL else { return }
         do { try index.save(to: url) } catch { log(["lookup": "index-ecriture-echec", "erreur": String(describing: error).prefix(80).description]) }
-    }
-
-    private func ms(since started: Double) -> String { String(Int(((now() - started) * 1000).rounded())) }
-
-    private func describe(_ v: RequestGate.Verdict) -> String {
-        switch v {
-        case .proceed: return "continuer"
-        case .retry(let after): return String(format: "nouvel essai dans %.1f s", after)
-        case .giveUp(let r): return "abandon (\(r.rawValue))"
-        }
     }
 }

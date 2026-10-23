@@ -63,12 +63,20 @@ final class PlayerHub {
     // MARK: Permissions (§3.7)
 
     /// État de l'autorisation Spotify, lu hors du fil principal avec un délai (J1 : l'appel peut ne jamais rendre la main).
+    /// 1.0.1 : une seule lecture à la fois (un appel bloqué laisse un thread en attente : on n'en empile pas) ; une lecture qui ne rend pas
+    /// la main ne remplace pas un état déjà connu.
     func refreshSpotifyAccess() {
+        guard !probing else { return }
+        probing = true
         Task { @MainActor [weak self] in
             let status = await Self.probe(.spotify, timeout: 4)
-            self?.model?.spotifyAccess = status
+            self?.probing = false
+            guard let model = self?.model else { return }
+            if status == .unknown(-1), model.spotifyAccess != nil { return }
+            model.spotifyAccess = status
         }
     }
+    private var probing = false
 
     /// Clic sur « Autoriser » (Music) : l'invite du système apparaît, la réponse arrive hors du fil principal.
     func requestMusicAccess() {

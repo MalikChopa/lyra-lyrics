@@ -1,0 +1,44 @@
+# 1.0.1, point B : le clic-à-travers ferme le volet et « À propos », avis de 3 s, bouton × du volet, Échap.
+# (faux lecteur « demo », préférences à usage unique ; aucun lecteur réel)
+play phares
+wait-for mode=synced 8
+# 1. volet + À propos ouverts, puis clic-à-travers activé : les deux se ferment tout seuls
+settings open
+expect settingsOpen=true
+about open
+expect aboutOpen=true
+clickthrough on
+expect clickThrough=true settingsOpen=false aboutOpen=false ignoresMouseEvents=true noticeVisible=true noticesShown=1
+expect noticeText=Clic-à-travers_activé_·_⌃⌥⌘L_pour_revenir
+state avis-visible
+# 2. l'avis disparaît tout seul après ~3 s
+wait-for noticeVisible=false 5
+state avis-disparu
+# 3. en clic-à-travers, le volet reste ouvrable (barre de menus) et son × le ferme (appui accessibilité = action réelle du bouton)
+settings open
+expect settingsOpen=true
+ax-press settings Fermer les réglages
+expect settingsOpen=false
+# 4. Échap ferme le volet, et « À propos » (le volet devient « key » dès l'ouverture, sans attendre un clic : Échap fonctionne tout de suite)
+settings open
+expect settingsOpen=true settingsKeyRequests=3
+escape settings
+expect settingsOpen=false
+about open
+expect aboutOpen=true
+escape about
+expect aboutOpen=false
+# 5. sortie du clic-à-travers : l'avis éventuel disparaît, pas de nouvel avis
+clickthrough off
+expect clickThrough=false ignoresMouseEvents=false noticeVisible=false
+# 6. réactivation : nouvel avis (2 au total), puis le raccourci (même chemin que la frappe) rend la main et ne cache pas
+clickthrough on
+expect noticeVisible=true noticesShown=2
+hotkey-handler
+expect clickThrough=false visible=true noticeVisible=false
+# 7. l'avis cite le raccourci CONFIGURÉ
+shortcut ctrl+opt+cmd+k
+clickthrough on
+expect noticeText=Clic-à-travers_activé_·_⌃⌥⌘K_pour_revenir
+clickthrough off
+stop

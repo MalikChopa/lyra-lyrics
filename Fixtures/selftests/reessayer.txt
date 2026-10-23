@@ -1,0 +1,20 @@
+# 1.0.1 : bouton « Réessayer » de « Paroles indisponibles » (faux lecteur + catalogue en processus, aucun réseau).
+clearcache
+play sans-paroles
+wait-for mode=unavailable 5
+expect stateAction=Réessayer lookup=aucun_candidat_(aucun_candidat)
+# retour sur le même titre : le « non trouvé » mémorisé 24 h répond sans requête
+play phares
+wait-for mode=synced 5
+play sans-paroles
+wait-for mode=unavailable 5
+expect lookup=index_:_non_trouvé_il_y_a_moins_de_24_h
+mark unavailableEntries
+# le bouton (appui accessibilité = action réelle) oublie cette mémoire et refait la recherche de zéro
+ax-press main Réessayer la recherche des paroles
+wait-for lookup=aucun_candidat_(aucun_candidat) 8
+expect mode=unavailable stateAction=Réessayer
+expect-gt unavailableEntries
+state reessayer
+clearcache
+stop

@@ -80,7 +80,7 @@ struct RequestGateTests {
         #expect(RequestGate.parseRetryAfter(nil, now: now) == nil)
     }
 
-    @Test("503 en série : nouvel essai après 2 s + aléa, puis disjoncteur 30, 60, 120, 240, 300, 300 s")
+    @Test("503 en série : nouvel essai après 2 s + aléa, puis disjoncteur 10, 20, 40, 60, 120, 120 s (1.0.1 ; 30 à 300 s avant)")
     func breakerSeries() {
         var g = gate()
         g.beginTitle()
@@ -101,7 +101,7 @@ struct RequestGateTests {
             #expect(g.requestFinished(now: now, outcome: .serverError(status: 502, retryAfter: nil)) == .giveUp(.serverErrors))
             if case .closed(let until, _) = g.admit(now: now) { pauses.append(until - now) }
         }
-        #expect(pauses == [30, 60, 120, 240, 300, 300])
+        #expect(pauses == [10, 20, 40, 60, 120, 120])
     }
 
     @Test("5xx avec Retry-After : le nouvel essai attend cette valeur ; délai dépassé et panne de transport suivent le même chemin")
@@ -114,7 +114,7 @@ struct RequestGateTests {
         #expect(t.requestFinished(now: 8, outcome: .timeout) == .retry(after: 2.5))
         t.requestStarted(now: 10.5)
         #expect(t.requestFinished(now: 18.5, outcome: .transportFailure) == .giveUp(.serverErrors))
-        #expect(t.closedUntil == 48.5)
+        #expect(t.closedUntil == 28.5)
     }
 
     @Test("remise à zéro du disjoncteur au premier succès")
@@ -130,7 +130,7 @@ struct RequestGateTests {
         #expect(g.requestFinished(now: 51, outcome: .serverError(status: 500, retryAfter: nil)) == .retry(after: 2.5))
     }
 
-    @Test("un 429 compte dans le disjoncteur : le 5xx suivant saute directement à la pause de 60 s")
+    @Test("un 429 compte dans le disjoncteur : le 5xx suivant saute directement à la deuxième pause (20 s)")
     func rateLimitCountsInBreaker() {
         var g = gate()
         g.beginTitle()
@@ -138,17 +138,17 @@ struct RequestGateTests {
         let reopen = g.closedUntil!
         g.beginAttempt()
         g.requestStarted(now: reopen); _ = g.requestFinished(now: reopen + 1, outcome: .serverError(status: 503, retryAfter: nil))
-        #expect(g.closedUntil == reopen + 1 + 60)
+        #expect(g.closedUntil == reopen + 1 + 20)
     }
 
-    @Test("hors connexion : aucune requête ; au plus 3 requêtes par tentative")
+    @Test("hors connexion : aucune requête ; au plus 6 requêtes par tentative (1.0.1)")
     func offlineAndCap() {
         var g = gate()
         g.isOffline = true
         #expect(g.admit(now: 0) == .offline)
         g.isOffline = false
         g.beginTitle()
-        for i in 0..<3 {
+        for i in 0..<6 {
             let now = Double(i)
             #expect(g.admit(now: now) == .proceed(timeout: 8))
             g.requestStarted(now: now); _ = g.requestFinished(now: now + 0.1, outcome: .notFound)
@@ -174,7 +174,7 @@ struct RequestGateTests {
             let verdict = g.requestFinished(now: now, outcome: .serverError(status: 503, retryAfter: 1))
             #expect(verdict == .giveUp(.serverErrors))
             if title < 3 { #expect(g.closedUntil == nil); g.beginTitle(); #expect(g.admit(now: now + 1) == .proceed(timeout: 8)) }
-            else { #expect(g.closedUntil == now + 30) }
+            else { #expect(g.closedUntil == now + 10) }
         }
     }
 

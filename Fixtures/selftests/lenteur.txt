@@ -1,6 +1,7 @@
-# Budget de 15 s (lenteur sans erreur) : get 404 après 7,8 s, search coupée par le budget → « Paroles indisponibles ».
+# Budget de 15 s (lenteur sans erreur) : get 404 après 7,8 s, search coupée par le budget. Depuis 1.0.1 ce n'est plus « Paroles indisponibles »
+# (on ne sait pas si LRCLIB a les paroles) : « Service occupé », reprise automatique après 5 s, bouton « Réessayer ».
 play lenteur
-wait-for mode=unavailable 25
-expect lookup=budget_de_15_s_dépassé_(lenteur)
+wait-for mode=busy 30
+expect lookup=occupé_(reprise) unavailableEntries=0 stateAction=Réessayer
 state lenteur
 stop

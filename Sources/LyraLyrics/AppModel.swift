@@ -32,6 +32,8 @@ final class AppModel {
     /// Message du volet après « Vider le cache ».
     var cacheMessage: String?
     private(set) var lastIndexCount = -1
+    /// Nombre de fois où « Paroles indisponibles » a été atteint depuis le lancement (autotest : une erreur passagère ne doit jamais l'y mener).
+    @ObservationIgnored private(set) var unavailableEntries = 0
 
     var mode: DisplayMode { DisplayMode(rawValue: display.screen.name) ?? .nothing }
     var title: String? { track?.title }
@@ -74,11 +76,44 @@ final class AppModel {
     /// Hauteur naturelle (sans défilement) du contenu du volet, mesurée par SwiftUI.
     var settingsContentHeight: Double = 0
     @ObservationIgnored var onSettingsContentHeight: (() -> Void)?
+    /// Ouverture du volet : relit l'état de l'autorisation Spotify (posé par `AppController`).
+    @ObservationIgnored var onSettingsOpened: (() -> Void)?
     var hotKeyAvailable = true
     var hotKeyMessage: String?
     var onDisplayedLinesChanged: (() -> Void)?
     /// Pile de lignes en cours (autotest et mesures) ; faible : appartient à la vue.
     @ObservationIgnored weak var lineStack: LineStackView?
+
+    // MARK: Avis passager (1.0.1)
+    /// Courte phrase affichée en haut de la fenêtre de paroles (≈ 3 s) : « Clic-à-travers activé · ⌃⌥⌘L pour revenir », ou l'explication
+    /// de l'autorisation Spotify pour les boutons de lecture.
+    private(set) var notice: String?
+    /// Bouton éventuel de l'avis (ex. « Ouvrir les Réglages »).
+    struct NoticeAction { var label: String; var perform: @MainActor () -> Void }
+    private(set) var noticeAction: NoticeAction?
+    @ObservationIgnored private var noticeTask: Task<Void, Never>?
+    /// Avis posés (diagnostic et autotest).
+    @ObservationIgnored private(set) var noticesShown: [String] = []
+
+    func showNotice(_ text: String, seconds: Double = 3, action: NoticeAction? = nil) {
+        notice = text
+        noticeAction = action
+        noticesShown.append(text)
+        diag?(["event": "notice", "text": text])
+        noticeTask?.cancel()
+        noticeTask = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(seconds))
+            guard !Task.isCancelled, let self else { return }
+            self.notice = nil; self.noticeAction = nil
+            self.onDisplayedLinesChanged?()
+        }
+        onDisplayedLinesChanged?()
+    }
+
+    func clearNotice() {
+        noticeTask?.cancel(); noticeTask = nil
+        if notice != nil { notice = nil; noticeAction = nil; onDisplayedLinesChanged?() }
+    }
 
     // MARK: Pochette et boutons de lecture
     /// Couleurs tirées de la pochette du titre en cours (nil : styles unis, réglage désactivé ou pochette indisponible).
@@ -89,6 +124,8 @@ final class AppModel {
     @ObservationIgnored var onTrackStopped: (() -> Void)?
     /// Exécute une commande de lecture auprès du lecteur actif (posé par `AppController`).
     @ObservationIgnored var onPlayback: ((PlaybackCommand) -> Void)?
+    /// Clic sur un bouton quand l'autorisation est refusée : propose « Ouvrir les Réglages » (posé par `AppController`).
+    @ObservationIgnored var onPlaybackRefused: (() -> Void)?
     /// Commandes de lecture envoyées (diagnostic et autotest).
     @ObservationIgnored private(set) var playbackSent: [PlaybackCommand] = []
 
@@ -100,29 +137,48 @@ final class AppModel {
     }
     func clearPalette() { if palette != nil { palette = nil; paletteIdentity = nil } }
 
-    /// Boutons précédent / lecture-pause / suivant : activés si un lecteur est actif ET son autorisation Automatisation est accordée.
-    var playbackAvailability: (enabled: Bool, reason: String?) {
-        guard let track else { return (false, "Aucune lecture en cours") }
+    /// État des boutons précédent / lecture-pause / suivant (1.0.1).
+    /// - Autorisation Automatisation accordée, NON DÉTERMINÉE, inconnue ou pas encore lue : boutons actifs ; si elle n'est pas accordée, le
+    ///   premier clic la demande (`hint` l'annonce dans l'infobulle) ;
+    /// - REFUSÉE : boutons grisés (`enabled` faux), mais un clic propose « Ouvrir les Réglages » (`refused`) ;
+    /// - aucun titre, ou Music en attente d'autorisation : grisés sans proposition.
+    struct PlaybackAvailability: Equatable {
+        var enabled: Bool
+        var reason: String?
+        var refused = false
+        var hint: String?
+    }
+
+    var playbackAvailability: PlaybackAvailability {
+        guard let track else { return PlaybackAvailability(enabled: false, reason: "Aucune lecture en cours") }
         switch track.player {
         case "spotify":
-            if let access = spotifyAccess, access == .granted { return (true, nil) }
-            #if DEBUG
-            if usesFakePlayer { return (true, nil) }
-            #endif
-            return (false, "Autorisation nécessaire : autorise \(AppIdentity.displayName) à contrôler Spotify (réglages, « Améliorer la précision »).")
+            if spotifyAccess == .denied {
+                return PlaybackAvailability(enabled: false, reason: "Autorisation refusée : clique pour ouvrir les Réglages Système (Automatisation).", refused: true)
+            }
+            if spotifyAccess == .granted { return PlaybackAvailability(enabled: true, reason: nil) }
+            return PlaybackAvailability(enabled: true, reason: nil, hint: "Le premier clic demande l'autorisation de piloter Spotify.")
         case "music":
-            if case .permissionNeeded = display.screen { return (false, "Autorisation nécessaire : autorise \(AppIdentity.displayName) à contrôler Apple Music.") }
-            return (true, nil)
+            if case .permissionNeeded = display.screen { return PlaybackAvailability(enabled: false, reason: "Autorisation nécessaire : autorise \(AppIdentity.displayName) à contrôler Apple Music.") }
+            return PlaybackAvailability(enabled: true, reason: nil)
         default:
-            return (true, nil)
+            return PlaybackAvailability(enabled: true, reason: nil)
         }
     }
     #if DEBUG
     @ObservationIgnored var usesFakePlayer = false
     #endif
 
+    /// Clic sur un bouton de lecture. Refusée : « Ouvrir les Réglages » ; sinon `onPlayback` (AppController) vérifie l'autorisation,
+    /// la demande au premier clic si besoin, puis envoie la commande.
     func sendPlayback(_ command: PlaybackCommand) {
-        guard playbackAvailability.enabled else { return }
+        let availability = playbackAvailability
+        if availability.refused {
+            diag?(["event": "playback-refused", "command": command.rawValue])
+            onPlaybackRefused?()
+            return
+        }
+        guard availability.enabled else { return }
         playbackSent.append(command)
         diag?(["event": "playback", "command": command.rawValue])
         onPlayback?(command)
@@ -338,10 +394,48 @@ final class AppModel {
             case .instrumental:
                 display = DisplayState.reduce(display, .instrumental)
             }
-        case .notFound(let reason, let budget):
+        case .notFound(let reason):
             lastLookup = reason
-            display = DisplayState.reduce(display, budget ? .budgetExhausted : .notFound)
+            unavailableEntries += 1
+            display = DisplayState.reduce(display, .notFound)
+        case .stalled(let reason):
+            busyRetryIn = 0
+            lastLookup = "service occupé (\(reason))"
+            display = DisplayState.reduce(display, .serviceStalled)
         }
+        logDisplay()
+        updateTimer()
+        onDisplayedLinesChanged?()
+    }
+
+    /// Libellé du bouton de l'état affiché (nil : pas de bouton) : « Autoriser » / « Ouvrir les Réglages » (Music), « Réessayer ».
+    var stateActionLabel: String? {
+        switch mode {
+        case .permission: return permissionRefused ? "Ouvrir les Réglages" : "Autoriser"
+        case .unavailable, .busy: return "Réessayer"
+        default: return nil
+        }
+    }
+    var stateActionAccessibilityLabel: String? {
+        switch mode {
+        case .permission: return permissionRefused ? "Ouvrir les Réglages Système" : AppIdentity.allowAccessibilityLabel
+        case .unavailable, .busy: return "Réessayer la recherche des paroles"
+        default: return nil
+        }
+    }
+
+    /// Bouton « Réessayer » (états « Paroles indisponibles » et « Service occupé ») : recherche relancée de zéro pour le titre courant.
+    func retryLookup() {
+        guard let service, let info = track, mode == .unavailable || mode == .busy else { return }
+        display = DisplayState.reduce(display, .trackChanged)
+        lyrics = nil; lastLookup = "nouvel essai demandé"
+        diag?(["event": "retry", "mode": mode.rawValue])
+        let identity = info.identity
+        let report: @Sendable (LyricsServiceEvent) -> Void = { [weak self] event in
+            Task { @MainActor in self?.applyServiceEvent(event, identity: identity) }
+        }
+        Task { await service.retry(info, report: report) }
+        scheduleHint()
         logDisplay()
         updateTimer()
         onDisplayedLinesChanged?()

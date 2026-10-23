@@ -59,6 +59,9 @@ public struct LookupIndex: Sendable, Equatable {
         entries.removeAll { now.timeIntervalSince($0.storedAt) > Self.maxAge || $0.storedAt > now.addingTimeInterval(60) }
     }
 
+    /// Oublie une entrée (bouton « Réessayer »).
+    public mutating func remove(key: String) { entries.removeAll { $0.key == key } }
+
     /// « Vider le cache ».
     public mutating func clear() { entries.removeAll() }
 

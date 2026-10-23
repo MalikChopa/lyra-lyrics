@@ -34,5 +34,7 @@ public struct LyricsCache: Sendable, Equatable {
         while entries.count > Self.capacity { entries.removeFirst() }
     }
 
+    public mutating func remove(_ key: String) { entries.removeAll { $0.key == key } }
+
     public mutating func clear() { entries.removeAll() }
 }

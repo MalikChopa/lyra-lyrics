@@ -141,7 +141,7 @@ struct LRCLIBClientTests {
         #expect(await paused.count == 1)
         #expect(t.requests[1].url!.path == "/api/search")
         let items = URLComponents(url: t.requests[1].url!, resolvingAgainstBaseURL: false)!.queryItems!
-        #expect(items.contains(URLQueryItem(name: "track_name", value: "phares sur la mer")))
+        #expect(items.contains(URLQueryItem(name: "track_name", value: "Phares sur la mer")))      // 1.0.1 : casse gardée, suffixe retiré
         // search → tableau vide : aucune entrée (pas une erreur)
         let (c2, _) = client([.response(HTTPResponse(status: 404, body: Self.json404)), .response(HTTPResponse(status: 200, body: Data("[]".utf8)))])
         #expect(try await c2.lookup(track: track).records.isEmpty)
@@ -153,10 +153,16 @@ struct LRCLIBClientTests {
         #expect(LRCLIBClient.lyrics(from: instrumental, for: track, provenance: "get")?.kind == .instrumental)
         let plain = LRCLIBRecord(id: 2, trackName: "Brume", artistName: "Duo fictif", duration: 120, plainLyrics: "Un\nDeux")
         #expect(LRCLIBClient.lyrics(from: plain, for: track, provenance: "get")?.kind == .plain("Un\nDeux"))
-        let far = LRCLIBRecord(id: 3, trackName: "Phares sur la mer", artistName: "Artiste fictif", duration: 128, syncedLyrics: "[00:01.00]Un\n[00:02.00]\n[00:03.00]Deux")
-        let farLyrics = LRCLIBClient.lyrics(from: far, for: track, provenance: "search")
+        let far = LRCLIBRecord(id: 3, trackName: "Phares sur la mer", artistName: "Artiste fictif", duration: 150, syncedLyrics: "[00:01.00]Un\n[00:02.00]\n[00:03.00]Deux")
+        let farLyrics = LRCLIBClient.lyrics(from: far, for: track, provenance: "search")                // +30 s : au-delà de 15 s
         #expect(farLyrics?.kind == .plain("Un\nDeux"))
         #expect(farLyrics?.provenance.contains("> 5 s") == true)
+        let tolerated = LRCLIBRecord(id: 6, trackName: "Phares sur la mer", artistName: "Artiste fictif", duration: 128, syncedLyrics: "[00:01.00]Un\n[00:03.00]Deux")
+        let toleratedLyrics = LRCLIBClient.lyrics(from: tolerated, for: track, provenance: "search")   // +8 s : synchro tolérée (1.0.1)
+        #expect(toleratedLyrics?.isSynced == true)
+        #expect(toleratedLyrics?.provenance.contains("toléré ≤ 15 s") == true)
+        let strangerGap = LRCLIBRecord(id: 7, trackName: "Phares sur la mer", artistName: "Quelqu'un d'autre", duration: 128, syncedLyrics: "[00:01.00]Un\n[00:03.00]Deux")
+        #expect(LRCLIBClient.lyrics(from: strangerGap, for: track, provenance: "search")?.isSynced == false)   // artiste sans rapport : texte
         let unknown = LRCLIBRecord(id: 4, trackName: "Phares sur la mer", artistName: "Artiste fictif", duration: nil, syncedLyrics: "[00:01.00]Un")
         #expect(LRCLIBClient.lyrics(from: unknown, for: track, provenance: "get")?.isSynced == true)
         let empty = LRCLIBRecord(id: 5, trackName: "Rien", artistName: "Personne", duration: 120, plainLyrics: "  ", syncedLyrics: "")
