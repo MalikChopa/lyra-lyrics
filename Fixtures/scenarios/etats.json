@@ -1,0 +1,55 @@
+{
+ "name": "etats",
+ "note": "Pour Fixtures/selftests/etats.txt : aucun déroulé automatique, c'est l'autotest qui joue les titres. Titres INVENTÉS.",
+ "tracks": [
+  {
+   "id": "phares",
+   "title": "Phares sur la mer",
+   "artist": "Artiste fictif",
+   "album": "Album fictif",
+   "duration": 120
+  },
+  {
+   "id": "sans-paroles",
+   "title": "Silence en do majeur",
+   "artist": "Trio imaginaire",
+   "album": "Album fictif",
+   "duration": 95
+  },
+  {
+   "id": "autre",
+   "title": "Café sous la pluie",
+   "artist": "Quatuor fictif",
+   "album": "Album fictif",
+   "duration": 150
+  },
+  {
+   "id": "brume",
+   "title": "Brume sans horloge",
+   "artist": "Duo fictif",
+   "album": "Album fictif",
+   "duration": 200
+  },
+  {
+   "id": "instrumental",
+   "title": "Vent instrumental",
+   "artist": "Trio imaginaire",
+   "album": "Album fictif",
+   "duration": 180
+  },
+  {
+   "id": "occupe",
+   "title": "Occupé trois secondes",
+   "artist": "Artiste fictif",
+   "album": "Album fictif",
+   "duration": 100
+  },
+  {
+   "id": "lenteur",
+   "title": "Lenteur de plomb",
+   "artist": "Artiste fictif",
+   "album": "Album fictif",
+   "duration": 100
+  }
+ ]
+}

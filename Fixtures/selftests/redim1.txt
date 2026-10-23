@@ -1,0 +1,67 @@
+# Redimensionnement à la souris, 1re exécution (préférences neuves ; événements souris synthétiques envoyés aux zones de prise).
+play phares
+wait-for mode=synced 8
+pause
+seek 14
+wait 1
+state avant
+expect windowWidthSetting=-1 winW=460 winH=190 fitCurrentSize=26 handlesHidden=false
+# bord droit +100 : plus large, retour à la ligne sur 504 pt, taille de police inchangée
+resize right 100 0
+state apres-droite
+expect winW=560 winH=190 windowWidthSetting=560 windowHeightSetting=190 modelWindowWidth=560 textWidth=504 fitCurrentSize=26 lineCount=3
+# bord bas remonté de 60 : moins haut, la hauteur règle la police effective (plus petite, rapport conservé)
+mark fitCurrentSize
+resize bottom 0 60
+expect winH=130 windowHeightSetting=130 winW=560
+expect-lt fitCurrentSize
+state apres-bas
+# bord haut tiré vers le haut de 80 : plus haut, la police remonte jusqu'au réglage « Taille » (26) sans le dépasser
+resize top 0 80
+expect winH=210 fitCurrentSize=26
+# coin haut-gauche : la largeur et la hauteur changent d'un coup, le coin opposé (bas-droit) ne bouge pas
+resize topLeft -40 30
+expect winW=600 winH=240
+# 1 ligne et 5 lignes restent respectées en taille imposée
+lines 1
+expect lineCount=1 visibleSlots=1 winW=600 winH=240
+lines 5
+expect lineCount=5 visibleSlots=5 winW=600 winH=240
+state cinq-lignes-imposee
+lines 3
+# minimum 280 x 110
+resize right -2000 0
+expect winW=280
+resize top 0 -2000
+expect winH=110
+state minimum
+expect fitCurrentSize=14
+# maximum : 90 % de la zone visible
+resize right 5000 0
+expect winW=1539
+resize top 0 5000
+expect winH=967
+state maximum
+# volet de réglages : reste accroché du même côté pendant et après le redimensionnement
+resetsize
+expect windowWidthSetting=-1 winW=460 winH=190
+settings open
+expect settingsOpen=true settingsSide=right settingsAttached=true
+resize right 80 0
+expect settingsSide=right settingsAttached=true winW=540
+resize bottomRight 30 -20
+expect settingsSide=right settingsAttached=true
+state volet-attache
+settings close
+# curseur choisi par zone (tracking area), pas de redimensionnement en clic-à-travers
+clickthrough on
+expect handlesHidden=true ignoresMouseEvents=true
+mark winW
+resize-blocked right 100 0
+expect-eq winW
+clickthrough off
+expect handlesHidden=false
+# taille voulue pour la 2e exécution (persistance)
+resize left -60 0
+resize bottom 0 -30
+state final-redim1

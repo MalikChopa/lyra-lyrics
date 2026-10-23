@@ -1,0 +1,28 @@
+# défilement doux. Les transitions de ligne sont des animations de COUCHES (clés et durées listées), la couche
+# présentée est échantillonnée à ~120 Hz pendant la transition ; « Réduire les animations » bascule sur un fondu simple.
+play phares
+wait-for mode=synced 8
+wait-for currentIndex=0 8
+anim-probe
+anim-list
+expect lastMotion=glide
+state apres-glissement
+reducemotion on
+expect reduceMotion=true
+anim-probe
+anim-list
+expect lastMotion=fade
+reducemotion off
+lines 5
+anim-probe
+anim-list
+expect lastMotion=glide layerCount=5
+lines 1
+anim-probe
+expect lastMotion=glide
+lines 3
+# nouveau titre : fondu (pas de défilement)
+expect trackFades=0
+play autre
+wait-for mode=synced 8
+expect trackFades=1

@@ -1,0 +1,4 @@
+# Autotest J2, 2e exécution (mêmes préférences) : les valeurs de la 1re exécution doivent avoir survécu au redémarrage.
+state redemarrage
+expect style=clear size=33 opacity=61 font=sfMono color=#ffb3d1 clickThrough=true ignoresMouseEvents=true
+expect hotKey=⌃⌥⌘K hotKeyRegistration=enregistré dock=false activationPolicy=accessory loadOutcome=ok

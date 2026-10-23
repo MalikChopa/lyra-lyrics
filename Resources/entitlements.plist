@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Requis par le runtime durci pour envoyer des Apple events à Spotify / Musique (J1). Aucun effet à J0. -->
+	<key>com.apple.security.automation.apple-events</key><true/>
+</dict>
+</plist>

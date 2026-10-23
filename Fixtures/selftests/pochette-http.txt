@@ -1,0 +1,25 @@
+# pochette Spotify simulée = URL (Apple event simulé) puis UN GET HTTP vers le faux serveur local (bouclage, http autorisé
+# seulement en DEBUG). Exige `pf-fake-lrclib --port 4181` et `--lyrics-endpoint http://127.0.0.1:4181`. Pochettes INVENTÉES.
+# le scénario « demo » joue « phares » (pochette par Apple event simulé) dès 0 s : 1re livraison, sans HTTP
+wait-for artworkDelivered=1 5
+expect artworkStarted=1 artworkPlayerReads=1 artworkHttp=0
+play autre
+wait-for mode=synced 8
+wait-for artworkDelivered=2 5
+expect artworkStarted=2 artworkPlayerReads=2 artworkHttp=1 artworkCancelled=0 paletteAccent=#6fb1f7
+state pochette-spotify-bleu
+# titre à pochette lente (2 s), remplacé après 0,5 s : la requête est ANNULÉE, sa réponse n'arrive jamais à l'affichage
+play decale
+wait 0.5
+expect artworkBusy=true artworkHttp=2
+play phares
+wait-for artworkDelivered=3 5
+expect artworkCancelled=1 artworkHttp=2 paletteAccent=#f76f8e
+wait 3
+expect paletteAccent=#f76f8e artworkDelivered=3
+# réglage désactivé : aucune requête de plus (ni lecture par Apple event simulé, ni HTTP)
+artwork off
+play autre
+wait-for mode=synced 8
+wait 1
+expect artworkHttp=2 artworkPlayerReads=4 artworkSkippedDisabled=1 paletteAccent=none

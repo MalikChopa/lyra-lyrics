@@ -1,0 +1,22 @@
+{
+ "name": "tour",
+ "note": "Tour des états en une commande (titres INVENTÉS, paroles servies par le faux LRCLIB) : synchronisées (0–20 s), bloc non synchronisé (20 s), service occupé puis synchronisées (32 s), indisponibles (42 s), instrumental (48 s), durée décalée → bloc (54 s), synchronisées (66 s).",
+ "tracks": [
+  {"id": "phares", "title": "Phares sur la mer", "artist": "Artiste fictif", "album": "Album fictif", "duration": 120},
+  {"id": "brume", "title": "Brume sans horloge", "artist": "Duo fictif", "album": "Album fictif", "duration": 200},
+  {"id": "occupe", "title": "Occupé trois secondes", "artist": "Artiste fictif", "album": "Album fictif", "duration": 100},
+  {"id": "sans-paroles", "title": "Silence en do majeur", "artist": "Trio imaginaire", "album": "Album fictif", "duration": 95},
+  {"id": "instrumental", "title": "Vent instrumental", "artist": "Trio imaginaire", "album": "Album fictif", "duration": 180},
+  {"id": "decale", "title": "Horloge décalée", "artist": "Artiste fictif", "album": "Album fictif", "duration": 122},
+  {"id": "autre", "title": "Café sous la pluie", "artist": "Quatuor fictif", "album": "Album fictif", "duration": 150}
+ ],
+ "timeline": [
+  {"at": 0.0, "do": "play", "track": "phares"},
+  {"at": 20.0, "do": "play", "track": "brume"},
+  {"at": 32.0, "do": "play", "track": "occupe"},
+  {"at": 42.0, "do": "play", "track": "sans-paroles"},
+  {"at": 48.0, "do": "play", "track": "instrumental"},
+  {"at": 54.0, "do": "play", "track": "decale"},
+  {"at": 66.0, "do": "play", "track": "autre"}
+ ]
+}

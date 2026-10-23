@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key><string>fr</string>
+	<key>CFBundleExecutable</key><string>LyraLyrics</string>
+	<!-- Identifiant de bundle : porte les autorisations du système (Automatisation). Ne pas le changer à la légère. -->
+	<key>CFBundleIdentifier</key><string>io.github.malikmoussaoui.lyra-lyrics</string>
+	<key>CFBundleInfoDictionaryVersion</key><string>6.0</string>
+	<key>CFBundleName</key><string>@APP_NAME@</string>
+	<key>CFBundleDisplayName</key><string>@APP_NAME@</string>
+	<key>CFBundlePackageType</key><string>APPL</string>
+	<key>CFBundleShortVersionString</key><string>1.0.0</string>
+	<key>CFBundleVersion</key><string>1</string>
+	<key>LSMinimumSystemVersion</key><string>26.0</string>
+	<!-- Pas de LSUIElement (décision utilisateur du 2026-10-22 : icône dans le Dock) ; la politique .regular/.accessory dépend du réglage showsDockIcon. -->
+	<key>CFBundleIconFile</key><string>AppIcon</string>
+	<key>NSPrincipalClass</key><string>NSApplication</string>
+	<key>NSHighResolutionCapable</key><true/>
+	<!-- Texte de l'invite Automatisation (utilisée à partir de J1, jamais déclenchée à J0). -->
+	<key>NSAppleEventsUsageDescription</key><string>@APP_NAME@ lit le titre et la position du morceau en cours dans Spotify ou Musique pour afficher les paroles.</string>
+</dict>
+</plist>

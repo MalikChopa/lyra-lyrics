@@ -1,0 +1,106 @@
+# Autotest J2, 1re exécution (préférences neuves) : chaque réglage change l'état attendu. Titres et paroles inventés.
+state initial
+expect style=glass effectiveStyle=glass size=26 opacity=38 font=system color=#ffffff clickThrough=false ignoresMouseEvents=false
+expect level=1000 collectionBehavior=262481 dock=false activationPolicy=accessory visible=true screens=1
+wait-for mode=synced 5
+expect hotKey=⌃⌥⌘L hotKeyRegistration=enregistré mode=synced title=Phares_sur_la_mer lyricsKind=synced
+# ◐ : un seul clic synthétique sur le vrai bouton (Verre -> Transparent -> Uni -> Verre), puis le menu
+hover on
+hit button-style
+hit drag
+hit credit-link
+click button-style
+expect style=clear hasShadow=false
+click button-style
+expect style=solid hasShadow=true
+cycle
+expect style=glass
+menustyle Transparent
+expect style=clear
+menustyle Uni
+expect style=solid
+# réglages du volet
+settings open
+expect settingsOpen=true settingsIsChild=true settingsNonactivating=true settingsLevel=1000 settingsCollectionBehavior=262481 settingsSide=right
+state volet-ouvert
+size 33
+opacity 61
+font sfMono
+color 3
+expect size=33 opacity=61 font=sfMono color=#ffb3d1 colorIndex=3 fontFellBack=false
+font avenirNext
+state avenir
+font newYork
+expect font=newYork
+font sfMono
+settings close
+expect settingsOpen=false settingsIsChild=false
+click button-gear
+expect settingsOpen=true
+click button-gear
+expect settingsOpen=false
+# À propos : non activant, Échap ferme
+about open
+expect aboutOpen=true aboutNonactivating=true
+state a-propos
+escape about
+expect aboutOpen=false
+# clic-à-travers : menu de la barre de menus puis volet
+menu Clic-à-travers
+expect clickThrough=true ignoresMouseEvents=true hovering=false
+menu Clic-à-travers
+expect clickThrough=false ignoresMouseEvents=false
+clickthrough on
+expect clickThrough=true ignoresMouseEvents=true
+# titre via le faux lecteur
+play sans-paroles
+wait-for mode=unavailable 5
+play autre
+wait-for mode=synced 5
+expect mode=synced currentIndex=0
+stop
+expect mode=nothing
+play phares
+# raccourci : refus sans modificateur, acceptation, échec réel (combinaison occupée), défaut
+shortcut k
+expect hotKey=⌃⌥⌘L recorderMessage=Ajoute_⌃,_⌥_ou_⌘_à_la_combinaison.
+shortcut ctrl+opt+cmd+k
+expect hotKey=⌃⌥⌘K hotKeyRegistration=enregistré
+shortcut-block ctrl+opt+cmd+j
+shortcut ctrl+opt+cmd+j
+expect hotKey=⌃⌥⌘K hotKeyRegistration=enregistré recorderMessage=raccourci_indisponible
+shortcut-unblock
+# chemin gestionnaire -> effet (événement Carbon synthétique, aucune frappe réelle) ; le clic-à-travers est encore actif ici :
+# le raccourci le désactive d'abord, sans cacher la fenêtre
+expect clickThrough=true
+hotkey-press
+expect visible=true clickThrough=false ignoresMouseEvents=false hotKeyPressCount=1
+hotkey-press
+expect visible=false hotKeyPressCount=2
+hotkey-press
+expect visible=true hotKeyPressCount=3
+# clic-à-travers ACTIVÉ et fenêtre cachée : le raccourci sort du clic-à-travers ET montre la fenêtre
+clickthrough on
+hide
+expect visible=false clickThrough=true
+hotkey-press
+expect visible=true clickThrough=false hotKeyPressCount=4
+# boutons de la barre : clic simulé sur ⚙ (et ◐) avec la géométrie partagée HoverBarLayout
+click button-gear
+expect settingsOpen=true
+click button-gear
+expect settingsOpen=false
+# déplacement par le code vers le bord droit, volet basculé à gauche
+move right
+settings open
+state bord-droit
+expect settingsSide=left settingsOpen=true
+settings close
+# réglages finaux persistés pour la 2e exécution (Dock : bascule immédiate dans les deux sens)
+style clear
+dock on
+expect dock=true activationPolicy=regular visible=true
+dock off
+expect dock=false activationPolicy=accessory visible=true
+clickthrough on
+state final-run1

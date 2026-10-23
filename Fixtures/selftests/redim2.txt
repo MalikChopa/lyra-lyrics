@@ -1,0 +1,10 @@
+# Redimensionnement à la souris, 2e exécution (mêmes préférences) : la taille et la position de la 1re exécution ont survécu au redémarrage.
+play phares
+wait-for mode=synced 8
+pause
+seek 14
+wait 1
+state redemarrage-redim
+expect windowWidthSetting=630 windowHeightSetting=240 winW=630 winH=240 modelWindowWidth=630 textWidth=574 winX=650 fitCurrentSize=26
+resetsize
+expect windowWidthSetting=-1 winW=460 winH=190

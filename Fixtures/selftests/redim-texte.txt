@@ -1,0 +1,58 @@
+# Ajustement automatique du texte à la taille de la fenêtre (taille imposée) : agrandir la fenêtre agrandit la police effective,
+# la réduire la réduit ; le retour à la ligne n'intervient que si la ligne la plus longue ne tient pas, même au plancher de 14 pt.
+play phares
+wait-for mode=synced 8
+pause
+seek 14
+size 44
+wait 1
+resize-to 300 130
+state petite
+expect winW=300 winH=130 fitCurrentSize=14
+mark fitCurrentSize
+resize-to 380 160
+state moyenne
+expect-gt fitCurrentSize
+mark fitCurrentSize
+resize-to 460 190
+state grande
+expect-gt fitCurrentSize
+mark fitCurrentSize
+resize-to 560 240
+state tres-grande
+expect-gt fitCurrentSize
+mark fitCurrentSize
+resize-to 1100 500
+expect-gt fitCurrentSize
+expect fitCurrentSize=44 fitShrunk=false
+# la hauteur compte autant que la largeur : même largeur, moins haut = police plus petite
+mark fitCurrentSize
+resize-to 1100 160
+expect-lt fitCurrentSize
+# 1 et 5 lignes : le nombre de lignes visibles est respecté, la police s'adapte
+lines 5
+resize-to 700 300
+expect lineCount=5 visibleSlots=5
+mark fitCurrentSize
+lines 1
+expect-gt fitCurrentSize
+lines 3
+# ligne très longue : retour à la ligne seulement au plancher de 14 pt
+play tres-longues
+wait-for mode=synced 8
+pause
+seek 3
+resize-to 460 190
+wait 1
+expect fitCurrentSize=14
+mark fitContentHeight
+state ligne-tres-longue-plancher
+# ligne courte dans la même fenêtre : une seule ligne par emplacement, hauteur de contenu bien plus faible
+play phares
+wait-for mode=synced 8
+pause
+seek 14
+wait 1
+expect-lt fitContentHeight
+expect fitCurrentSize=29
+resetsize

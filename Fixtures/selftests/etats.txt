@@ -1,0 +1,89 @@
+# J5 : chaque état du §3.6 atteint par scénario (faux lecteur + faux LRCLIB en processus ; titres et paroles INVENTÉS).
+# Chaque « wait-for » est une attente (échec si l'état n'est pas atteint) ; « state » écrit l'état complet dans le diagnostic.
+wait 1
+expect mode=nothing stateTitle=Rien_en_lecture
+state rien
+# Recherche : « Lenteur de plomb » met 7,8 s à répondre ; « Recherche des paroles… » après 1,5 s
+play lenteur
+wait-for mode=searching 3
+wait-for searchHint=true 4
+expect currentLen=22
+state recherche
+# Synchronisées
+play phares
+wait-for mode=synced 8
+wait-for visibleCount=2 5
+state synchronisees
+# En pause (drapeau sur l'écran courant : lignes figées, barre « En pause »)
+pause
+wait-for paused=true 3
+expect mode=synced barText=Phares_sur_la_mer_|_Artiste_fictif_·_En_pause
+state pause
+resume
+wait-for paused=false 3
+# Non synchronisées (texte seul)
+play brume
+wait-for mode=unsynced 8
+expect lyricsKind=plain
+state non-synchronisees
+# Instrumental
+play instrumental
+wait-for mode=instrumental 8
+expect stateTitle=Morceau_instrumental
+state instrumental
+# Indisponibles (aucun candidat)
+play sans-paroles
+wait-for mode=unavailable 8
+expect stateTitle=Paroles_indisponibles
+state indisponibles
+# Service occupé (429, Retry-After 3 s) puis synchronisées
+play occupe
+wait-for mode=busy 6
+expect stateTitle=Service_de_paroles_occupé
+state occupe
+wait-for mode=synced 12
+# Réseau perdu alors que les paroles sont déjà affichées : elles restent ; retour du réseau : rien ne change
+offline on
+expect mode=synced
+offline off
+expect mode=synced
+# Hors connexion : un NOUVEAU titre ne peut pas être cherché
+offline on
+play autre
+wait-for mode=offline 5
+expect stateTitle=Hors_connexion
+state hors-connexion
+offline off
+wait-for mode=synced 10
+# Autorisation nécessaire (Music) : bouton « Autoriser » ; aucune URL ouverte tant qu'il n'y a pas de refus
+stop
+wait-for mode=nothing 3
+perm-needed
+wait-for mode=permission 3
+expect permissionRefused=false stateTitle=Autorisation_nécessaire openedURLs=0
+state autorisation
+click-permission
+expect openedURLs=0
+# Refus : « Ouvrir les Réglages » ouvre le volet Automatisation (ici seulement NOTÉ, jamais ouvert)
+perm-answer denied
+expect mode=permission permissionRefused=true
+state autorisation-refusee
+click-permission
+expect openedURLs=1
+# Accord : sortie de l'état
+perm-answer granted
+wait-for mode=nothing 3
+# Titre illisible (-1728 répétés côté Music)
+play phares
+wait-for mode=synced 8
+unreadable
+wait-for mode=unreadable 3
+expect stateTitle=Titre_non_lisible_depuis_Apple_Music
+state illisible
+# Sortie : titre suivant
+play autre
+wait-for mode=synced 8
+# Lecteur arrêté / quitté
+stop
+wait-for mode=nothing 3
+state rien-apres-arret

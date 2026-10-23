@@ -1,0 +1,5 @@
+# Mesure du CPU fenêtre CACHÉE (scripts/measure-cpu.sh hidden) : lecture en cours, fenêtre masquée (même chemin que le raccourci).
+play phares
+wait 3
+hide
+wait 300

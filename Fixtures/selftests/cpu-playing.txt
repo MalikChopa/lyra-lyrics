@@ -1,0 +1,11 @@
+# Mesure du CPU (scripts/measure-cpu.sh playing) : lecture en boucle du faux titre « phares » (paroles inventées, ~20 lignes sur 53 s),
+# retour à 0 s toutes les 50 s pour que des changements de ligne aient lieu pendant toute la mesure. Aucun réglage de l'utilisateur.
+play phares
+wait 50
+seek 0
+wait 50
+seek 0
+wait 50
+seek 0
+wait 50
+seek 0

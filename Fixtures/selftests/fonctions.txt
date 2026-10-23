@@ -1,0 +1,81 @@
+# nombre de lignes, thèmes de police, couleurs de la pochette (Apple Music simulé), boutons de lecture. Titres, paroles et pochettes INVENTÉS.
+play phares
+wait-for mode=synced 8
+pause
+seek 14
+wait 1
+state trois-lignes
+expect lineCount=3 visibleSlots=3 fontTheme=classic artworkColors=true
+wait-for artworkDelivered=1 5
+expect artworkStarted=1 artworkPlayerReads=1 artworkHttp=0 artworkSkippedDisabled=0
+# valeurs de la pochette inventée « rouge » (déterministes), contraste WCAG >= 4,5
+expect paletteAccent=#f76f8e paletteTint=#4d1613 paletteContrast=5.32 lineColor=#f76f8e
+state pochette-rouge
+lines 1
+state une-ligne
+expect lineCount=1 visibleSlots=1 visibleCount=1 frameH=120
+lines 5
+state cinq-lignes
+expect lineCount=5 visibleSlots=5 frameH=232
+lines 2
+expect lineCount=3
+lines 3
+# thèmes : un clic règle police, graisse, couleur, halo et rapport ; un réglage individuel passe en « Personnalisé »
+theme elegant
+expect fontTheme=elegant font=newYork fontWeight=semibold colorIndex=1 glow=false
+state theme-elegant
+theme neon
+expect fontTheme=neon font=rounded fontWeight=bold colorIndex=2 glow=true
+state theme-neon
+theme minimal
+expect fontTheme=minimal font=system fontWeight=light glow=false neighbourRatio=0.72
+theme classic
+expect fontTheme=classic font=system fontWeight=bold colorIndex=0 glow=false neighbourRatio=0.66
+size 30
+expect fontTheme=classic
+font sfMono
+expect fontTheme=custom
+theme classic
+expect fontTheme=classic
+glow on
+expect fontTheme=custom
+glow off
+expect fontTheme=classic
+# couleurs de la pochette : désactivées = plus aucune requête, palette effacée ; réactivées = une demande pour le titre en cours
+artwork off
+expect artworkColors=false paletteAccent=none paletteTint=none lineColor=#ffffff
+play brume
+wait-for mode=unsynced 8
+expect artworkStarted=1 artworkSkippedDisabled=1 artworkPlayerReads=1
+artwork on
+wait-for artworkDelivered=2 5
+expect artworkStarted=2 artworkPlayerReads=2 artworkHttp=0
+# boutons de lecture (faux lecteur : précédent / suivant du scénario, lecture / pause)
+play phares
+wait-for mode=synced 8
+expect playbackEnabled=true playbackSent=0 paused=false
+playback playPause
+wait-for paused=true 3
+playback playPause
+wait-for paused=false 3
+expect playbackSent=2 playbackLast=playPause
+playback next
+wait-for title=Silence_en_do_majeur 3
+playback previous
+wait-for title=Phares_sur_la_mer 3
+expect playbackSent=4 playbackLast=previous
+click button-playpause
+wait-for paused=true 3
+click button-playpause
+wait-for paused=false 3
+click button-next
+wait-for title=Silence_en_do_majeur 3
+click button-previous
+wait-for title=Phares_sur_la_mer 3
+expect playbackSent=8
+stop
+wait-for mode=nothing 3
+expect playbackEnabled=false playbackReason=Aucune_lecture_en_cours
+state boutons-sans-lecture
+play phares
+wait-for mode=synced 8

@@ -1,0 +1,110 @@
+{
+ "note": "Faux LRCLIB. Titres, artistes, albums et paroles INVENTÉS (aucune oeuvre réelle). Même forme que l'API réelle : id, trackName, artistName, albumName, duration, instrumental, plainLyrics, syncedLyrics. Les « behaviours » scénarisent 429 / 503 / lenteur par titre.",
+ "records": [
+  {
+   "id": 101,
+   "trackName": "Phares sur la mer",
+   "artistName": "Artiste fictif",
+   "albumName": "Album fictif",
+   "duration": 120,
+   "instrumental": false,
+   "plainLyrics": "Les phares glissent sur la mer\nEt la ville s'éteint sans bruit\nJe compte les vagues une à une\nJusqu'à ce que la nuit me suive\nUn bateau passe, très loin d'ici\nRien ne bouge, tout avance\nOn se perd pour se retrouver\nDans le reflet qui se dérobe\nEncore un peu, rien qu'un instant\nPuis le jour reprend la mer\nLe sel dessine des cartes sur mes mains\nChaque vague efface un chemin\nLa jetée compte ses lanternes\nUne mouette dort sur la balise\nLe vent plie les mâts sans un mot\nLa marée range les galets\nQuelqu'un siffle au bout du quai\nLa lumière tourne encore une fois\nEt la mer reprend son souffle\nDemain les phares recommenceront",
+   "syncedLyrics": "[00:00.00] Les phares glissent sur la mer\n[00:02.80] Et la ville s'éteint sans bruit\n[00:05.60] Je compte les vagues une à une\n[00:08.40] Jusqu'à ce que la nuit me suive\n[00:11.20] Un bateau passe, très loin d'ici\n[00:14.00] Rien ne bouge, tout avance\n[00:16.80] On se perd pour se retrouver\n[00:19.60] Dans le reflet qui se dérobe\n[00:22.40] Encore un peu, rien qu'un instant\n[00:25.20] Puis le jour reprend la mer\n[00:28.00] Le sel dessine des cartes sur mes mains\n[00:30.80] Chaque vague efface un chemin\n[00:33.60] La jetée compte ses lanternes\n[00:36.40] Une mouette dort sur la balise\n[00:39.20] Le vent plie les mâts sans un mot\n[00:42.00] La marée range les galets\n[00:44.80] Quelqu'un siffle au bout du quai\n[00:47.60] La lumière tourne encore une fois\n[00:50.40] Et la mer reprend son souffle\n[00:53.20] Demain les phares recommenceront"
+  },
+  {
+   "id": 102,
+   "trackName": "Gare des horloges sans heure",
+   "artistName": "Orchestre de poche fictif",
+   "albumName": "Album fictif",
+   "duration": 160,
+   "instrumental": false,
+   "plainLyrics": null,
+   "syncedLyrics": "[00:00.00] Sous les lampadaires de la gare un train imaginaire attend les voyageurs absents\n[00:03.00] Dans la cour de l'école vide une horloge invente des heures qui n'existent pas a\n[00:06.00] Le facteur des nuages distribue des lettres blanches aux fenêtres endormies lent\n[00:09.00] Au bout du quai numéro neuf une valise chante doucement toute seule en secret en\n[00:12.00] Les girouettes du village se disputent le vent comme on se partage une pomme en.\n[00:15.00] Une barque de papier traverse le canal en saluant chaque pont qu'elle rencontre.\n[00:18.00] Le soir pose ses mains de cendre sur les toits et compte les cheminées éteintes.\n[00:21.00] Quelqu'un a laissé sa lune sur la table de la cuisine avec un mot sans nom clair"
+  },
+  {
+   "id": 103,
+   "trackName": "Ligne démesurée",
+   "artistName": "Artiste fictif",
+   "albumName": "Album fictif",
+   "duration": 60,
+   "instrumental": false,
+   "plainLyrics": null,
+   "syncedLyrics": "[00:00.00] Cette ligne démesurée est inventée pour mettre la mise en page à l'épreuve : elle accumule des mots sans queue ni tête, des horloges qui bavardent, des rivières de papier, des lampadaires qui comptent les étoiles une à une, des trains absents, des lunes oubliées sur des tables de cuisine, et ne s'arrête que parce qu'il faut bien finir.\n[00:03.00] Cette ligne interminable est inventée pour mettre la mise en page à l'épreuve : elle accumule des mots sans queue ni tête, des horloges qui bavardent, des rivières de papier, des lampadaires qui comptent les étoiles une à une, des trains absents, des lunes oubliées sur des tables de cuisine, et ne s'arrête que parce qu'il faut bien finir.\n[00:06.00] Cette ligne infinie est inventée pour mettre la mise en page à l'épreuve : elle accumule des mots sans queue ni tête, des horloges qui bavardent, des rivières de papier, des lampadaires qui comptent les étoiles une à une, des trains absents, des lunes oubliées sur des tables de cuisine, et ne s'arrête que parce qu'il faut bien finir."
+  },
+  {
+   "id": 104,
+   "trackName": "Café sous la pluie",
+   "artistName": "Quatuor fictif",
+   "albumName": "Album fictif",
+   "duration": 150,
+   "instrumental": false,
+   "plainLyrics": "Une goutte tape à la vitre\nLe café refroidit sans bruit\nQuelqu'un sourit au comptoir\nLa rue brille comme un cahier neuf",
+   "syncedLyrics": "[00:00.00] Une goutte tape à la vitre\n[00:03.00] Le café refroidit sans bruit\n[00:06.00] Quelqu'un sourit au comptoir\n[00:09.00] La rue brille comme un cahier neuf"
+  },
+  {
+   "id": 105,
+   "trackName": "Brume sans horloge",
+   "artistName": "Duo fictif",
+   "albumName": "Album fictif",
+   "duration": 200,
+   "instrumental": false,
+   "plainLyrics": "La brume avale les horloges\nLes rues n'ont plus d'adresse\nOn marche sans compter les pas\nUn réverbère hésite\nPuis s'endort debout\n\nLa brume avale les horloges\nEt rend les heures aux passants\nPersonne ne réclame la sienne\nOn a tout le temps du monde\nPour ne rien faire ensemble",
+   "syncedLyrics": null
+  },
+  {
+   "id": 106,
+   "trackName": "Vent instrumental",
+   "artistName": "Trio imaginaire",
+   "albumName": "Album fictif",
+   "duration": 180,
+   "instrumental": true,
+   "plainLyrics": null,
+   "syncedLyrics": null
+  },
+  {
+   "id": 107,
+   "trackName": "Occupé trois secondes",
+   "artistName": "Artiste fictif",
+   "albumName": "Album fictif",
+   "duration": 100,
+   "instrumental": false,
+   "plainLyrics": "Le serveur compte jusqu'à trois\nPuis il ouvre la porte\nOn entre sans se presser\nLa file a disparu",
+   "syncedLyrics": "[00:00.00] Le serveur compte jusqu'à trois\n[00:02.00] Puis il ouvre la porte\n[00:04.00] On entre sans se presser\n[00:06.00] La file a disparu"
+  },
+  {
+   "id": 108,
+   "trackName": "Chant du canari",
+   "artistName": "Artiste fictif",
+   "albumName": "Album fictif",
+   "duration": 90,
+   "instrumental": false,
+   "plainLyrics": "Le canari chante ZQ7CANARI5E3F dans sa cage\nPersonne ne doit le recopier\nIl reste en mémoire, jamais sur le disque\nEt s'envole quand l'app se ferme",
+   "syncedLyrics": "[00:00.00] Le canari chante ZQ7CANARI5E3F dans sa cage\n[00:02.50] Personne ne doit le recopier\n[00:05.00] Il reste en mémoire, jamais sur le disque\n[00:07.50] Et s'envole quand l'app se ferme"
+  },
+  {
+   "id": 109,
+   "trackName": "Horloge décalée",
+   "artistName": "Artiste fictif",
+   "albumName": "Album fictif",
+   "duration": 130,
+   "instrumental": false,
+   "plainLyrics": null,
+   "syncedLyrics": "[00:00.00] Cette horloge avance de huit secondes\n[00:03.00] Ses paroles existent mais ne collent pas\n[00:06.00] Alors on les lit en bloc\n[00:09.00] Sans chercher la ligne du moment"
+  },
+  {
+   "id": 110,
+   "trackName": "Rivière remasterisée",
+   "artistName": "Artiste fictif",
+   "albumName": "Album fictif (édition 2031)",
+   "duration": 140,
+   "instrumental": false,
+   "plainLyrics": null,
+   "syncedLyrics": "[00:00.00] La rivière retrouve son lit\n[00:03.00] Après des années de silence\n[00:06.00] Les cailloux se souviennent\n[00:09.00] Du chemin qu'elle prenait"
+  }
+ ],
+ "behaviours": [
+  {"trackName": "Occupé trois secondes", "status": 429, "retryAfter": "3", "times": 1},
+  {"trackName": "Panne en série", "status": 503},
+  {"trackName": "Lenteur de plomb", "delaySeconds": 7.8}
+ ]
+}

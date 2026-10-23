@@ -1,0 +1,11 @@
+# Mesure du CPU, 5 ligne(s) visible(s)
+lines 5
+play phares
+wait 50
+seek 0
+wait 50
+seek 0
+wait 50
+seek 0
+wait 50
+seek 0

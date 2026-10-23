@@ -1,0 +1,5 @@
+# Critère 9, 2e exécution : la valeur cochée a survécu au redémarrage, puis retour à décoché.
+state redemarrage
+expect dock=true activationPolicy=regular loadOutcome=ok
+dock off
+expect dock=false activationPolicy=accessory

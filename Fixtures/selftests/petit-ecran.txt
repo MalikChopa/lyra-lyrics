@@ -1,0 +1,28 @@
+# J5 : le volet de réglages ne dépasse jamais la zone visible (le contenu défile). Zone visible SIMULÉE (hauteur seulement).
+settings open
+wait 1
+state volet-ecran-reel
+expect settingsFitsVisible=true settingsScrolls=false
+visible-height 700
+wait 1
+expect settingsFitsVisible=true settingsVisibleH=700
+state volet-700
+visible-height 500
+wait 1
+expect settingsFitsVisible=true settingsVisibleH=500 settingsScrolls=true
+state volet-500
+# Plus de contenu (ligne « Synchro réduite » + bouton Spotify) : toujours dans la zone
+spotify-access notdetermined
+wait 1
+expect settingsFitsVisible=true
+state volet-500-spotify
+visible-height 300
+wait 1
+expect settingsFitsVisible=true
+state volet-300
+# la ligne « Synchro réduite » ajoutée plus haut allonge le volet : on la retire avant de revérifier l'écran réel (volet plus long)
+spotify-access granted
+visible-height auto
+wait 1
+expect settingsFitsVisible=true settingsScrolls=false
+state volet-retour

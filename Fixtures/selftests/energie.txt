@@ -1,0 +1,31 @@
+# J5b : politique d'énergie (§3.4/§4) : minuteur actif seulement si lecture ET fenêtre visible ET écran à suivre ; aucune
+# publication fenêtre cachée ; fondu de ligne par Core Animation.
+play phares
+wait-for mode=synced 8
+wait 4
+expect timerRunning=true windowVisible=true
+state lecture
+pause
+wait 0.5
+expect timerRunning=false
+resume
+wait 0.5
+expect timerRunning=true
+hide
+wait 0.5
+expect timerRunning=false windowVisible=false
+state cache-1
+wait 6
+state cache-2
+show
+wait 0.5
+expect timerRunning=true windowVisible=true
+state affiche
+stop
+wait 0.5
+expect timerRunning=false mode=nothing
+play brume
+wait-for mode=unsynced 8
+wait 1
+expect timerRunning=true
+state non-synchronise

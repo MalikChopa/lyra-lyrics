@@ -1,0 +1,10 @@
+# Mesure du CPU PENDANT des redimensionnements continus (information, sans cible) : glissements de bord à ~60 événements/s.
+play phares
+wait 3
+resize right 200 0 6
+resize right -200 0 6
+resize bottom 0 -60 6
+resize bottom 0 60 6
+resize bottomRight 120 -60 6
+resize bottomRight -120 60 6
+wait 20

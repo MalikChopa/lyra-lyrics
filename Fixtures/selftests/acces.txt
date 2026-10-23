@@ -1,0 +1,41 @@
+# J5 : veille/réveil, réduire les animations, réduire la transparence, arbre d'accessibilité (VoiceOver) de nos fenêtres.
+play phares
+wait-for mode=synced 8
+wait-for visibleCount=2 5
+hover on
+# Réduire les animations : transitions coupées (animation() renvoie nil) ; le réglage du système n'est jamais modifié
+expect reduceMotion=false animationsOn=true
+reducemotion on
+expect reduceMotion=true animationsOn=false
+reducemotion off
+expect reduceMotion=false animationsOn=true
+reducemotion auto
+# Réduire la transparence : Verre et Transparent deviennent Uni
+style clear
+reducetransparency on
+expect effectiveStyle=solid reduceTransparency=true
+reducetransparency auto
+style glass
+expect effectiveStyle=glass
+# Réveil de veille : relevé forcé auprès de la source (ici le faux lecteur), compte des réveils
+expect wakeCount=0 forcedReadings=0
+wake
+wait-for wakeCount=1 3
+expect forcedReadings=1
+wake
+wait-for wakeCount=2 3
+expect forcedReadings=2
+# Arbre d'accessibilité
+ax-audit main
+settings open
+spotify-access notdetermined
+wait 1
+ax-audit settings
+about open
+wait 1
+ax-audit about
+about close
+settings close
+stop
+wait-for mode=nothing 3
+ax-audit main

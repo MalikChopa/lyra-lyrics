@@ -1,0 +1,80 @@
+# J3, bout en bout (faux lecteur + faux LRCLIB, en processus ou par --lyrics-endpoint). Titres et paroles INVENTÉS.
+# 200 synchronisées : lignes affichées (compte et longueur seulement : jamais de texte dans le journal)
+play phares
+wait-for mode=synced 5
+expect lyricsKind=synced currentIndex=0 visibleCount=2 lrclibID=101
+state synced
+# 404 → « Paroles indisponibles » (get 404 puis search vide)
+play sans-paroles
+wait-for mode=unavailable 5
+state indisponible
+# texte seul → bloc non synchronisé
+play brume
+wait-for mode=unsynced 5
+expect lyricsKind=plain lrclibID=105
+state non-synchronisees
+# instrumental
+play instrumental
+wait-for mode=instrumental 5
+state instrumental
+# écart de durée 8 s (get 404 à ± 2 s, search trouve l'entrée) → bloc non synchronisé
+play decale
+wait-for mode=unsynced 5
+expect lyricsKind=plain lrclibID=109
+state decale
+# titre « - Remastered 2031 » : get 404, search avec titre normalisé → synchronisées
+play remaster
+wait-for mode=synced 5
+expect lrclibID=110
+state remaster
+# durée inconnue côté lecteur → synchro acceptée
+play sans-duree
+wait-for mode=synced 5
+expect lrclibID=104
+# décalage manuel : ± 5 s par 0,1
+offset 1.0
+expect offset=1
+offset +0.1
+expect offset=1.1
+offset 9
+expect offset=5
+offset reset
+expect offset=0
+# 429 + Retry-After 3 → « Service occupé » puis paroles après l'attente (≥ 3 s, journal)
+play occupe
+wait-for mode=busy 5
+state occupe-busy
+wait-for mode=synced 8
+expect lrclibID=107
+state occupe-ok
+# index disque : « phares » n'est plus dans le cache mémoire (2 entrées) mais son identifiant est dans l'index → get/{id}
+play phares
+wait-for mode=synced 5
+expect lookup=get/{id},_durée_+0_s lrclibID=101
+# cache mémoire (2 entrées) : « occupe » vient d'être affiché, il revient sans requête
+play occupe
+wait-for mode=synced 5
+expect lookup=cache lrclibID=107
+# index disque : « Vider le cache » puis compte
+stats
+state index-avant
+clearcache
+expect indexCount=0
+# hors connexion → « Hors connexion », retour → recherche reprend
+offline on
+play autre
+wait-for mode=offline 5
+state hors-connexion
+offline off
+wait-for mode=synced 5
+state retour-reseau
+# 503 en série : nouvel essai après ~2 s puis disjoncteur 30 s, puis 60 s
+play panne
+wait-for mode=busy 10
+expect retryInCeil=30
+state panne-30
+wait 27
+wait-for retryInCeil=60 10
+state panne-60
+stop
+expect mode=nothing

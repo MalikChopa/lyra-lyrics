@@ -1,0 +1,6 @@
+# Budget de 15 s (lenteur sans erreur) : get 404 après 7,8 s, search coupée par le budget → « Paroles indisponibles ».
+play lenteur
+wait-for mode=unavailable 25
+expect lookup=budget_de_15_s_dépassé_(lenteur)
+state lenteur
+stop

@@ -1,0 +1,18 @@
+# D11 : le titre « Chant du canari » contient une chaîne unique (ZQ7CANARI5E3F) ; elle passe par le réseau local, le cache
+# mémoire et l'affichage, puis on la cherche partout sur le disque et dans les journaux : 0 attendu.
+play canari
+wait-for mode=synced 5
+expect lrclibID=108 visibleCount=2
+state canari-affiche
+wait 3
+settings open
+wait 1
+settings close
+play phares
+wait-for mode=synced 5
+play canari
+wait-for mode=synced 5
+expect lookup=cache
+state canari-cache
+wait 2
+stop

@@ -1,0 +1,6 @@
+# Critère 9 : préférences neuves → case décochée (.accessory) ; bascule immédiate ; persistance (dock2.txt).
+state initial
+expect dock=false activationPolicy=accessory loadOutcome=missing
+dock on
+expect dock=true activationPolicy=regular
+state dock-on

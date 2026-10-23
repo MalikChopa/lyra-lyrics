@@ -1,0 +1,7 @@
+# Plein écran : réglage Dock faux, fenêtre déplacée par le code, puis attente pendant que la sonde passe en plein écran.
+dock off
+show
+move right
+state avant-plein-ecran
+wait 16
+state apres-plein-ecran

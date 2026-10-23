@@ -1,0 +1,5 @@
+# Fumée : état initial puis un cycle de style (aucun réglage de l'utilisateur : suite de préférences dédiée).
+state initial
+hover on
+cycle
+state apres-cycle

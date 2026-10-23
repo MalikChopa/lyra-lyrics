@@ -1,0 +1,3 @@
+# Mesure du CPU, bloc NON synchronisé qui défile (scripts/measure-cpu.sh unsynced) : « Brume sans horloge », 200 s.
+play brume
+wait 300

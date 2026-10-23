@@ -1,0 +1,23 @@
+{
+ "name": "demo",
+ "note": "Titres, artistes et durées INVENTÉS (aucune oeuvre réelle). Depuis J3 les paroles ne sont plus ici : elles viennent du faux LRCLIB (Fixtures/lrclib/catalog.json), en processus ou par --lyrics-endpoint.",
+ "tracks": [
+  {"id": "phares", "title": "Phares sur la mer", "artist": "Artiste fictif", "album": "Album fictif", "duration": 120, "artwork": "rouge", "artworkMode": "music"},
+  {"id": "sans-paroles", "title": "Silence en do majeur", "artist": "Trio imaginaire", "album": "Album fictif", "duration": 95, "artwork": "sombre", "artworkMode": "music"},
+  {"id": "longues", "title": "Gare des horloges sans heure", "artist": "Orchestre de poche fictif", "album": "Album fictif", "duration": 160, "artwork": "jaune", "artworkMode": "music"},
+  {"id": "tres-longues", "title": "Ligne démesurée", "artist": "Artiste fictif", "album": "Album fictif", "duration": 60},
+  {"id": "autre", "title": "Café sous la pluie", "artist": "Quatuor fictif", "album": "Album fictif", "duration": 150, "artwork": "bleu", "artworkMode": "spotify"},
+  {"id": "brume", "title": "Brume sans horloge", "artist": "Duo fictif", "album": "Album fictif", "duration": 200, "artwork": "vert", "artworkMode": "music"},
+  {"id": "instrumental", "title": "Vent instrumental", "artist": "Trio imaginaire", "album": "Album fictif", "duration": 180, "artwork": "gris", "artworkMode": "music"},
+  {"id": "occupe", "title": "Occupé trois secondes", "artist": "Artiste fictif", "album": "Album fictif", "duration": 100},
+  {"id": "panne", "title": "Panne en série", "artist": "Artiste fictif", "album": "Album fictif", "duration": 100},
+  {"id": "lenteur", "title": "Lenteur de plomb", "artist": "Artiste fictif", "album": "Album fictif", "duration": 100},
+  {"id": "canari", "title": "Chant du canari", "artist": "Artiste fictif", "album": "Album fictif", "duration": 90},
+  {"id": "decale", "title": "Horloge décalée", "artist": "Artiste fictif", "album": "Album fictif", "duration": 122, "artwork": "violet", "artworkMode": "spotify-lent"},
+  {"id": "remaster", "title": "Rivière remasterisée - Remastered 2031", "artist": "Artiste fictif", "album": "Album fictif (édition 2031)", "duration": 140},
+  {"id": "sans-duree", "title": "Café sous la pluie", "artist": "Quatuor fictif", "album": null, "duration": null}
+ ],
+ "timeline": [
+  {"at": 0.0, "do": "play", "track": "phares"}
+ ]
+}

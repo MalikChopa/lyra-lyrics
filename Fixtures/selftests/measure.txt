@@ -1,0 +1,3 @@
+# Mesure 3 du §5 : chaîne de l'app contre une référence connue (faux lecteur, LRC inventé, seek et pause), sans décalage puis +1,0 s.
+measure-sync 0
+measure-sync 1.0

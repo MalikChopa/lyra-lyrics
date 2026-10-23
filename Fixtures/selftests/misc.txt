@@ -1,0 +1,26 @@
+# Lignes longues (§4) et « Réduire la transparence » (forcé : le réglage système n'est pas modifié).
+style glass
+size 44
+play longues
+wait-for mode=synced 5
+pause
+seek 6
+state longues-80-taille44
+play tres-longues
+wait-for mode=synced 5
+pause
+seek 3
+state longues-250-taille44
+size 26
+play phares
+wait-for mode=synced 5
+pause
+seek 3
+state normal-taille26
+reducetransparency on
+expect effectiveStyle=solid reduceTransparency=true style=glass
+style clear
+expect effectiveStyle=solid style=clear
+state reduire-transparence
+reducetransparency auto
+expect effectiveStyle=clear reduceTransparency=false
