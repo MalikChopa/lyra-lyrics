@@ -66,7 +66,7 @@ Pas de compte, pas de connexion, pas de serveur à nous : l'app parle à ton lec
 
 ## Installation
 
-1. Télécharge `Lyra-Lyrics-1.0.1-macOS.zip` sur la [page des Releases](https://github.com/MalikMoussaoui/lyra-lyrics/releases) et décompresse-le.
+1. Télécharge `Lyra-Lyrics-1.0.1-macOS.zip` sur la [page des Releases](https://github.com/MalikChopa/lyra-lyrics/releases) et décompresse-le.
 2. Glisse **Lyra Lyrics.app** dans ton dossier **Applications**.
 3. Ouvre-la. La première fois, macOS la **bloque** (« Apple n'a pas pu vérifier... »). C'est normal : l'app n'est **pas notariée** par Apple (la notarisation demande un compte développeur payant, et ce projet est gratuit et fait sur le temps libre). Pour l'autoriser :
    - ouvre **Réglages Système > Confidentialité et sécurité**,
@@ -91,7 +91,7 @@ L'app lit le titre, l'artiste, l'album, la durée et la position du morceau en c
 
 ## Vie privée
 
-- **Ce qui sort de ton Mac.** Pour trouver les paroles, le titre, l'artiste, l'album et la durée du morceau en cours sont envoyés à lrclib.net (avec ton adresse IP, comme toute requête web). La requête porte aussi le nom de l'app, sa version et l'adresse du projet dans l'en-tête `User-Agent` (`LyraLyrics/1.0.0 (+https://github.com/MalikMoussaoui/lyra-lyrics)`). **Une requête de plus, seulement pour Spotify et seulement si « Couleurs de la pochette » est activé :** la pochette du morceau est téléchargée une fois depuis le serveur d'images de Spotify (`i.scdn.co`), gardée en mémoire seulement, jamais écrite sur le disque, et annulée si le morceau change avant la fin. Les pochettes d'Apple Music sont lues dans l'app Musique, sans téléchargement. Désactive le réglage et plus aucune requête de pochette n'est faite. Rien d'autre ne quitte ton Mac : ni statistiques, ni télémétrie, ni rapport de plantage, ni vérification de mises à jour.
+- **Ce qui sort de ton Mac.** Pour trouver les paroles, le titre, l'artiste, l'album et la durée du morceau en cours sont envoyés à lrclib.net (avec ton adresse IP, comme toute requête web). La requête porte aussi le nom de l'app, sa version et l'adresse du projet dans l'en-tête `User-Agent` (`LyraLyrics/1.0.0 (+https://github.com/MalikChopa/lyra-lyrics)`). **Une requête de plus, seulement pour Spotify et seulement si « Couleurs de la pochette » est activé :** la pochette du morceau est téléchargée une fois depuis le serveur d'images de Spotify (`i.scdn.co`), gardée en mémoire seulement, jamais écrite sur le disque, et annulée si le morceau change avant la fin. Les pochettes d'Apple Music sont lues dans l'app Musique, sans téléchargement. Désactive le réglage et plus aucune requête de pochette n'est faite. Rien d'autre ne quitte ton Mac : ni statistiques, ni télémétrie, ni rapport de plantage, ni vérification de mises à jour.
 - **Les paroles ne sont jamais stockées.** Elles restent en mémoire pour le morceau affiché (et le précédent) et disparaissent quand tu quittes. Pas de cache HTTP, pas de fonction copier ou exporter.
 - **Ce qui est sur le disque.** Tes réglages, et un petit index de recherche dans `~/Library/Application Support/io.github.malikmoussaoui.lyra-lyrics/` : une empreinte salée de (titre, artiste, durée) associée à l'identifiant LRCLIB, pendant 24 h et 500 entrées au plus. Il ne contient aucun texte. « Vider le cache » le vide. Cette empreinte est un simple brouillage, pas une protection.
 - **Seul le morceau en cours** est cherché, quand il démarre : pas de préchargement, pas d'historique.
@@ -110,7 +110,7 @@ macOS ne laisse une fenêtre flotter au-dessus d'une app en plein écran que si 
 Il te faut seulement les **Command Line Tools** de Xcode (pas Xcode complet) avec Swift 6, sous macOS 26 ou plus récent. Aucune dépendance n'est téléchargée.
 
 ```sh
-git clone https://github.com/MalikMoussaoui/lyra-lyrics.git
+git clone https://github.com/MalikChopa/lyra-lyrics.git
 cd lyra-lyrics
 swift build                 # build debug de toutes les cibles
 scripts/test.sh             # tests unitaires (Swift Testing) ; la dernière ligne dit quel chemin a servi

@@ -20,7 +20,7 @@ Fixes for three problems reported with 1.0.0.
 ### Changed
 - Text of the "Lyrics unavailable" state: "(Remix, rare title or not listed yet.)" instead of mentioning a busy service (a busy service now has its own state).
 
-[1.0.1]: https://github.com/MalikMoussaoui/lyra-lyrics/releases/tag/v1.0.1
+[1.0.1]: https://github.com/MalikChopa/lyra-lyrics/releases/tag/v1.0.1
 
 ## [1.0.0] - 2026-10-23
 
@@ -50,4 +50,4 @@ First public release. Native macOS app (Swift / SwiftUI, macOS 26 or later).
 - `scripts/bundle.sh` looks for the signing identity "Lyra Lyrics Code" (or `PF_SIGN_IDENTITY`) and falls back to ad hoc, printing which one was used.
 - Settings of pre-release builds (which used another bundle identifier) are not migrated.
 
-[1.0.0]: https://github.com/MalikMoussaoui/lyra-lyrics/releases/tag/v1.0.0
+[1.0.0]: https://github.com/MalikChopa/lyra-lyrics/releases/tag/v1.0.0

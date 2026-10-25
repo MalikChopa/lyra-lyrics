@@ -66,7 +66,7 @@ No account, no sign-in, no server of ours: the app talks to your music player an
 
 ## Install
 
-1. Download `Lyra-Lyrics-1.0.1-macOS.zip` from the [Releases page](https://github.com/MalikMoussaoui/lyra-lyrics/releases) and unzip it.
+1. Download `Lyra-Lyrics-1.0.1-macOS.zip` from the [Releases page](https://github.com/MalikChopa/lyra-lyrics/releases) and unzip it.
 2. Move **Lyra Lyrics.app** to your **Applications** folder.
 3. Open it. The first time, macOS **blocks** it ("Apple could not verify..."). This is expected: the app is **not notarised** by Apple (notarisation needs a paid developer account, and this project is free and spare-time). To allow it:
    - open **System Settings > Privacy & Security**,
@@ -91,7 +91,7 @@ The app reads the title, artist, album, duration and position of the current son
 
 ## Privacy
 
-- **What leaves your Mac.** To find the lyrics, the title, artist, album and duration of the current song are sent to lrclib.net (with your IP address, like any web request). The request also carries the app's name, version and project address in the `User-Agent` header (`LyraLyrics/1.0.0 (+https://github.com/MalikMoussaoui/lyra-lyrics)`). **One more request, only for Spotify and only if "Colours from the album cover" is on:** the cover image of the song is downloaded once from Spotify's image server (`i.scdn.co`), kept in memory only and never written to disk, and cancelled if the song changes first. Apple Music covers are read from the Music app and are not downloaded. Switch the setting off and no cover request is made at all. Nothing else leaves your Mac: no statistics, no telemetry, no crash report, no update check.
+- **What leaves your Mac.** To find the lyrics, the title, artist, album and duration of the current song are sent to lrclib.net (with your IP address, like any web request). The request also carries the app's name, version and project address in the `User-Agent` header (`LyraLyrics/1.0.0 (+https://github.com/MalikChopa/lyra-lyrics)`). **One more request, only for Spotify and only if "Colours from the album cover" is on:** the cover image of the song is downloaded once from Spotify's image server (`i.scdn.co`), kept in memory only and never written to disk, and cancelled if the song changes first. Apple Music covers are read from the Music app and are not downloaded. Switch the setting off and no cover request is made at all. Nothing else leaves your Mac: no statistics, no telemetry, no crash report, no update check.
 - **Lyrics are never stored.** They are kept in memory for the song being shown (and the previous one), and are gone when you quit. There is no HTTP cache and no copy/export function.
 - **What is on disk.** Your settings, and a small lookup index in `~/Library/Application Support/io.github.malikmoussaoui.lyra-lyrics/`: a salted hash of (title, artist, duration) mapped to the LRCLIB identifier, for 24 hours and at most 500 entries. It contains no text. "Clear cache" empties it. This hash is a light obfuscation, not a protection.
 - **Only the current song** is looked up, when it starts playing: no preloading, no history.
@@ -110,7 +110,7 @@ macOS lets a window float above a full-screen app only if the app has **no Dock 
 You only need the **Command Line Tools** for Xcode (no full Xcode) with Swift 6, on macOS 26 or later. No dependency is downloaded.
 
 ```sh
-git clone https://github.com/MalikMoussaoui/lyra-lyrics.git
+git clone https://github.com/MalikChopa/lyra-lyrics.git
 cd lyra-lyrics
 swift build                 # debug build of all targets
 scripts/test.sh             # unit tests (Swift Testing); last line tells which path was used
