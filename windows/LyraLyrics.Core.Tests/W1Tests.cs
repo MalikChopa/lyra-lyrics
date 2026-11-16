@@ -195,7 +195,11 @@ public class RollingLogTests
             Assert.Equal(2, log.TotalFailures);
             Directory.Delete(path);                                       // l'erreur passe
             log.Write("après");
-            var text = File.ReadAllText(path);
+            // Lecture partagée : le journal reste ouvert en écriture (FileShare.ReadWrite) ; sous Windows, File.ReadAllText
+            // demande un partage en lecture seule et échoue tant qu'un écrivain tient le fichier (vu en CI le 2026-11-16).
+            string text;
+            using (var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete))
+            using (var reader = new StreamReader(fs)) text = reader.ReadToEnd();
             Assert.Contains("après", text);
             Assert.Contains("2 ligne(s) perdue(s)", text);
             Assert.DoesNotContain("perdue 1", text);
