@@ -1,27 +1,34 @@
 # Lyra Lyrics
 
-**A small always-on-top window that shows the synchronised lyrics of the song playing in Spotify or Apple Music, on your Mac.**
+**A small always-on-top window that shows the synchronised lyrics of the song playing: on a Mac in Spotify or Apple Music, on Windows (beta) in Spotify.**
 
 *English · [Français](README.fr.md)*
 
 ![Lyra Lyrics: a frosted-glass window tinted with the colours of the album cover, floating over other apps, showing three lines of lyrics with playback buttons](docs/images/hero.jpg)
 
-> The screenshots in this README are renderings made by the app itself (`--snapshot`) on a drawn desktop, with **invented** lyrics, titles, artists and cover images. In the real app the frosted glass blurs what is behind the window; these renderings do not show that blur.
-> The app's interface is in **French** in this version (menus, settings, messages).
+![Demo (invented lyrics and artwork)](docs/images/demo.gif)
+
+> **The app's interface is in French only** in this version (menus, settings, messages), on the Mac and on Windows.
+> The screenshots in this README are renderings made by the Mac app itself (`--snapshot`) on a drawn desktop, with **invented** lyrics, titles, artists and cover images. In the real app the frosted glass blurs what is behind the window; these renderings do not show that blur. There is no screenshot of the Windows version yet.
 
 ## What it does
 
-Play a song in Spotify or Apple Music (the Music app). Lyra Lyrics notices it, looks the lyrics up on [LRCLIB](https://lrclib.net), and shows one, three or five lines in a small window that stays above every other window, wherever you put it on screen. The line being sung is highlighted and glides smoothly into place as the song goes on.
+Play a song in Spotify or Apple Music (the Music app, Mac only). Lyra Lyrics notices it, looks the lyrics up on [LRCLIB](https://lrclib.net), and shows one, three or five lines in a small window that stays above every other window, wherever you put it on screen. The line being sung is highlighted and glides smoothly into place as the song goes on.
 
-No account, no sign-in, no server of ours: the app talks to your music player and to lrclib.net, nothing else.
+No account, no sign-in, no server of ours: the app talks to your music player and to lrclib.net, plus (once a day at most, can be switched off) to GitHub to know whether a new version exists. See [Privacy](#privacy).
+
+**Mac and Windows.** The Mac version is complete (Spotify and Apple Music, full-screen Scene). The **Windows version is a beta**: Spotify only, **no Scene yet** (planned for 1.3.0), and it had **never run on a real PC** before it was published. See [Windows (beta)](#windows-beta).
 
 ## Features
 
-### New in 1.1.0
+### New in 1.2.0
 
-![Demo (invented lyrics and artwork)](docs/images/demo.gif)
+- **Windows version (beta).** Windows 10 1809 or later, or Windows 11, 64-bit; Spotify only; no Scene; with an unsigned installer (per user, no administrator rights). Everything is in [Windows (beta)](#windows-beta).
+- **Fixes shared by both apps**: "feat.", "ft." and "vs." are recognised the same way on both; `Retry-After` is capped at 300 s; indented LRC lines are accepted; on the Mac, waiting for the network to return can be cancelled. Details are in the [changelog](CHANGELOG.md), which also holds all earlier versions.
 
-- **Scene (full-screen mode).** Click the full-screen button in the hover bar of the floating window (or double-click it): it zooms smoothly to full screen on the screen you choose (Esc, double-click, the exit button that appears when the mouse moves, or your shortcut to leave). The cover, very blurred, drifts slowly behind big lyrics (the current line is highlighted in the accent colour; the next lines wait below; the optional "Remplissage karaoké" setting fills it from left to right as it is sung); a title card with the cover and its soft reflection appears for about 3 seconds at each new song; during intros, gaps and instrumentals a breathing note and a few slow particles take over; a light grain and vignette (one setting). Restraint rules: one accent colour from the cover, at most two moving effects at a time, soft ease-in-out curves, text contrast of at least 4.5:1, "Reduce motion" and "Reduce transparency" respected. Measured: about 1.7 to 2.1 % CPU on average in the Scene and about 0.2 % in the small window (release build with debug flags, fake player, 2026-10-28; see CHANGELOG).
+### Mac features (including the Scene, new in 1.1.0)
+
+- **Scene (full-screen mode).** Click the full-screen button in the hover bar of the floating window (or double-click it): it zooms smoothly to full screen on the screen you choose (Esc, double-click, the exit button that appears when the mouse moves, or your shortcut to leave). The cover, very blurred, drifts slowly behind big lyrics (the current line is highlighted in the accent colour; the next lines wait below; the optional "Remplissage karaoké" setting fills it from left to right as it is sung); in the "Paroles seules" layout, a title card with the cover and its soft reflection appears for about 3 seconds at each new song (with the default "Avec la pochette" layout the title and artist stay shown on the left and there is no card); during intros, gaps and instrumentals a breathing note and a few slow particles take over; a light grain and vignette (one setting). Restraint rules: one accent colour from the cover, at most two moving effects at a time, soft ease-in-out curves, text contrast of at least 4.5:1, "Reduce motion" and "Reduce transparency" respected. Measured: about 1.7 to 2.1 % CPU on average in the Scene and about 0.2 % in the small window (release build with debug flags, fake player, 2026-10-28; see CHANGELOG).
   ![Scene: title card](docs/images/scene-01-carte.jpg)
   ![Scene: lyrics, the current line highlighted](docs/images/scene-02-lignes.jpg)
   ![Scene: instrumental passage](docs/images/scene-05-passage.jpg)
@@ -77,13 +84,22 @@ No account, no sign-in, no server of ours: the app talks to your music player an
 
 ## Requirements
 
+### Mac
+
 - A Mac with **Apple silicon** and **macOS 26 or later**. The released app is an `arm64` binary only (checked with `lipo -info`: "Non-fat file ... architecture: arm64"). Intel Macs are not supported by the download; building from source on Intel has not been tried.
 - Spotify (desktop app) and/or Apple Music (the Music app).
 - Developed and tested on macOS 27; macOS 26 itself has not been tested.
 
+### Windows
+
+- **Windows 10 version 1809 or later, or Windows 11, 64-bit** (x64). Windows on Arm: not verified.
+- The **Spotify desktop app**, running (the app reads Spotify through the Windows media controls). No other player is taken into account (no Apple Music, no browser). Nothing else to install: the app ships with its .NET runtime.
+
 ## Install
 
-1. Download `Lyra-Lyrics-1.1.0-macOS.zip` from the [Releases page](https://github.com/MalikChopa/lyra-lyrics/releases) and unzip it.
+### Mac
+
+1. Download `Lyra-Lyrics-1.2.0-macOS.zip` from the [Releases page](https://github.com/MalikChopa/lyra-lyrics/releases) and unzip it.
 2. Move **Lyra Lyrics.app** to your **Applications** folder.
 3. Open it. The first time, macOS **blocks** it ("Apple could not verify..."). This is expected: the app is **not notarised** by Apple (notarisation needs a paid developer account, and this project is free and spare-time). To allow it:
    - open **System Settings > Privacy & Security**,
@@ -93,13 +109,41 @@ No account, no sign-in, no server of ours: the app talks to your music player an
    The exact wording of these screens may differ on your version of macOS. A right-click > Open is no longer enough on recent versions of macOS.
 4. A music-note icon appears in the menu bar, and a window "Nothing playing" appears. Start a song.
 
-The SHA-256 of each zip is in the release notes: compare it with `shasum -a 256 Lyra-Lyrics-1.1.0-macOS.zip` if you want to check your download.
+The SHA-256 of each file is in the release notes: compare it with `shasum -a 256 Lyra-Lyrics-1.2.0-macOS.zip` if you want to check your download.
+
+### Windows
+
+1. Download `Lyra-Lyrics-1.2.0-windows-x64-setup.exe` from the [Releases page](https://github.com/MalikChopa/lyra-lyrics/releases).
+2. Run it. The installer is **not signed**: Windows SmartScreen may show "Windows protected your PC" (French: "Windows a protégé votre ordinateur"). Click **More info** ("Informations complémentaires"), then **Run anyway** ("Exécuter quand même"). On Windows 11 with Smart App Control turned on, that button may not exist and Windows may refuse the file: **not verified on a real PC**. The code is not signed (zero budget; free signing is being considered, nothing is established).
+3. The installer installs for **your account only** (no administrator rights or user-account-control prompt expected: not verified on a real PC) in `%LOCALAPPDATA%\Programs\Lyra Lyrics`, adds a Start menu shortcut and offers to launch the app at the end. It comes in French and English.
+4. An icon appears in the notification area (often behind the "^" arrow of the taskbar on Windows 11), a welcome screen opens at the first launch and a "Nothing playing" window appears. Start a song in Spotify.
+5. **Uninstall**: Settings > Apps > Lyra Lyrics. The uninstaller closes the app, removes the shortcut and the launch-at-start entry if there is one, then asks whether to delete your settings, lookup index and log as well (default answer: no, everything is kept).
+
+To check your download: `Get-FileHash Lyra-Lyrics-1.2.0-windows-x64-setup.exe` in PowerShell, to compare with the SHA-256 in the release notes.
 
 If you would rather not trust a binary, [build it yourself](#build-from-source).
 
-## Permissions
+## Windows (beta)
 
-Lyra Lyrics never asks for Accessibility, Input Monitoring or Screen Recording. It uses only **Automation** (macOS asks the first time you click the button; you can change it later in System Settings > Privacy & Security > Automation):
+The Windows version is a **beta**: it is complete in its essentials, but it had **never run on a real PC** before it was published (everything was written, compiled and tested on a Mac: unit tests and test files shared with the Mac version). Expect display or detection defects, and report them through "À propos et droits" > "Signaler un problème" (it opens the issues page of this repository in your browser; the app sends nothing).
+
+**What it does**: the same small always-on-top window (draggable, resizable with the mouse, text that adapts); Spotify only, read through the Windows media controls (**nothing to authorise**); synchronised lyrics on one, three or five lines with soft scrolling, or a scrolling block of plain text; three backgrounds (solid, glass, transparent), font themes, colours taken from the album cover (read locally, never downloaded), manual offset from -5 s to +5 s; previous, play/pause and next buttons; click-through mode; global shortcut **Ctrl+Alt+Shift+L** (changeable); notification-area icon; welcome screen; auto-hide (when nothing plays by default); launch at Windows start (checkbox); "Mauvaises paroles ?" (search LRCLIB and pick another version, remembered for that song); update notice (one request a day at most, can be switched off); "Copier le diagnostic" in the icon menu.
+
+**What it does not have (yet)**: the full-screen **Scene** (planned for 1.3.0), the animated cover background, the karaoke-style fill, Apple Music and other players, an interface in another language. The "Verre" style is only a tinted gradient with no blur; an experimental "Flou du système" option (Windows 11, off by default) exists but has never been tried on a real screen.
+
+**What it writes on your disk**
+- `%APPDATA%\LyraLyrics\`: `settings.json` (your settings), `lookup-index.json` (a lookup index with no text at all: hashed keys, LRCLIB identifiers), `lyra.log` (a log with no titles, no lyrics and no LRCLIB identifiers, 256 KB then rotation).
+- If you tick "Lancer au démarrage de Windows": a `LyraLyrics` value in the `HKCU\Software\Microsoft\Windows\CurrentVersion\Run` key (removed when you untick it and on uninstall).
+- The installer: the app in `%LOCALAPPDATA%\Programs\Lyra Lyrics\`, a Start menu shortcut, an entry in Settings > Apps (`HKCU` key). Nothing under `HKLM` or in `Program Files`, no service, no scheduled task.
+- .NET extracts the app's native libraries to `%TEMP%\.net\LyraLyrics\` at the first launch; that folder stays after uninstalling and can be deleted by hand.
+
+**What leaves your PC**: two addresses only. `lrclib.net` (title, artist, album and duration of the current song, with your IP address, to find the lyrics; one more request when you click "Chercher" in "Mauvaises paroles ?") and, once a day at most, `api.github.com` (this repository's latest release; nothing about you is sent except the app's `User-Agent`; can be switched off in the settings). No cover is downloaded on Windows, and there are no statistics or telemetry.
+
+**Limits**: see [Known limitations](#known-limitations). Lyrics are never written to disk on Windows either.
+
+## Permissions (Mac)
+
+On Windows there is nothing to authorise (see [Windows (beta)](#windows-beta)). On the Mac, Lyra Lyrics never asks for Accessibility, Input Monitoring or Screen Recording. It uses only **Automation** (macOS asks the first time you click the button; you can change it later in System Settings > Privacy & Security > Automation):
 
 - **Apple Music: required.** The only way to read the playback position is to ask the Music app. The window shows "Authorisation needed" with a button; the system then shows its prompt. If you refuse, the same button opens the settings.
 - **Spotify: optional.** Song changes reach the app through a notification Spotify broadcasts, with no permission. A line in the settings panel ("improve precision") lets you allow reading Spotify's position, which keeps the highlighted line accurate after pauses and seeks. Without it, the lyrics still show but the synchronisation is less precise.
@@ -108,11 +152,13 @@ The app reads the title, artist, album, duration and position of the current son
 
 ## Privacy
 
-- **What leaves your Mac.** To find the lyrics, the title, artist, album and duration of the current song are sent to lrclib.net (with your IP address, like any web request). The request also carries the app's name, version and project address in the `User-Agent` header (`LyraLyrics/1.0.0 (+https://github.com/MalikChopa/lyra-lyrics)`). **One more request, only for Spotify and only if "Colours from the album cover" is on:** the cover image of the song is downloaded once from Spotify's image server (`i.scdn.co`), kept in memory only and never written to disk, and cancelled if the song changes first. Apple Music covers are read from the Music app and are not downloaded. Switch the setting off and no cover request is made at all. **One more request, once a day at most, at launch, if "Check for updates" is on (default):** one GET to `api.github.com` (this repository's latest release) to tell you when a new version exists. It sends nothing about you (only the app's `User-Agent`), uses an ephemeral session and can be switched off. Nothing else leaves your Mac: no statistics, no telemetry, no crash report.
+This describes the Mac; for Windows (same principles, one cover request fewer) see [Windows (beta)](#windows-beta).
+
+- **What leaves your Mac.** To find the lyrics, the title, artist, album and duration of the current song are sent to lrclib.net (with your IP address, like any web request). The request also carries the app's name, version and project address in the `User-Agent` header (`LyraLyrics/<version> (+https://github.com/MalikChopa/lyra-lyrics)`). **One more request, only for Spotify and only if "Colours from the album cover" is on:** the cover image of the song is downloaded once from Spotify's image server (`i.scdn.co`), kept in memory only and never written to disk, and cancelled if the song changes first. Apple Music covers are read from the Music app and are not downloaded. Switch the setting off and no cover request is made at all. **One more request, once a day at most, at launch, if "Check for updates" is on (default):** one GET to `api.github.com` (this repository's latest release) to tell you when a new version exists. It sends nothing about you (only the app's `User-Agent`), uses an ephemeral session and can be switched off. Nothing else leaves your Mac: no statistics, no telemetry, no crash report.
 - **Lyrics are never stored.** They are kept in memory for the song being shown (and the previous one), and are gone when you quit. There is no HTTP cache and no copy/export function.
-- **What is on disk.** Your settings, and a small lookup index in `~/Library/Application Support/io.github.malikchopa.lyra-lyrics/`: a salted hash of (title, artist, duration) mapped to the LRCLIB identifier, for 24 hours and at most 500 entries. It contains no text. "Clear cache" empties it. This hash is a light obfuscation, not a protection.
+- **What is on disk.** Your settings, and a small lookup index in `~/Library/Application Support/io.github.malikchopa.lyra-lyrics/`: a salted hash of (title, artist, duration) mapped to the LRCLIB identifier, for 24 hours and at most 500 entries; only the choices you make by hand in "Wrong lyrics?" (200 at most) do not expire. It contains no text. "Clear cache" empties it. This hash is a light obfuscation, not a protection.
 - **Only the current song** is looked up, when it starts playing: no preloading, no history.
-- This describes what the code is designed and tested to do (the release binary contains no URL other than lrclib.net, this repository, `api.github.com` and Spotify's image host `i.scdn.co`). It is not legal advice.
+- This describes what the code is designed and tested to do (the released Mac binary contains no URL other than lrclib.net, `api.github.com`, this repository and Spotify's image host `i.scdn.co`; the Windows exe only `lrclib.net`, `api.github.com` and `github.com`). It is not legal advice.
 
 ## The Dock icon and full-screen apps
 
@@ -120,7 +166,7 @@ macOS lets a window float above a full-screen app only if the app has **no Dock 
 
 ## Keyboard shortcut
 
-**Control-Option-Command-L** hides or shows the window. **In click-through mode it works differently:** it turns click-through **off** and shows the window (it never hides it), because in that mode the window no longer receives any click, so you could not open the settings; and on a MacBook with a notch the menu bar icon can be hidden behind the notch when the menu bar is full. With click-through off, it hides or shows as usual. Launching the app a second time (Spotlight, Finder) also leaves click-through. The shortcut can be changed in the settings panel (gear button on the window, visible when the pointer is over it). If the system cannot register the combination, the panel shows "raccourci indisponible" and the previous one stays active.
+On Windows the default shortcut is **Ctrl+Alt+Shift+L** (changeable in the settings); it hides or shows the window and also leaves click-through. On the Mac, **Control-Option-Command-L** hides or shows the window. **In click-through mode it works differently:** it turns click-through **off** and shows the window (it never hides it), because in that mode the window no longer receives any click, so you could not open the settings; and on a MacBook with a notch the menu bar icon can be hidden behind the notch when the menu bar is full. With click-through off, it hides or shows as usual. Launching the app a second time (Spotlight, Finder) also leaves click-through. The shortcut can be changed in the settings panel (gear button on the window, visible when the pointer is over it). If the system cannot register the combination, the panel shows "raccourci indisponible" and the previous one stays active.
 
 ## Build from source
 
@@ -140,6 +186,18 @@ scripts/package.sh          # zip -> .build/dist/Lyra-Lyrics-<version>-macOS.zip
 - The debug build has extra command-line flags for tests (a fake player, a fake LRCLIB server, `--snapshot`); the release build does not contain them. See `scripts/run-app-test.sh` and `Fixtures/selftests/`. Code comments are in French.
 - `scripts/ear-check.sh` helps you check the synchronisation by ear on Spotify.
 
+### Windows
+
+You need the **.NET 10 SDK**. No package other than .NET's own is downloaded.
+
+```sh
+dotnet test windows/LyraLyrics.Core.Tests     # core tests (portable, also run on Mac and Linux)
+dotnet build windows/LyraLyrics.App -c Release
+dotnet publish windows/LyraLyrics.App -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o publish
+```
+
+The WPF app only runs on Windows. The installer is an Inno Setup 6 script (`windows/installer/LyraLyrics.iss`) built by GitHub Actions (`.github/workflows/windows-release.yml`), never on a Mac. Details are in `docs/windows/`.
+
 ## Known limitations
 
 - **Apple Music streaming tracks: not verified.** It was not established whether Music reports a usable position for tracks streamed from the catalogue (as opposed to your library); synchronisation may be missing or off for them.
@@ -149,14 +207,16 @@ scripts/package.sh          # zip -> .build/dist/Lyra-Lyrics-<version>-macOS.zip
 - **Resizing**: the cursor shape on the grab zones and a real mouse drag were not checked on screen (the automated test sends synthetic mouse events).
 - **Plain-text lyrics** (not synchronised) scroll in a block that costs about 2 % CPU while it moves.
 - **LRCLIB availability.** The service is community-run and free: it sometimes answers "busy" (HTTP 503, measured on 7 of 22 well-known songs on a first request) or has no lyrics for a song. Since 1.0.1 a failed request moves on to the search endpoint straight away and the app retries by itself ("Lyrics service busy", with a countdown and a **Retry** button); "Lyrics unavailable" now only means that LRCLIB really has nothing.
-- **Interface in French only**; **Apple silicon only**; **macOS 26+ only**; no Windows version yet.
+- **Interface in French only**; on the Mac: **Apple silicon only** and **macOS 26+ only**.
 - **How well it is tested**: the logic is covered by unit tests and by automated runs with a simulated player and a simulated server. Real players were tested on one Mac (macOS 27). The synchronisation was checked **by ear** on Spotify by the author, without a numeric measurement. The CPU figures come from a simulated player on one Mac.
 - Not notarised: macOS asks you to confirm the first launch.
+- **Windows (beta): never tried on a real PC before it was published.** The installer, the shortcut, uninstalling, the window rendering (background, click-through, resizing, several screens, scaling), Spotify detection through the media controls (including the Microsoft Store version), the global shortcut, the notification icon, launch at start and the update check are only verified by tests on a Mac and by reading the code; the CI workflow that builds the installer had never run before the first release.
+- **Windows: no Scene** (1.3.0), **Spotify only**, **unsigned** installer (SmartScreen, see [Install](#install)), Spotify ads treated as "Nothing playing" by an unverified heuristic, Windows on Arm not verified.
 
 ## Credits and rights
 
-- Lyrics come from **[LRCLIB](https://lrclib.net)**, a community database. Lyra Lyrics is an independent app, **not affiliated** with LRCLIB, Spotify or Apple.
-- **Lyrics belong to their authors and publishers.** They are shown here for **personal use**, only for the song you are playing; the app never stores them on disk, never uploads them and never redistributes them. If you find a problem with some lyrics, report it to LRCLIB.
+- Lyrics come from **[LRCLIB](https://lrclib.net)**, a community database. Lyra Lyrics is an independent app, **not affiliated** with LRCLIB, Spotify, Apple or Microsoft; the names Spotify, Apple Music and Windows are used only to describe compatibility.
+- **Lyrics belong to their authors and publishers.** They are shown here for **personal use**, only for the song you are playing; the app (Mac and Windows) never stores them on disk, never uploads them and never redistributes them. The screenshots in this README only contain invented ones. If you find a problem with some lyrics, report it to LRCLIB.
 - The app icon is drawn in code (see `scripts/make-icon-proposals.swift`); no artwork was copied.
 
 ## Licence

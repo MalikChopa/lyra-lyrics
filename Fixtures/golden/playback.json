@@ -1,0 +1,1146 @@
+{
+ "comment": "W3 : scénarios du modèle de lecture, lus par la suite C# (PlaybackModel du Core, via une horloge simulée) ET par la suite Swift (pilote de test qui rejoue les règles de AppModel.swift avec DisplayState, PositionEstimator et SyncEngine de LyricsCore ; AppModel.swift lui-même n'est pas atteignable depuis les tests). Chaque pas : t = horloge (s), op, paramètres, expect = ce qui doit être vrai après le pas. Paroles de test : jeu A = 4 lignes à 10, 20, 30, 40 s ; synchro = position + 0,15 s + décalage. Titres : identifiants inventés.",
+ "lineSets": {
+  "A": [
+   [
+    10,
+    "un"
+   ],
+   [
+    20,
+    "deux"
+   ],
+   [
+    30,
+    "trois"
+   ],
+   [
+    40,
+    "quatre"
+   ]
+  ]
+ },
+ "scenarios": [
+  {
+   "name": "lecture normale : recherche, indice, paroles, lignes qui avancent",
+   "note": "",
+   "steps": [
+    {
+     "t": 0,
+     "op": "track",
+     "id": "A",
+     "duration": 200,
+     "pos": 0,
+     "state": "playing",
+     "expect": {
+      "screen": "searching",
+      "hint": false,
+      "hasTrack": true,
+      "index": -1,
+      "paused": false
+     }
+    },
+    {
+     "t": 1.6,
+     "op": "tick",
+     "expect": {
+      "screen": "searching",
+      "hint": true
+     }
+    },
+    {
+     "t": 2,
+     "op": "service",
+     "kind": "found-synced",
+     "expect": {
+      "screen": "synced",
+      "index": -1
+     },
+     "lines": "A"
+    },
+    {
+     "t": 10,
+     "op": "tick",
+     "expect": {
+      "index": 0
+     }
+    },
+    {
+     "t": 19.9,
+     "op": "tick",
+     "expect": {
+      "index": 1
+     }
+    },
+    {
+     "t": 25,
+     "op": "tick",
+     "expect": {
+      "index": 1
+     }
+    },
+    {
+     "t": 40,
+     "op": "tick",
+     "expect": {
+      "index": 3
+     }
+    },
+    {
+     "t": 90,
+     "op": "tick",
+     "expect": {
+      "index": 3
+     }
+    }
+   ]
+  },
+  {
+   "name": "pause puis reprise : la ligne reste figée, la reprise repart de la position",
+   "note": "",
+   "steps": [
+    {
+     "t": 0,
+     "op": "track",
+     "id": "A",
+     "duration": 200,
+     "pos": 0,
+     "state": "playing",
+     "expect": {}
+    },
+    {
+     "t": 0.5,
+     "op": "service",
+     "kind": "found-synced",
+     "expect": {
+      "screen": "synced"
+     },
+     "lines": "A"
+    },
+    {
+     "t": 15,
+     "op": "tick",
+     "expect": {
+      "index": 0
+     }
+    },
+    {
+     "t": 15,
+     "op": "reading",
+     "pos": 15,
+     "state": "paused",
+     "expect": {
+      "paused": true,
+      "index": 0
+     }
+    },
+    {
+     "t": 100,
+     "op": "tick",
+     "expect": {
+      "index": 0,
+      "paused": true
+     }
+    },
+    {
+     "t": 100,
+     "op": "reading",
+     "pos": 15,
+     "state": "playing",
+     "expect": {
+      "paused": false,
+      "index": 0
+     }
+    },
+    {
+     "t": 115,
+     "op": "tick",
+     "expect": {
+      "index": 2
+     }
+    },
+    {
+     "t": 116,
+     "op": "tick",
+     "expect": {
+      "index": 2
+     }
+    }
+   ]
+  },
+  {
+   "name": "saut arrière franc (seek) : la ligne recule ; dérive arrière silencieuse : elle ne recule pas",
+   "note": "",
+   "steps": [
+    {
+     "t": 0,
+     "op": "track",
+     "id": "A",
+     "duration": 200,
+     "pos": 0,
+     "state": "playing",
+     "expect": {}
+    },
+    {
+     "t": 0.1,
+     "op": "service",
+     "kind": "found-synced",
+     "expect": {
+      "screen": "synced"
+     },
+     "lines": "A"
+    },
+    {
+     "t": 30,
+     "op": "tick",
+     "expect": {
+      "index": 2
+     }
+    },
+    {
+     "t": 30,
+     "op": "reading",
+     "pos": 29.6,
+     "state": "playing",
+     "expect": {
+      "index": 2
+     }
+    },
+    {
+     "t": 30,
+     "op": "reading",
+     "pos": 12,
+     "state": "playing",
+     "expect": {
+      "index": 0
+     }
+    }
+   ]
+  },
+  {
+   "name": "saut avant franc (seek)",
+   "note": "",
+   "steps": [
+    {
+     "t": 0,
+     "op": "track",
+     "id": "A",
+     "duration": 200,
+     "pos": 0,
+     "state": "playing",
+     "expect": {}
+    },
+    {
+     "t": 0.1,
+     "op": "service",
+     "kind": "found-synced",
+     "expect": {
+      "screen": "synced"
+     },
+     "lines": "A"
+    },
+    {
+     "t": 5,
+     "op": "tick",
+     "expect": {
+      "index": -1
+     }
+    },
+    {
+     "t": 5,
+     "op": "reading",
+     "pos": 41,
+     "state": "playing",
+     "expect": {
+      "index": 3
+     }
+    },
+    {
+     "t": 6,
+     "op": "reading",
+     "pos": 42,
+     "state": "playing",
+     "expect": {
+      "index": 3
+     }
+    }
+   ]
+  },
+  {
+   "name": "fin de liste et avant la première ligne",
+   "note": "",
+   "steps": [
+    {
+     "t": 0,
+     "op": "track",
+     "id": "A",
+     "duration": 200,
+     "pos": 0,
+     "state": "playing",
+     "expect": {}
+    },
+    {
+     "t": 0.1,
+     "op": "service",
+     "kind": "found-synced",
+     "expect": {
+      "screen": "synced",
+      "index": -1
+     },
+     "lines": "A"
+    },
+    {
+     "t": 1,
+     "op": "reading",
+     "pos": 9.7,
+     "state": "playing",
+     "expect": {
+      "index": -1
+     }
+    },
+    {
+     "t": 2,
+     "op": "reading",
+     "pos": 9.9,
+     "state": "playing",
+     "expect": {
+      "index": 0
+     }
+    },
+    {
+     "t": 3,
+     "op": "reading",
+     "pos": 500,
+     "state": "playing",
+     "expect": {
+      "index": 3
+     }
+    }
+   ]
+  },
+  {
+   "name": "changements de titre rapides : un événement de l'ancien titre est ignoré",
+   "note": "",
+   "steps": [
+    {
+     "t": 0,
+     "op": "track",
+     "id": "A",
+     "duration": 200,
+     "pos": 0,
+     "state": "playing",
+     "expect": {
+      "screen": "searching"
+     }
+    },
+    {
+     "t": 0.3,
+     "op": "track",
+     "id": "B",
+     "duration": 200,
+     "pos": 0,
+     "state": "playing",
+     "expect": {
+      "screen": "searching",
+      "hint": false,
+      "index": -1
+     }
+    },
+    {
+     "t": 0.5,
+     "op": "service",
+     "kind": "found-synced",
+     "expect": {
+      "screen": "searching"
+     },
+     "lines": "A",
+     "for": "A"
+    },
+    {
+     "t": 0.6,
+     "op": "track",
+     "id": "C",
+     "duration": 200,
+     "pos": 0,
+     "state": "playing",
+     "expect": {
+      "screen": "searching"
+     }
+    },
+    {
+     "t": 0.8,
+     "op": "service",
+     "kind": "found-synced",
+     "expect": {
+      "screen": "searching"
+     },
+     "lines": "A",
+     "for": "B"
+    },
+    {
+     "t": 1.0,
+     "op": "service",
+     "kind": "found-synced",
+     "expect": {
+      "screen": "synced",
+      "index": -1
+     },
+     "lines": "A",
+     "for": "C"
+    },
+    {
+     "t": 11,
+     "op": "tick",
+     "expect": {
+      "index": 0
+     }
+    }
+   ]
+  },
+  {
+   "name": "un nouveau titre remet tout à zéro (écran, ligne, pause, décalage)",
+   "note": "",
+   "steps": [
+    {
+     "t": 0,
+     "op": "track",
+     "id": "A",
+     "duration": 200,
+     "pos": 0,
+     "state": "playing",
+     "expect": {}
+    },
+    {
+     "t": 0.1,
+     "op": "service",
+     "kind": "found-synced",
+     "expect": {
+      "screen": "synced"
+     },
+     "lines": "A"
+    },
+    {
+     "t": 1,
+     "op": "offset",
+     "expect": {
+      "offset": 0.5
+     },
+     "value": 0.5
+    },
+    {
+     "t": 25,
+     "op": "reading",
+     "pos": 25,
+     "state": "paused",
+     "expect": {
+      "paused": true,
+      "index": 1
+     }
+    },
+    {
+     "t": 26,
+     "op": "track",
+     "id": "B",
+     "duration": 200,
+     "pos": 0,
+     "state": "playing",
+     "expect": {
+      "screen": "searching",
+      "paused": false,
+      "index": -1,
+      "offset": 0
+     }
+    }
+   ]
+  },
+  {
+   "name": "paroles introuvables, puis « Réessayer » qui aboutit",
+   "note": "",
+   "steps": [
+    {
+     "t": 0,
+     "op": "track",
+     "id": "A",
+     "duration": 200,
+     "pos": 0,
+     "state": "playing",
+     "expect": {}
+    },
+    {
+     "t": 0.5,
+     "op": "service",
+     "kind": "notfound",
+     "expect": {
+      "screen": "unavailable"
+     }
+    },
+    {
+     "t": 1,
+     "op": "retry",
+     "expect": {
+      "screen": "searching",
+      "hint": false
+     }
+    },
+    {
+     "t": 2.6,
+     "op": "tick",
+     "expect": {
+      "screen": "searching",
+      "hint": true
+     }
+    },
+    {
+     "t": 3,
+     "op": "service",
+     "kind": "found-synced",
+     "expect": {
+      "screen": "synced"
+     },
+     "lines": "A"
+    }
+   ]
+  },
+  {
+   "name": "« Réessayer » sans effet hors des états indisponible et occupé",
+   "note": "",
+   "steps": [
+    {
+     "t": 0,
+     "op": "track",
+     "id": "A",
+     "duration": 200,
+     "pos": 0,
+     "state": "playing",
+     "expect": {}
+    },
+    {
+     "t": 0.5,
+     "op": "retry",
+     "expect": {
+      "screen": "searching"
+     }
+    },
+    {
+     "t": 0.6,
+     "op": "service",
+     "kind": "found-synced",
+     "expect": {
+      "screen": "synced"
+     },
+     "lines": "A"
+    },
+    {
+     "t": 1,
+     "op": "retry",
+     "expect": {
+      "screen": "synced"
+     }
+    }
+   ]
+  },
+  {
+   "name": "service occupé avec compte à rebours, puis nouvel essai automatique",
+   "note": "",
+   "steps": [
+    {
+     "t": 0,
+     "op": "track",
+     "id": "A",
+     "duration": 200,
+     "pos": 0,
+     "state": "playing",
+     "expect": {}
+    },
+    {
+     "t": 0.5,
+     "op": "service",
+     "kind": "busy",
+     "expect": {
+      "screen": "busy",
+      "retryIn": 30
+     },
+     "retryIn": 30
+    },
+    {
+     "t": 1.5,
+     "op": "service",
+     "kind": "busy",
+     "expect": {
+      "screen": "busy",
+      "retryIn": 29
+     },
+     "retryIn": 29
+    },
+    {
+     "t": 10,
+     "op": "service",
+     "kind": "busy",
+     "expect": {
+      "screen": "busy",
+      "retryIn": 0.4
+     },
+     "retryIn": 0.4
+    },
+    {
+     "t": 11,
+     "op": "service",
+     "kind": "retrying",
+     "expect": {
+      "screen": "searching",
+      "hint": false
+     }
+    },
+    {
+     "t": 12,
+     "op": "service",
+     "kind": "found-synced",
+     "expect": {
+      "screen": "synced"
+     },
+     "lines": "A"
+    }
+   ]
+  },
+  {
+   "name": "service bloqué : « occupé » sans délai, puis « Réessayer »",
+   "note": "",
+   "steps": [
+    {
+     "t": 0,
+     "op": "track",
+     "id": "A",
+     "duration": 200,
+     "pos": 0,
+     "state": "playing",
+     "expect": {}
+    },
+    {
+     "t": 0.5,
+     "op": "service",
+     "kind": "stalled",
+     "expect": {
+      "screen": "busy",
+      "retryIn": 0
+     }
+    },
+    {
+     "t": 1,
+     "op": "retry",
+     "expect": {
+      "screen": "searching"
+     }
+    },
+    {
+     "t": 2,
+     "op": "service",
+     "kind": "found-plain",
+     "expect": {
+      "screen": "unsynced"
+     }
+    }
+   ]
+  },
+  {
+   "name": "hors connexion pendant la recherche, puis retour du réseau",
+   "note": "",
+   "steps": [
+    {
+     "t": 0,
+     "op": "track",
+     "id": "A",
+     "duration": 200,
+     "pos": 0,
+     "state": "playing",
+     "expect": {}
+    },
+    {
+     "t": 0.5,
+     "op": "net-off",
+     "expect": {
+      "screen": "offline"
+     }
+    },
+    {
+     "t": 0.6,
+     "op": "service",
+     "kind": "busy",
+     "expect": {
+      "screen": "offline"
+     },
+     "retryIn": 5
+    },
+    {
+     "t": 1,
+     "op": "net-on",
+     "expect": {
+      "screen": "searching",
+      "hint": false
+     }
+    },
+    {
+     "t": 2,
+     "op": "service",
+     "kind": "found-synced",
+     "expect": {
+      "screen": "synced"
+     },
+     "lines": "A"
+    }
+   ]
+  },
+  {
+   "name": "le réseau tombe alors que les paroles sont affichées : elles restent",
+   "note": "",
+   "steps": [
+    {
+     "t": 0,
+     "op": "track",
+     "id": "A",
+     "duration": 200,
+     "pos": 0,
+     "state": "playing",
+     "expect": {}
+    },
+    {
+     "t": 0.1,
+     "op": "service",
+     "kind": "found-synced",
+     "expect": {
+      "screen": "synced"
+     },
+     "lines": "A"
+    },
+    {
+     "t": 1,
+     "op": "net-off",
+     "expect": {
+      "screen": "synced"
+     }
+    },
+    {
+     "t": 2,
+     "op": "net-on",
+     "expect": {
+      "screen": "synced"
+     }
+    }
+   ]
+  },
+  {
+   "name": "événement hors connexion du service, puis réseau revenu avec paroles déjà en mémoire",
+   "note": "",
+   "steps": [
+    {
+     "t": 0,
+     "op": "track",
+     "id": "A",
+     "duration": 200,
+     "pos": 0,
+     "state": "playing",
+     "expect": {}
+    },
+    {
+     "t": 0.1,
+     "op": "service",
+     "kind": "found-synced",
+     "expect": {
+      "screen": "synced"
+     },
+     "lines": "A"
+    },
+    {
+     "t": 1,
+     "op": "service",
+     "kind": "offline",
+     "expect": {
+      "screen": "offline"
+     }
+    },
+    {
+     "t": 2,
+     "op": "net-on",
+     "expect": {
+      "screen": "synced"
+     }
+    },
+    {
+     "t": 12,
+     "op": "tick",
+     "expect": {
+      "index": 0
+     }
+    }
+   ]
+  },
+  {
+   "name": "un nouveau titre pendant « hors connexion » reste hors connexion",
+   "note": "",
+   "steps": [
+    {
+     "t": 0,
+     "op": "track",
+     "id": "A",
+     "duration": 200,
+     "pos": 0,
+     "state": "playing",
+     "expect": {}
+    },
+    {
+     "t": 0.5,
+     "op": "net-off",
+     "expect": {
+      "screen": "offline"
+     }
+    },
+    {
+     "t": 1,
+     "op": "track",
+     "id": "B",
+     "duration": 200,
+     "pos": 0,
+     "state": "playing",
+     "expect": {
+      "screen": "offline"
+     }
+    },
+    {
+     "t": 2,
+     "op": "net-on",
+     "expect": {
+      "screen": "searching"
+     }
+    }
+   ]
+  },
+  {
+   "name": "instrumental",
+   "note": "",
+   "steps": [
+    {
+     "t": 0,
+     "op": "track",
+     "id": "A",
+     "duration": 200,
+     "pos": 0,
+     "state": "playing",
+     "expect": {}
+    },
+    {
+     "t": 0.5,
+     "op": "service",
+     "kind": "found-instrumental",
+     "expect": {
+      "screen": "instrumental"
+     }
+    },
+    {
+     "t": 5,
+     "op": "tick",
+     "expect": {
+      "screen": "instrumental",
+      "index": -1
+     }
+    }
+   ]
+  },
+  {
+   "name": "paroles non synchronisées",
+   "note": "",
+   "steps": [
+    {
+     "t": 0,
+     "op": "track",
+     "id": "A",
+     "duration": 200,
+     "pos": 0,
+     "state": "playing",
+     "expect": {}
+    },
+    {
+     "t": 0.5,
+     "op": "service",
+     "kind": "found-plain",
+     "expect": {
+      "screen": "unsynced",
+      "index": -1
+     }
+    },
+    {
+     "t": 1,
+     "op": "reading",
+     "pos": 1,
+     "state": "paused",
+     "expect": {
+      "screen": "unsynced",
+      "paused": true
+     }
+    }
+   ]
+  },
+  {
+   "name": "rien en lecture, puis lecture, puis arrêt pendant la recherche (événement tardif ignoré)",
+   "note": "",
+   "steps": [
+    {
+     "t": 0,
+     "op": "stop",
+     "expect": {
+      "screen": "nothing",
+      "hasTrack": false
+     }
+    },
+    {
+     "t": 1,
+     "op": "track",
+     "id": "A",
+     "duration": 200,
+     "pos": 0,
+     "state": "playing",
+     "expect": {
+      "screen": "searching",
+      "hasTrack": true
+     }
+    },
+    {
+     "t": 2,
+     "op": "stop",
+     "expect": {
+      "screen": "nothing",
+      "hasTrack": false,
+      "index": -1
+     }
+    },
+    {
+     "t": 3,
+     "op": "service",
+     "kind": "found-synced",
+     "expect": {
+      "screen": "nothing"
+     },
+     "lines": "A",
+     "for": "A"
+    }
+   ]
+  },
+  {
+   "name": "arrêt pendant que les paroles défilent",
+   "note": "",
+   "steps": [
+    {
+     "t": 0,
+     "op": "track",
+     "id": "A",
+     "duration": 200,
+     "pos": 0,
+     "state": "playing",
+     "expect": {}
+    },
+    {
+     "t": 0.1,
+     "op": "service",
+     "kind": "found-synced",
+     "expect": {
+      "screen": "synced"
+     },
+     "lines": "A"
+    },
+    {
+     "t": 21,
+     "op": "tick",
+     "expect": {
+      "index": 1
+     }
+    },
+    {
+     "t": 22,
+     "op": "stop",
+     "expect": {
+      "screen": "nothing",
+      "hasTrack": false,
+      "index": -1,
+      "paused": false
+     }
+    }
+   ]
+  },
+  {
+   "name": "paroles qui arrivent pendant la pause",
+   "note": "",
+   "steps": [
+    {
+     "t": 0,
+     "op": "track",
+     "id": "A",
+     "duration": 200,
+     "pos": 0,
+     "state": "playing",
+     "expect": {}
+    },
+    {
+     "t": 5,
+     "op": "reading",
+     "pos": 5,
+     "state": "paused",
+     "expect": {
+      "paused": true
+     }
+    },
+    {
+     "t": 6,
+     "op": "service",
+     "kind": "found-synced",
+     "expect": {
+      "screen": "synced",
+      "paused": true,
+      "index": -1
+     },
+     "lines": "A"
+    },
+    {
+     "t": 60,
+     "op": "tick",
+     "expect": {
+      "index": -1
+     }
+    },
+    {
+     "t": 60,
+     "op": "reading",
+     "pos": 21,
+     "state": "paused",
+     "expect": {
+      "index": 1,
+      "paused": true
+     }
+    },
+    {
+     "t": 61,
+     "op": "reading",
+     "pos": 21,
+     "state": "playing",
+     "expect": {
+      "paused": false,
+      "index": 1
+     }
+    }
+   ]
+  },
+  {
+   "name": "décalage manuel : borné à ±5 s, arrondi au dixième, ré-autorise le recul",
+   "note": "",
+   "steps": [
+    {
+     "t": 0,
+     "op": "track",
+     "id": "A",
+     "duration": 200,
+     "pos": 0,
+     "state": "playing",
+     "expect": {}
+    },
+    {
+     "t": 0.1,
+     "op": "service",
+     "kind": "found-synced",
+     "expect": {
+      "screen": "synced"
+     },
+     "lines": "A"
+    },
+    {
+     "t": 19.5,
+     "op": "reading",
+     "pos": 19.5,
+     "state": "playing",
+     "expect": {
+      "index": 0
+     }
+    },
+    {
+     "t": 19.5,
+     "op": "offset",
+     "expect": {
+      "offset": 0.5,
+      "index": 1
+     },
+     "value": 0.5
+    },
+    {
+     "t": 19.6,
+     "op": "offset",
+     "expect": {
+      "offset": 0.0,
+      "index": 0
+     },
+     "value": 0.04
+    },
+    {
+     "t": 19.7,
+     "op": "offset",
+     "expect": {
+      "offset": 5.0
+     },
+     "value": 9
+    },
+    {
+     "t": 19.8,
+     "op": "offset",
+     "expect": {
+      "offset": -5.0
+     },
+     "value": -9
+    }
+   ]
+  },
+  {
+   "name": "la ligne ne recule pas toute seule quand le décalage est inchangé (hystérésis)",
+   "note": "",
+   "steps": [
+    {
+     "t": 0,
+     "op": "track",
+     "id": "A",
+     "duration": 200,
+     "pos": 0,
+     "state": "playing",
+     "expect": {}
+    },
+    {
+     "t": 0.1,
+     "op": "service",
+     "kind": "found-synced",
+     "expect": {
+      "screen": "synced"
+     },
+     "lines": "A"
+    },
+    {
+     "t": 30,
+     "op": "tick",
+     "expect": {
+      "index": 2
+     }
+    },
+    {
+     "t": 30.2,
+     "op": "reading",
+     "pos": 30.1,
+     "state": "playing",
+     "expect": {
+      "index": 2
+     }
+    },
+    {
+     "t": 31,
+     "op": "reading",
+     "pos": 31.2,
+     "state": "playing",
+     "expect": {
+      "index": 2
+     }
+    }
+   ]
+  }
+ ]
+}

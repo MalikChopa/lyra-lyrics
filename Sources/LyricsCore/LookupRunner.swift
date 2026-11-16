@@ -64,7 +64,8 @@ public actor LookupRunner {
     private let clock: @Sendable () -> Double
     private let sleeper: @Sendable (Double) async -> Void
     private let log: @Sendable ([String: String]) -> Void
-    private var onlineWaiters: [CheckedContinuation<Void, Never>] = []
+    /// Recherches suspendues hors connexion, par identifiant (W2, constat 21 : une annulation retire et libère son attente).
+    private var onlineWaiters: [UUID: CheckedContinuation<Void, Never>] = [:]
 
     public init(client: LRCLIBClient, gate: RequestGate, config: Config = Config(),
                 clock: @escaping @Sendable () -> Double, sleep: @escaping @Sendable (Double) async -> Void,
@@ -79,8 +80,8 @@ public actor LookupRunner {
     public func setOnline(_ online: Bool) {
         gate.isOffline = !online
         if online {
-            let waiters = onlineWaiters
-            onlineWaiters = []
+            let waiters = onlineWaiters.values
+            onlineWaiters = [:]
             waiters.forEach { $0.resume() }
         }
     }
@@ -310,8 +311,20 @@ public actor LookupRunner {
     }
 
     private func waitForOnline() async {
-        guard gate.isOffline else { return }
-        await withCheckedContinuation { (c: CheckedContinuation<Void, Never>) in onlineWaiters.append(c) }
+        guard gate.isOffline, !Task.isCancelled else { return }
+        let id = UUID()
+        await withTaskCancellationHandler {
+            await withCheckedContinuation { (c: CheckedContinuation<Void, Never>) in
+                if Task.isCancelled || !gate.isOffline { c.resume() } else { onlineWaiters[id] = c }
+            }
+        } onCancel: {
+            Task { await self.cancelOnlineWait(id) }
+        }
+    }
+
+    /// Libère l'attente d'une recherche annulée (la boucle appelante voit alors `Task.isCancelled` et rend « cancelled »).
+    private func cancelOnlineWait(_ id: UUID) {
+        onlineWaiters.removeValue(forKey: id)?.resume()
     }
 
     private func ms(since started: Double) -> String { String(Int(((clock() - started) * 1000).rounded())) }

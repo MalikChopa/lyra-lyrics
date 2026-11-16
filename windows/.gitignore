@@ -1,0 +1,8 @@
+bin/
+obj/
+*.user
+.vs/
+TestResults/
+
+# Le dossier LyraLyrics.App est pris pour un paquet macOS (« *.app/ » du .gitignore racine, casse ignorée sur Mac) : on le ré-inclut.
+!LyraLyrics.App/

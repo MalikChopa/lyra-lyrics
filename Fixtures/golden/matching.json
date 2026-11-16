@@ -121,6 +121,26 @@
   {"name": "titre contenu (sous-titre ajouté côté LRCLIB) accepté faute de mieux", "track": {"title": "Balise", "artist": "Artiste fictif", "duration": 195},
    "candidates": [{"id": 39, "title": "Balise (version longue)", "artist": "Artiste fictif", "duration": 196, "synced": true}],
    "expect": {"id": 39, "mode": "synced"}},
+  {"name": "W2 : « ß » du titre joué contre « ss » du candidat (repli de casse Unicode)", "track": {"title": "Straße des Phares", "artist": "Artiste fictif", "duration": 180},
+   "candidates": [{"id": 40, "title": "Strasse des Phares", "artist": "Artiste fictif", "duration": 180, "synced": true}],
+   "expect": {"id": 40, "mode": "synced"}},
+  {"name": "W2 : « ss » du titre joué contre « ß » du candidat", "track": {"title": "Weiss", "artist": "Artiste fictif", "duration": 150},
+   "candidates": [{"id": 41, "title": "Weiß", "artist": "Artiste fictif", "duration": 150, "synced": true}],
+   "expect": {"id": 41, "mode": "synced"}},
+  {"name": "W2 : sigma final « ς » contre « σ » en majuscules", "track": {"title": "ΣΊΣΥΦΟΣ", "artist": "Artiste fictif", "duration": 210},
+   "candidates": [{"id": 42, "title": "Σίσυφος", "artist": "Artiste fictif", "duration": 210, "synced": true}],
+   "expect": {"id": 42, "mode": "synced"}},
+  {"name": "W2 : artiste invité après « feat. » reconnu (jeton « jay-z » sans point)", "track": {"title": "Boussole", "artist": "Chanteuse fictive feat. Rappeur-Fictif", "duration": 200},
+   "candidates": [{"id": 44, "title": "Boussole", "artist": "Inconnu total", "duration": 200, "synced": true},
+                  {"id": 43, "title": "Boussole", "artist": "Rappeur-Fictif", "duration": 200, "synced": true}],
+   "expect": {"id": 43, "mode": "synced"}},
+  {"name": "W2 : « ft. » et « vs. » séparent aussi les artistes", "track": {"title": "Écho", "artist": "Duo A ft. Duo B", "duration": 190},
+   "candidates": [{"id": 46, "title": "Écho", "artist": "Quelqu'un d'autre", "duration": 190, "synced": true},
+                  {"id": 45, "title": "Écho", "artist": "Duo B vs. Duo C", "duration": 190, "synced": true}],
+   "expect": {"id": 45, "mode": "synced"}},
+  {"name": "W2 : « (feat. …) » puis « - Remastered » combinés, majuscules et accents", "track": {"title": "BALADE ÉTRANGE - Remastered 2011 (feat. Invité)", "artist": "Artiste fictif", "duration": 220},
+   "candidates": [{"id": 47, "title": "Balade Etrange", "artist": "Artiste fictif", "duration": 220, "synced": true}],
+   "expect": {"id": 47, "mode": "synced"}},
   {"name": "normalisation", "normalize": [
     {"in": "Chanson - Remastered 2011", "out": "chanson"},
     {"in": "Chanson (2009 Remaster)", "out": "chanson"},
@@ -131,7 +151,9 @@
     {"in": "Chanson - Remix", "out": "chanson - remix"},
     {"in": "L’Été  à   Ｐａｒｉｓ", "out": "lété à paris"},
     {"in": "Rock & Roll", "out": "rock and roll"},
-    {"in": "?", "out": "?"}
+    {"in": "?", "out": "?"},
+    {"in": "Straße", "out": "straße"},
+    {"in": "Titre ft. Invité", "out": "titre"}
   ]}
  ]
 }

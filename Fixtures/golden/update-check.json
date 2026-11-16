@@ -1,0 +1,454 @@
+{
+ "description": "E1 : vérification des mises à jour (UpdateCheck). Lue par Swift (W4FixtureTests) et C# (W4ParityTests). Aucune requête réseau : seulement des charges utiles d'exemple.",
+ "endpoint": "https://api.github.com/repos/MalikChopa/lyra-lyrics/releases/latest",
+ "host": "api.github.com",
+ "parse": [
+  {
+   "name": "réponse normale",
+   "payload": "{\"tag_name\": \"v1.2.0\", \"html_url\": \"https://github.com/MalikChopa/lyra-lyrics/releases/tag/v1.2.0\", \"body\": \"ignor\\u00e9\"}",
+   "tag": "v1.2.0",
+   "url": "https://github.com/MalikChopa/lyra-lyrics/releases/tag/v1.2.0"
+  },
+  {
+   "name": "dépôt renvoyé sous un autre nom de compte",
+   "payload": "{\"tag_name\": \"v1.0.1\", \"html_url\": \"https://github.com/autre-compte/lyra-lyrics/releases/tag/v1.0.1\"}",
+   "tag": "v1.0.1",
+   "url": "https://github.com/autre-compte/lyra-lyrics/releases/tag/v1.0.1"
+  },
+  {
+   "name": "page releases seule",
+   "payload": "{\"tag_name\": \"v1.3.0\", \"html_url\": \"https://github.com/MalikChopa/lyra-lyrics/releases\"}",
+   "tag": "v1.3.0",
+   "url": "https://github.com/MalikChopa/lyra-lyrics/releases"
+  },
+  {
+   "name": "casse de l'hôte et du chemin",
+   "payload": "{\"tag_name\": \"v1.3.0\", \"html_url\": \"https://GitHub.com/MalikChopa/Lyra-Lyrics/Releases/tag/v1.3.0\"}",
+   "tag": "v1.3.0",
+   "url": "https://GitHub.com/MalikChopa/Lyra-Lyrics/Releases/tag/v1.3.0"
+  },
+  {
+   "name": "étiquette de 40 caractères",
+   "payload": "{\"tag_name\": \"v111111111111111111111111111111111111111\", \"html_url\": \"https://github.com/MalikChopa/lyra-lyrics/releases/tag/x\"}",
+   "tag": "v111111111111111111111111111111111111111",
+   "url": "https://github.com/MalikChopa/lyra-lyrics/releases/tag/x"
+  },
+  {
+   "name": "autre dépôt",
+   "payload": "{\"tag_name\": \"v9\", \"html_url\": \"https://github.com/autre-compte/autre-depot/releases/tag/v9\"}",
+   "tag": null
+  },
+  {
+   "name": "issues au lieu de releases",
+   "payload": "{\"tag_name\": \"v9\", \"html_url\": \"https://github.com/autre-compte/lyra-lyrics/issues/1\"}",
+   "tag": null
+  },
+  {
+   "name": "autre hôte",
+   "payload": "{\"tag_name\": \"v9\", \"html_url\": \"https://example.com/MalikChopa/lyra-lyrics/releases\"}",
+   "tag": null
+  },
+  {
+   "name": "http",
+   "payload": "{\"tag_name\": \"v9\", \"html_url\": \"http://github.com/MalikChopa/lyra-lyrics/releases\"}",
+   "tag": null
+  },
+  {
+   "name": "dépôt et propriétaire quelconques",
+   "payload": "{\"tag_name\": \"v9\", \"html_url\": \"https://github.com/autre/depot/releases\"}",
+   "tag": null
+  },
+  {
+   "name": "hôte qui commence par github.com",
+   "payload": "{\"tag_name\": \"v9\", \"html_url\": \"https://github.com.evil.example/MalikChopa/lyra-lyrics/releases/x\"}",
+   "tag": null
+  },
+  {
+   "name": "hôte avec identifiant devant",
+   "payload": "{\"tag_name\": \"v9\", \"html_url\": \"https://github.com@evil.example/MalikChopa/lyra-lyrics/releases/x\"}",
+   "tag": null
+  },
+  {
+   "name": "identifiant sur github.com",
+   "payload": "{\"tag_name\": \"v9\", \"html_url\": \"https://user@github.com/MalikChopa/lyra-lyrics/releases/x\"}",
+   "tag": null
+  },
+  {
+   "name": "port explicite",
+   "payload": "{\"tag_name\": \"v9\", \"html_url\": \"https://github.com:8443/MalikChopa/lyra-lyrics/releases/x\"}",
+   "tag": null
+  },
+  {
+   "name": "sous-domaine",
+   "payload": "{\"tag_name\": \"v9\", \"html_url\": \"https://gist.github.com/MalikChopa/lyra-lyrics/releases/x\"}",
+   "tag": null
+  },
+  {
+   "name": "dépôt avec suffixe",
+   "payload": "{\"tag_name\": \"v9\", \"html_url\": \"https://github.com/MalikChopa/lyra-lyrics-evil/releases/x\"}",
+   "tag": null
+  },
+  {
+   "name": "chemin trop court",
+   "payload": "{\"tag_name\": \"v9\", \"html_url\": \"https://github.com/MalikChopa/lyra-lyrics\"}",
+   "tag": null
+  },
+  {
+   "name": "schéma javascript",
+   "payload": "{\"tag_name\": \"v9\", \"html_url\": \"javascript:alert(1)\"}",
+   "tag": null
+  },
+  {
+   "name": "schéma file",
+   "payload": "{\"tag_name\": \"v9\", \"html_url\": \"file:///etc/passwd\"}",
+   "tag": null
+  },
+  {
+   "name": "lien relatif",
+   "payload": "{\"tag_name\": \"v9\", \"html_url\": \"/MalikChopa/lyra-lyrics/releases\"}",
+   "tag": null
+  },
+  {
+   "name": "étiquette vide",
+   "payload": "{\"tag_name\": \"\", \"html_url\": \"https://github.com/MalikChopa/lyra-lyrics/releases/tag/x\"}",
+   "tag": null
+  },
+  {
+   "name": "étiquette de 41 caractères",
+   "payload": "{\"tag_name\": \"v1111111111111111111111111111111111111111\", \"html_url\": \"https://github.com/MalikChopa/lyra-lyrics/releases/tag/x\"}",
+   "tag": null
+  },
+  {
+   "name": "étiquette numérique",
+   "payload": "{\"tag_name\":9,\"html_url\":\"https://github.com/MalikChopa/lyra-lyrics/releases/tag/x\"}",
+   "tag": null
+  },
+  {
+   "name": "étiquette nulle",
+   "payload": "{\"tag_name\":null,\"html_url\":\"https://github.com/MalikChopa/lyra-lyrics/releases/tag/x\"}",
+   "tag": null
+  },
+  {
+   "name": "lien absent",
+   "payload": "{\"tag_name\":\"v9\"}",
+   "tag": null
+  },
+  {
+   "name": "lien non texte",
+   "payload": "{\"tag_name\":\"v9\",\"html_url\":[\"https://github.com/MalikChopa/lyra-lyrics/releases/tag/x\"]}",
+   "tag": null
+  },
+  {
+   "name": "objet vide",
+   "payload": "{}",
+   "tag": null
+  },
+  {
+   "name": "tableau",
+   "payload": "[1,2]",
+   "tag": null
+  },
+  {
+   "name": "texte qui n'est pas du JSON",
+   "payload": "pas du json",
+   "tag": null
+  },
+  {
+   "name": "page HTML",
+   "payload": "<html><body>rate limit</body></html>",
+   "tag": null
+  },
+  {
+   "name": "réponse vide",
+   "payload": "",
+   "tag": null
+  },
+  {
+   "name": "message d'erreur GitHub",
+   "payload": "{\"message\":\"API rate limit exceeded\",\"documentation_url\":\"https://docs.github.com\"}",
+   "tag": null
+  }
+ ],
+ "newer": [
+  {
+   "remote": "v1.1.0",
+   "local": "1.0.1",
+   "expected": true
+  },
+  {
+   "remote": "1.10.0",
+   "local": "1.9.9",
+   "expected": true
+  },
+  {
+   "remote": "v1.0.1",
+   "local": "1.0.1",
+   "expected": false
+  },
+  {
+   "remote": "1.0",
+   "local": "1.0.0",
+   "expected": false
+  },
+  {
+   "remote": "v1.0.0",
+   "local": "1.0.1",
+   "expected": false
+  },
+  {
+   "remote": "2.0.0-beta1",
+   "local": "1.9.0",
+   "expected": true
+  },
+  {
+   "remote": "1.1.0-rc1",
+   "local": "1.1.0",
+   "expected": false
+  },
+  {
+   "remote": "v1.1.1-beta",
+   "local": "1.1.0",
+   "expected": true
+  },
+  {
+   "remote": "n'importe quoi",
+   "local": "1.0.1",
+   "expected": false
+  },
+  {
+   "remote": "v1.1.0",
+   "local": "n'importe quoi",
+   "expected": false
+  },
+  {
+   "remote": "V2.0.0",
+   "local": "1.9.9",
+   "expected": true
+  },
+  {
+   "remote": " v1.2.0 ",
+   "local": "1.1.0",
+   "expected": true
+  },
+  {
+   "remote": "1.1.0.1",
+   "local": "1.1.0",
+   "expected": true
+  },
+  {
+   "remote": "1.1",
+   "local": "1.1.0",
+   "expected": false
+  },
+  {
+   "remote": "1.2",
+   "local": "1.1.9",
+   "expected": true
+  },
+  {
+   "remote": "1..2",
+   "local": "1.0.0",
+   "expected": false
+  },
+  {
+   "remote": "1.2.",
+   "local": "1.0.0",
+   "expected": false
+  },
+  {
+   "remote": "",
+   "local": "1.0.0",
+   "expected": false
+  },
+  {
+   "remote": "1.0.0",
+   "local": "",
+   "expected": false
+  },
+  {
+   "remote": "v1.1.0+build5",
+   "local": "1.1.0",
+   "expected": false
+  },
+  {
+   "remote": "1.1.1+build5",
+   "local": "1.1.0",
+   "expected": true
+  },
+  {
+   "remote": "1.99999999999999999999",
+   "local": "1.0.0",
+   "expected": false
+  },
+  {
+   "remote": "0.9.9",
+   "local": "1.0.0",
+   "expected": false
+  },
+  {
+   "remote": "10.0.0",
+   "local": "9.99.99",
+   "expected": true
+  },
+  {
+   "remote": "1.0.0-",
+   "local": "0.9",
+   "expected": true
+  },
+  {
+   "remote": "v",
+   "local": "1.0.0",
+   "expected": false
+  },
+  {
+   "remote": "1.a.0",
+   "local": "1.0.0",
+   "expected": false
+  }
+ ],
+ "due": [
+  {
+   "last": null,
+   "now": 1800000000,
+   "expected": true
+  },
+  {
+   "last": 1799996400,
+   "now": 1800000000,
+   "expected": false
+  },
+  {
+   "last": 1799913601,
+   "now": 1800000000,
+   "expected": false
+  },
+  {
+   "last": 1799913600,
+   "now": 1800000000,
+   "expected": true
+  },
+  {
+   "last": 1800864000,
+   "now": 1800000000,
+   "expected": true
+  },
+  {
+   "last": 1800003600,
+   "now": 1800000000,
+   "expected": false
+  },
+  {
+   "last": 1800003601,
+   "now": 1800000000,
+   "expected": true
+  },
+  {
+   "last": 0,
+   "now": 1800000000,
+   "expected": true
+  },
+  {
+   "last": 1800000000,
+   "now": 1800000000,
+   "expected": false
+  }
+ ],
+ "trusted": [
+  {
+   "url": "https://github.com/MalikChopa/lyra-lyrics/releases",
+   "expected": true
+  },
+  {
+   "url": "https://github.com/x/lyra-lyrics/releases/tag/v1",
+   "expected": true
+  },
+  {
+   "url": "https://github.com/x/lyra-lyrics/issues",
+   "expected": false
+  },
+  {
+   "url": "https://github.com/MalikChopa/lyra-lyrics",
+   "expected": false
+  },
+  {
+   "url": "http://github.com/x/lyra-lyrics/releases",
+   "expected": false
+  },
+  {
+   "url": "https://github.com:443/x/lyra-lyrics/releases",
+   "expected": false
+  },
+  {
+   "url": "https://api.github.com/x/lyra-lyrics/releases",
+   "expected": false
+  },
+  {
+   "url": "https://github.com/x/lyra-lyrics/releases?x=1",
+   "expected": true
+  },
+  {
+   "url": "https://github.com//x/lyra-lyrics/releases",
+   "expected": true
+  },
+  {
+   "url": "https://github.com/x/lyra-lyrics/Releases",
+   "expected": true
+  }
+ ],
+ "outcome": [
+  {
+   "name": "plus récente",
+   "payload": "{\"tag_name\":\"v1.1.0\",\"html_url\":\"https://github.com/MalikChopa/lyra-lyrics/releases/tag/v1.1.0\"}",
+   "local": "1.0.1",
+   "expected": "newer:v1.1.0"
+  },
+  {
+   "name": "même version",
+   "payload": "{\"tag_name\":\"v1.0.1\",\"html_url\":\"https://github.com/MalikChopa/lyra-lyrics/releases/tag/v1.0.1\"}",
+   "local": "1.0.1",
+   "expected": "upToDate"
+  },
+  {
+   "name": "plus ancienne",
+   "payload": "{\"tag_name\":\"v1.0.0\",\"html_url\":\"https://github.com/MalikChopa/lyra-lyrics/releases/tag/v1.0.0\"}",
+   "local": "1.0.1",
+   "expected": "upToDate"
+  },
+  {
+   "name": "objet vide",
+   "payload": "{}",
+   "local": "1.0.1",
+   "expected": "failed"
+  },
+  {
+   "name": "lien hostile même si plus récente",
+   "payload": "{\"tag_name\":\"v9.0.0\",\"html_url\":\"https://evil.example/x/lyra-lyrics/releases\"}",
+   "local": "1.0.1",
+   "expected": "failed"
+  },
+  {
+   "name": "pré-version marquée (comportement du Mac : seule l'étiquette compte, GitHub n'envoie jamais de pré-version dans /latest)",
+   "payload": "{\"tag_name\":\"v2.0.0-beta1\",\"prerelease\":true,\"html_url\":\"https://github.com/MalikChopa/lyra-lyrics/releases/tag/v2.0.0-beta1\"}",
+   "local": "1.9.0",
+   "expected": "newer:v2.0.0-beta1"
+  },
+  {
+   "name": "étiquette illisible mais lien sûr",
+   "payload": "{\"tag_name\":\"nightly\",\"html_url\":\"https://github.com/MalikChopa/lyra-lyrics/releases/tag/nightly\"}",
+   "local": "1.0.1",
+   "expected": "upToDate"
+  },
+  {
+   "name": "garbage",
+   "payload": "\u0000\u0001 garbage",
+   "local": "1.0.1",
+   "expected": "failed"
+  },
+  {
+   "name": "version locale illisible",
+   "payload": "{\"tag_name\":\"v1.1.0\",\"html_url\":\"https://github.com/MalikChopa/lyra-lyrics/releases/tag/v1.1.0\"}",
+   "local": "dev",
+   "expected": "upToDate"
+  }
+ ]
+}

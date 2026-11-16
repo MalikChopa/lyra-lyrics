@@ -1,0 +1,442 @@
+{
+ "description": "C1 : masquage automatique (AutoHideState). Lue par Swift (Tests/AppSupportTests/W4FixtureTests.swift) et C# (W4ParityTests). Chaque pas : evaluate (mode, activity, windowShown -> action attendue hide/show/null) ou manual (windowShown après un geste de l'utilisateur).",
+ "conditions": [
+  {
+   "mode": "never",
+   "activity": "nothing",
+   "expected": false
+  },
+  {
+   "mode": "never",
+   "activity": "paused",
+   "expected": false
+  },
+  {
+   "mode": "never",
+   "activity": "playing",
+   "expected": false
+  },
+  {
+   "mode": "idle",
+   "activity": "nothing",
+   "expected": true
+  },
+  {
+   "mode": "idle",
+   "activity": "paused",
+   "expected": false
+  },
+  {
+   "mode": "idle",
+   "activity": "playing",
+   "expected": false
+  },
+  {
+   "mode": "paused",
+   "activity": "nothing",
+   "expected": true
+  },
+  {
+   "mode": "paused",
+   "activity": "paused",
+   "expected": true
+  },
+  {
+   "mode": "paused",
+   "activity": "playing",
+   "expected": false
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "cache puis remontre (mode idle)",
+   "steps": [
+    {
+     "op": "evaluate",
+     "mode": "idle",
+     "activity": "playing",
+     "windowShown": true,
+     "expect": null
+    },
+    {
+     "op": "evaluate",
+     "mode": "idle",
+     "activity": "nothing",
+     "windowShown": true,
+     "expect": "hide"
+    },
+    {
+     "op": "evaluate",
+     "mode": "idle",
+     "activity": "nothing",
+     "windowShown": false,
+     "expect": null
+    },
+    {
+     "op": "evaluate",
+     "mode": "idle",
+     "activity": "playing",
+     "windowShown": false,
+     "expect": "show"
+    }
+   ]
+  },
+  {
+   "name": "masquage manuel : la reprise ne remontre rien",
+   "steps": [
+    {
+     "op": "evaluate",
+     "mode": "idle",
+     "activity": "nothing",
+     "windowShown": true,
+     "expect": "hide"
+    },
+    {
+     "op": "manual",
+     "windowShown": false
+    },
+    {
+     "op": "evaluate",
+     "mode": "idle",
+     "activity": "nothing",
+     "windowShown": false,
+     "expect": null
+    },
+    {
+     "op": "evaluate",
+     "mode": "idle",
+     "activity": "playing",
+     "windowShown": false,
+     "expect": null
+    }
+   ]
+  },
+  {
+   "name": "affichage manuel pendant la condition gardé jusqu'au retour de la lecture",
+   "steps": [
+    {
+     "op": "evaluate",
+     "mode": "idle",
+     "activity": "nothing",
+     "windowShown": true,
+     "expect": "hide"
+    },
+    {
+     "op": "manual",
+     "windowShown": true
+    },
+    {
+     "op": "evaluate",
+     "mode": "idle",
+     "activity": "nothing",
+     "windowShown": true,
+     "expect": null
+    },
+    {
+     "op": "evaluate",
+     "mode": "idle",
+     "activity": "nothing",
+     "windowShown": true,
+     "expect": null
+    },
+    {
+     "op": "evaluate",
+     "mode": "idle",
+     "activity": "playing",
+     "windowShown": true,
+     "expect": null
+    },
+    {
+     "op": "evaluate",
+     "mode": "idle",
+     "activity": "nothing",
+     "windowShown": true,
+     "expect": "hide"
+    }
+   ]
+  },
+  {
+   "name": "« jamais » remontre ce qu'on avait caché",
+   "steps": [
+    {
+     "op": "evaluate",
+     "mode": "idle",
+     "activity": "nothing",
+     "windowShown": true,
+     "expect": "hide"
+    },
+    {
+     "op": "evaluate",
+     "mode": "never",
+     "activity": "nothing",
+     "windowShown": false,
+     "expect": "show"
+    }
+   ]
+  },
+  {
+   "name": "jamais : rien ne se passe",
+   "steps": [
+    {
+     "op": "evaluate",
+     "mode": "never",
+     "activity": "nothing",
+     "windowShown": true,
+     "expect": null
+    },
+    {
+     "op": "evaluate",
+     "mode": "never",
+     "activity": "paused",
+     "windowShown": true,
+     "expect": null
+    },
+    {
+     "op": "evaluate",
+     "mode": "never",
+     "activity": "playing",
+     "windowShown": true,
+     "expect": null
+    }
+   ]
+  },
+  {
+   "name": "idle : la pause ne masque pas",
+   "steps": [
+    {
+     "op": "evaluate",
+     "mode": "idle",
+     "activity": "paused",
+     "windowShown": true,
+     "expect": null
+    },
+    {
+     "op": "evaluate",
+     "mode": "idle",
+     "activity": "playing",
+     "windowShown": true,
+     "expect": null
+    }
+   ]
+  },
+  {
+   "name": "paused : pause masque, lecture remontre",
+   "steps": [
+    {
+     "op": "evaluate",
+     "mode": "paused",
+     "activity": "paused",
+     "windowShown": true,
+     "expect": "hide"
+    },
+    {
+     "op": "evaluate",
+     "mode": "paused",
+     "activity": "paused",
+     "windowShown": false,
+     "expect": null
+    },
+    {
+     "op": "evaluate",
+     "mode": "paused",
+     "activity": "playing",
+     "windowShown": false,
+     "expect": "show"
+    },
+    {
+     "op": "evaluate",
+     "mode": "paused",
+     "activity": "playing",
+     "windowShown": true,
+     "expect": null
+    }
+   ]
+  },
+  {
+   "name": "paused : rien ne joue masque aussi",
+   "steps": [
+    {
+     "op": "evaluate",
+     "mode": "paused",
+     "activity": "nothing",
+     "windowShown": true,
+     "expect": "hide"
+    },
+    {
+     "op": "evaluate",
+     "mode": "paused",
+     "activity": "playing",
+     "windowShown": false,
+     "expect": "show"
+    }
+   ]
+  },
+  {
+   "name": "fenêtre déjà masquée à la main avant la condition : jamais remontrée",
+   "steps": [
+    {
+     "op": "evaluate",
+     "mode": "paused",
+     "activity": "playing",
+     "windowShown": true,
+     "expect": null
+    },
+    {
+     "op": "manual",
+     "windowShown": false
+    },
+    {
+     "op": "evaluate",
+     "mode": "paused",
+     "activity": "paused",
+     "windowShown": false,
+     "expect": null
+    },
+    {
+     "op": "evaluate",
+     "mode": "paused",
+     "activity": "playing",
+     "windowShown": false,
+     "expect": null
+    }
+   ]
+  },
+  {
+   "name": "remontrée à la main pendant que nous l'avions masquée : aucun doublon",
+   "steps": [
+    {
+     "op": "evaluate",
+     "mode": "idle",
+     "activity": "nothing",
+     "windowShown": true,
+     "expect": "hide"
+    },
+    {
+     "op": "manual",
+     "windowShown": true
+    },
+    {
+     "op": "evaluate",
+     "mode": "idle",
+     "activity": "playing",
+     "windowShown": true,
+     "expect": null
+    },
+    {
+     "op": "evaluate",
+     "mode": "idle",
+     "activity": "nothing",
+     "windowShown": true,
+     "expect": "hide"
+    }
+   ]
+  },
+  {
+   "name": "masquée par nous puis remontrée par l'utilisateur sans condition : pas de dérogation",
+   "steps": [
+    {
+     "op": "evaluate",
+     "mode": "idle",
+     "activity": "nothing",
+     "windowShown": true,
+     "expect": "hide"
+    },
+    {
+     "op": "evaluate",
+     "mode": "idle",
+     "activity": "playing",
+     "windowShown": true,
+     "expect": null
+    },
+    {
+     "op": "manual",
+     "windowShown": true
+    },
+    {
+     "op": "evaluate",
+     "mode": "idle",
+     "activity": "nothing",
+     "windowShown": true,
+     "expect": "hide"
+    }
+   ]
+  },
+  {
+   "name": "changement de mode pendant le masquage (idle -> paused -> never)",
+   "steps": [
+    {
+     "op": "evaluate",
+     "mode": "paused",
+     "activity": "paused",
+     "windowShown": true,
+     "expect": "hide"
+    },
+    {
+     "op": "evaluate",
+     "mode": "idle",
+     "activity": "paused",
+     "windowShown": false,
+     "expect": "show"
+    },
+    {
+     "op": "evaluate",
+     "mode": "idle",
+     "activity": "paused",
+     "windowShown": true,
+     "expect": null
+    },
+    {
+     "op": "evaluate",
+     "mode": "paused",
+     "activity": "paused",
+     "windowShown": true,
+     "expect": "hide"
+    },
+    {
+     "op": "evaluate",
+     "mode": "never",
+     "activity": "paused",
+     "windowShown": false,
+     "expect": "show"
+    }
+   ]
+  },
+  {
+   "name": "la fenêtre remontrée par l'utilisateur est laissée telle quelle au retour de la lecture",
+   "steps": [
+    {
+     "op": "evaluate",
+     "mode": "idle",
+     "activity": "nothing",
+     "windowShown": true,
+     "expect": "hide"
+    },
+    {
+     "op": "manual",
+     "windowShown": true
+    },
+    {
+     "op": "evaluate",
+     "mode": "idle",
+     "activity": "playing",
+     "windowShown": true,
+     "expect": null
+    },
+    {
+     "op": "evaluate",
+     "mode": "idle",
+     "activity": "nothing",
+     "windowShown": true,
+     "expect": "hide"
+    },
+    {
+     "op": "evaluate",
+     "mode": "idle",
+     "activity": "playing",
+     "windowShown": true,
+     "expect": null
+    }
+   ]
+  }
+ ]
+}

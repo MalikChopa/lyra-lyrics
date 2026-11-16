@@ -3,6 +3,38 @@
 All notable changes to this project are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.2.0] - 2026-11-16
+
+### Added
+- **Windows version (beta).** First Windows release, shared with the Mac release (same version number, one GitHub release, two files). Windows 10 version 1809 or later and Windows 11, 64-bit; **Spotify only** (read through the Windows media controls, SMTC: no permission to give); **no Scene yet** (full-screen mode is planned for 1.3.0); never run on a real PC before this release, hence "beta". Features:
+  - A small always-on-top window with the synchronised lyrics, one, three or five lines, current line highlighted, neighbours dimmed, soft scrolling (opacity and scale) and text that adapts to the window size; resizable with the mouse.
+  - Three backgrounds (solid, glass, transparent) and font themes (Classic, Elegant, Neon, Minimal), font, weight, maximum size, colour of the current line, background opacity; colours taken from the album cover (the cover is read locally from Windows, never downloaded); optional experimental "system blur" on Windows 11 (off by default).
+  - Plain-text lyrics as a scrolling block, ghost-line waiting animation, manual offset of -5 s to +5 s for the current song, clear messages for each state (nothing playing, searching, no lyrics, instrumental, service busy with a countdown and "Réessayer", offline).
+  - "Mauvaises paroles ?": search LRCLIB by title and artist and pick another version, remembered for that song (identifier only, no text), with a way back to the automatic choice.
+  - Playback buttons (previous, play/pause, next) in the hover bar; click-through mode; global shortcut Ctrl+Alt+Shift+L (changeable); notification-area icon with a menu; welcome screen at the first launch; auto-hide (never / when paused / when nothing plays, default); launch at Windows start (a value in the user's `Run` registry key, written only when you tick the box); "Copier le diagnostic" in the icon menu; link "Signaler un problème" (opens the issues page of this repository in your browser, nothing is sent).
+  - Update notice: at most one request a day, 8 seconds after launch, to `api.github.com` (latest release of this repository), nothing sent about you, setting "Vérifier les mises à jour" (on by default).
+  - Accessibility: UI Automation names on the interactive controls; "Reduce animations" and transparency settings of Windows are respected.
+  - **Installer** `Lyra-Lyrics-1.2.0-windows-x64-setup.exe` (Inno Setup, built by GitHub Actions on Windows, never on the Mac): per user, no administrator rights, Start menu shortcut, entry in Settings > Apps, uninstaller that asks (default: no) whether to delete your settings, lookup index and log. The installer and the app are **not code-signed**: Windows SmartScreen may warn.
+  - Disk: `%APPDATA%\LyraLyrics\` (settings, lookup index with hashed keys and no text, a log without titles or lyrics); network: `lrclib.net` and the daily update check only.
+- Windows application icon (derived from the Mac icon) for the exe, the windows and the notification area.
+- GitHub Actions workflow `windows-release.yml` (on a `v*` tag: tests, single-file self-contained build, installer, SHA-256, draft release with the installer attached; it never publishes).
+- Shared test fixtures: both apps (Swift and C#) now read the same JSON files in `Fixtures/` for text normalisation, `Retry-After`, LRC parsing, request spacing, lookup runner, playback model, settings defaults, palette, auto-hide, update check and manual choices, with `scripts/test-parite.sh` to run both suites.
+
+### Changed
+- Version 1.2.0 on both platforms (the Mac `CFBundleVersion` goes to 4). The Windows update check and the Mac one use the same comparison.
+- The README (English and French) now covers Windows, and the privacy text no longer pins the `User-Agent` version.
+
+### Fixed
+Core fixes made while aligning the Mac and Windows cores (they apply to the Mac app and to Windows):
+- Title and artist normalisation: "feat.", "ft." and "vs." are now split off the artist in the same way on both sides, including when the dot touches the next name ("feat.Guest"); on Windows, "ß", "ẞ", "ς" and "İ" are now folded like on the Mac.
+- `Retry-After` is capped at 300 seconds (a server asking for a day no longer freezes the app for hours; after 5 minutes one request tries again); negative values count as 0; "inf", "nan" and hexadecimal values are rejected instead of opening an infinite wait.
+- LRC lines that are indented (spaces, tabs or no-break spaces before the timestamp) are now accepted instead of being dropped.
+- Mac: the wait for the network to come back is now cancellable (a cancelled lookup no longer stays suspended until the next network change).
+- Windows: concurrent saves of the lookup index no longer fail (writes are serialised).
+
+### Known limitations
+- Windows: beta, never run on a real PC before this release; the installer and the CI workflow had never been run before the first tag; unsigned (SmartScreen, and on Windows 11 the "Smart App Control" may refuse it); Spotify only; no Scene, animated background or karaoke fill yet (stored in the settings file but no control is shown); Windows on Arm not verified; interface in French only.
+
 ## [1.1.0] - 2026-11-16
 
 ### Added

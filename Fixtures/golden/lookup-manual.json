@@ -1,0 +1,303 @@
+{
+ "description": "B1 : index disque de la recherche, drapeau « manual » (LookupIndex). Lue par Swift (Tests/LyricsCoreTests/W4FixtureTests.swift) et C# (W4ParityTests). `at` = secondes après t0 ; clés déjà hachées (aucun texte).",
+ "scenarios": [
+  {
+   "name": "un choix manuel ne périme pas après 24 h, un résultat automatique oui",
+   "steps": [
+    {
+     "op": "record",
+     "key": "auto",
+     "id": 1,
+     "at": 0
+    },
+    {
+     "op": "recordManual",
+     "key": "manuel",
+     "id": 42,
+     "at": 0
+    },
+    {
+     "op": "purge",
+     "at": 86460
+    },
+    {
+     "op": "lookup",
+     "key": "auto",
+     "at": 86460,
+     "expect": null
+    },
+    {
+     "op": "manualChoice",
+     "key": "manuel",
+     "expect": 42
+    }
+   ]
+  },
+  {
+   "name": "choix manuel et résultat automatique coexistent ; le retour retire seulement le premier",
+   "steps": [
+    {
+     "op": "record",
+     "key": "k",
+     "id": 7,
+     "at": 0
+    },
+    {
+     "op": "recordManual",
+     "key": "k",
+     "id": 99,
+     "at": 0
+    },
+    {
+     "op": "manualChoice",
+     "key": "k",
+     "expect": 99
+    },
+    {
+     "op": "lookup",
+     "key": "k",
+     "at": 0,
+     "expect": "found:7"
+    },
+    {
+     "op": "removeManual",
+     "key": "k"
+    },
+    {
+     "op": "manualChoice",
+     "key": "k",
+     "expect": null
+    },
+    {
+     "op": "lookup",
+     "key": "k",
+     "at": 0,
+     "expect": "found:7"
+    },
+    {
+     "op": "remove",
+     "key": "k"
+    },
+    {
+     "op": "recordManual",
+     "key": "k",
+     "id": 5,
+     "at": 0
+    },
+    {
+     "op": "remove",
+     "key": "k"
+    },
+    {
+     "op": "manualChoice",
+     "key": "k",
+     "expect": 5
+    },
+    {
+     "op": "clear"
+    },
+    {
+     "op": "count",
+     "expect": 0
+    }
+   ]
+  },
+  {
+   "name": "un nouveau choix manuel remplace l'ancien pour la même clé",
+   "steps": [
+    {
+     "op": "recordManual",
+     "key": "k",
+     "id": 1,
+     "at": 0
+    },
+    {
+     "op": "recordManual",
+     "key": "k",
+     "id": 2,
+     "at": 10
+    },
+    {
+     "op": "manualChoice",
+     "key": "k",
+     "expect": 2
+    },
+    {
+     "op": "count",
+     "expect": 1
+    }
+   ]
+  },
+  {
+   "name": "« non trouvé » automatique ne cache pas un choix manuel",
+   "steps": [
+    {
+     "op": "recordNotFound",
+     "key": "k",
+     "at": 0
+    },
+    {
+     "op": "recordManual",
+     "key": "k",
+     "id": 8,
+     "at": 0
+    },
+    {
+     "op": "lookup",
+     "key": "k",
+     "at": 0,
+     "expect": "notFound"
+    },
+    {
+     "op": "manualChoice",
+     "key": "k",
+     "expect": 8
+    },
+    {
+     "op": "count",
+     "expect": 2
+    }
+   ]
+  },
+  {
+   "name": "200 choix manuels au plus : le plus ancien part",
+   "steps": [
+    {
+     "op": "recordManualRange",
+     "prefix": "m",
+     "from": 0,
+     "to": 205,
+     "at": 0
+    },
+    {
+     "op": "manualChoice",
+     "key": "m0",
+     "expect": null
+    },
+    {
+     "op": "manualChoice",
+     "key": "m4",
+     "expect": null
+    },
+    {
+     "op": "manualChoice",
+     "key": "m5",
+     "expect": 5
+    },
+    {
+     "op": "manualChoice",
+     "key": "m204",
+     "expect": 204
+    },
+    {
+     "op": "count",
+     "expect": 200
+    }
+   ]
+  },
+  {
+   "name": "500 entrées au plus : les automatiques anciennes partent, jamais les choix manuels",
+   "steps": [
+    {
+     "op": "recordManualRange",
+     "prefix": "m",
+     "from": 0,
+     "to": 50,
+     "at": 0
+    },
+    {
+     "op": "recordRange",
+     "prefix": "a",
+     "from": 0,
+     "to": 520,
+     "at": 0
+    },
+    {
+     "op": "count",
+     "expect": 500
+    },
+    {
+     "op": "manualChoice",
+     "key": "m0",
+     "expect": 0
+    },
+    {
+     "op": "manualChoice",
+     "key": "m49",
+     "expect": 49
+    },
+    {
+     "op": "lookup",
+     "key": "a0",
+     "at": 0,
+     "expect": null
+    },
+    {
+     "op": "lookup",
+     "key": "a69",
+     "at": 0,
+     "expect": null
+    },
+    {
+     "op": "lookup",
+     "key": "a70",
+     "at": 0,
+     "expect": "found:70"
+    },
+    {
+     "op": "lookup",
+     "key": "a519",
+     "at": 0,
+     "expect": "found:519"
+    }
+   ]
+  },
+  {
+   "name": "un résultat automatique expire après 24 h (et une date dans le futur de plus d'une minute)",
+   "steps": [
+    {
+     "op": "record",
+     "key": "a",
+     "id": 3,
+     "at": 0
+    },
+    {
+     "op": "lookup",
+     "key": "a",
+     "at": 86399,
+     "expect": "found:3"
+    },
+    {
+     "op": "lookup",
+     "key": "a",
+     "at": 86401,
+     "expect": null
+    },
+    {
+     "op": "record",
+     "key": "f",
+     "id": 4,
+     "at": 1000
+    },
+    {
+     "op": "lookup",
+     "key": "f",
+     "at": 950,
+     "expect": "found:4"
+    },
+    {
+     "op": "lookup",
+     "key": "f",
+     "at": 900,
+     "expect": null
+    }
+   ]
+  }
+ ],
+ "diskKeys": [
+  "key",
+  "lrclibID",
+  "storedAt",
+  "manual"
+ ]
+}

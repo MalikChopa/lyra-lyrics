@@ -1,0 +1,248 @@
+# Livraison Windows de Lyra Lyrics : tests du cœur, exe autonome win-x64, installateur, SHA-256, brouillon de release.
+# Déclenchement : push d'une étiquette « v* » (la release X.Y.Z) ou lancement manuel (construit et dépose l'artefact, ne touche à aucune release).
+# Rien à configurer côté dépôt : seul le jeton automatique de l'exécution est utilisé, et seulement par le job « release » (droit d'écriture sur les contenus),
+# qui ne construit ni n'exécute rien du dépôt. Le job « build » n'a que le droit de lecture.
+# La release créée est TOUJOURS un brouillon : elle est publiée à la main, après vérification des fichiers et du résumé de l'exécution.
+# Le zip Mac n'est pas construit ici : il est fabriqué et signé en local.
+name: windows-release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: windows-release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  DOTNET_NOLOGO: '1'
+  DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: '1'
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      setup_name: ${{ steps.installer.outputs.setup_name }}
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      # Les fichiers de test (Fixtures) et le script d'installation sont lus tels quels : pas de conversion de fins de ligne.
+      - name: Fins de ligne intactes
+        run: git config --global core.autocrlf false
+
+      # actions/checkout v7.0.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+
+      # actions/setup-dotnet v6.1.0
+      - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: "Version (source unique, windows/Directory.Build.props)"
+        id: version
+        env:
+          REF_TYPE: ${{ github.ref_type }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          $props = Get-Content -Raw windows/Directory.Build.props
+          if ($props -notmatch '<Version>([0-9]+\.[0-9]+\.[0-9]+)</Version>') { throw 'Version introuvable dans windows/Directory.Build.props' }
+          $v = $Matches[1]
+          if ($env:REF_TYPE -eq 'tag' -and $env:REF_NAME -ne "v$v") {
+            throw "L'étiquette $($env:REF_NAME) ne correspond pas à la version du dépôt (v$v) : version non montée, ou mauvaise étiquette."
+          }
+          "version=$v" >> $env:GITHUB_OUTPUT
+          Write-Host "Version : $v"
+          dotnet --info | Select-Object -First 8
+
+      - name: Tests du cœur (dotnet test)
+        run: dotnet test windows/LyraLyrics.Core.Tests/LyraLyrics.Core.Tests.csproj -c Release --nologo
+
+      - name: Publication (win-x64, autonome, fichier unique)
+        run: >
+          dotnet publish windows/LyraLyrics.App/LyraLyrics.App.csproj
+          -c Release -r win-x64 --self-contained true
+          -p:PublishSingleFile=true
+          -o "$env:GITHUB_WORKSPACE\publish" --nologo
+
+      - name: Contrôle de l'exe (présent, sous-système graphique, version)
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          $exe = Join-Path $env:GITHUB_WORKSPACE 'publish\LyraLyrics.exe'
+          if (-not (Test-Path $exe)) { throw "LyraLyrics.exe absent de publish\" }
+          $size = (Get-Item $exe).Length
+          if ($size -lt 10MB) { throw "LyraLyrics.exe trop petit ($size octets) : publication autonome attendue" }
+          $fs = [IO.File]::OpenRead($exe)
+          try { $buf = New-Object byte[] 4096; [void]$fs.Read($buf, 0, 4096) } finally { $fs.Dispose() }
+          $pe = [BitConverter]::ToInt32($buf, 0x3C)
+          $subsystem = [BitConverter]::ToUInt16($buf, $pe + 24 + 68)
+          if ($subsystem -ne 2) { throw "Sous-système $subsystem : 2 (fenêtre graphique) attendu, sinon une console s'ouvrirait" }
+          $info = (Get-Item $exe).VersionInfo
+          Write-Host "FileVersion=$($info.FileVersion) ProductName=$($info.ProductName) taille=$size"
+          if ($info.FileVersion -ne "$($env:VERSION).0") { throw "FileVersion $($info.FileVersion) attendu $($env:VERSION).0" }
+
+      - name: Installateur (Inno Setup)
+        id: installer
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          # Inno Setup est préinstallé sur l'image windows-latest (paquet Chocolatey « innosetup »). Recherche, puis installation de secours.
+          function Find-Iscc {
+            $c = Get-Command ISCC.exe -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty Source
+            if ($c) { return $c }
+            foreach ($pattern in @("${env:ProgramFiles(x86)}\Inno Setup*\ISCC.exe", "$env:ProgramFiles\Inno Setup*\ISCC.exe")) {
+              $f = Get-ChildItem $pattern -ErrorAction SilentlyContinue | Sort-Object FullName -Descending | Select-Object -First 1 -ExpandProperty FullName
+              if ($f) { return $f }
+            }
+            return $null
+          }
+          $iscc = Find-Iscc
+          if (-not $iscc) {
+            Write-Host 'ISCC.exe introuvable : installation de secours (choco install innosetup, source officielle Chocolatey)'
+            choco install innosetup -y --no-progress
+            if ($LASTEXITCODE -ne 0) { throw "choco install innosetup a échoué ($LASTEXITCODE)" }
+            $iscc = Find-Iscc
+          }
+          if (-not $iscc) { throw 'ISCC.exe (Inno Setup) introuvable' }
+          Write-Host "ISCC : $iscc"
+          $out = Join-Path $env:GITHUB_WORKSPACE 'dist'
+          New-Item -ItemType Directory -Force $out | Out-Null
+          & $iscc "/DAppVersion=$($env:VERSION)" "/DPublishDir=$env:GITHUB_WORKSPACE\publish" "/O$out" windows\installer\LyraLyrics.iss
+          if ($LASTEXITCODE -ne 0) { throw "ISCC a échoué ($LASTEXITCODE)" }
+          $name = "Lyra-Lyrics-$($env:VERSION)-windows-x64-setup.exe"
+          $setup = Join-Path $out $name
+          if (-not (Test-Path $setup)) { throw "$name absent de dist\ ; contenu : $((Get-ChildItem $out).Name -join ', ')" }
+          "setup_name=$name" >> $env:GITHUB_OUTPUT
+
+      - name: SHA-256 et taille
+        env:
+          SETUP_NAME: ${{ steps.installer.outputs.setup_name }}
+        run: |
+          $setup = Join-Path $env:GITHUB_WORKSPACE "dist\$($env:SETUP_NAME)"
+          $hash = (Get-FileHash -Algorithm SHA256 $setup).Hash.ToLowerInvariant()
+          $size = (Get-Item $setup).Length
+          # Format de « sha256sum -c » : « <empreinte> *<nom> »
+          [IO.File]::WriteAllText("$setup.sha256", "$hash *$($env:SETUP_NAME)`n", (New-Object Text.UTF8Encoding($false)))
+          Write-Host "$($env:SETUP_NAME) : $size octets, SHA-256 $hash"
+          @(
+            "### $($env:SETUP_NAME)",
+            "",
+            "- Taille : **$size octets**",
+            "- SHA-256 : ``$hash``"
+          ) | Add-Content -Path $env:GITHUB_STEP_SUMMARY -Encoding utf8
+
+      # actions/upload-artifact v7.0.2
+      - name: Artefact (installateur + SHA-256)
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: lyra-lyrics-windows-installer
+          path: |
+            dist/*-windows-x64-setup.exe
+            dist/*-windows-x64-setup.exe.sha256
+          if-no-files-found: error
+          retention-days: 30
+
+      # Essai de l'installateur sur le runner : installation silencieuse, contrôles, désinstallation, contrôles.
+      # Non bloquant (continue-on-error) : un faux négatif ne doit pas empêcher d'obtenir le brouillon ; le résultat est écrit dans le résumé
+      # de l'exécution et DOIT être lu avant de publier.
+      - name: Essai de l'installateur (installation et désinstallation silencieuses)
+        id: smoke
+        continue-on-error: true
+        env:
+          SETUP_NAME: ${{ steps.installer.outputs.setup_name }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $setup = Join-Path $env:GITHUB_WORKSPACE "dist\$($env:SETUP_NAME)"
+          $dir = Join-Path $env:RUNNER_TEMP 'lyra-install'
+          $log = Join-Path $env:RUNNER_TEMP 'lyra-setup.log'
+          $uKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\{318F5B4D-2FF1-4733-8750-0E7771DB70D6}_is1'
+          $runKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run'
+          $lnk = Join-Path ([Environment]::GetFolderPath('Programs')) 'Lyra Lyrics.lnk'
+          $data = Join-Path $env:APPDATA 'LyraLyrics'
+          function Check($ok, $what) { if ($ok) { Write-Host "OK  $what" } else { throw "ECHEC  $what" } }
+
+          $p = Start-Process -FilePath $setup -ArgumentList @('/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/SP-', "/DIR=$dir", "/LOG=$log") -Wait -PassThru
+          Check ($p.ExitCode -eq 0) "installation (code $($p.ExitCode))"
+          Check (Test-Path "$dir\LyraLyrics.exe") 'LyraLyrics.exe installé'
+          Check (Test-Path "$dir\unins000.exe") 'désinstallateur installé'
+          Check (Test-Path $lnk) 'raccourci du menu Démarrer'
+          Check (Test-Path $uKey) 'entrée de désinstallation (Paramètres Windows)'
+          Check (-not (Test-Path 'HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\{318F5B4D-2FF1-4733-8750-0E7771DB70D6}_is1')) 'rien sous HKLM'
+
+          # Fausses données : la désinstallation silencieuse doit garder les réglages et retirer la clé Run.
+          New-Item -ItemType Directory -Force $data | Out-Null
+          Set-Content -Path (Join-Path $data 'settings.json') -Value '{}'
+          Set-ItemProperty -Path $runKey -Name 'LyraLyrics' -Value "`"$dir\LyraLyrics.exe`""
+
+          Start-Process -FilePath "$dir\unins000.exe" -ArgumentList @('/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART') -Wait
+          # Le désinstallateur se relance depuis un dossier temporaire : on attend la disparition de l'exe (60 s au plus).
+          $t = 0; while ((Test-Path "$dir\LyraLyrics.exe") -and $t -lt 60) { Start-Sleep -Seconds 1; $t++ }
+          Start-Sleep -Seconds 2
+          Check (-not (Test-Path "$dir\LyraLyrics.exe")) 'LyraLyrics.exe supprimé'
+          Check (-not (Test-Path $lnk)) 'raccourci supprimé'
+          Check (-not (Test-Path $uKey)) 'entrée de désinstallation supprimée'
+          Check ($null -eq (Get-ItemProperty -Path $runKey -Name 'LyraLyrics' -ErrorAction SilentlyContinue)) 'clé Run supprimée'
+          Check (Test-Path (Join-Path $data 'settings.json')) 'réglages conservés (désinstallation silencieuse)'
+          Remove-Item -Recurse -Force $data
+
+      - name: Résultat de l'essai de l'installateur
+        if: always()
+        env:
+          SMOKE: ${{ steps.smoke.outcome }}
+        run: |
+          $line = "Essai de l'installateur sur le runner : **$($env:SMOKE)** (success = installation et désinstallation conformes ; failure = lire le journal de l'étape « Essai de l'installateur »)"
+          Write-Host $line
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Value @("", $line)
+          $log = Join-Path $env:RUNNER_TEMP 'lyra-setup.log'
+          if ($env:SMOKE -ne 'success' -and (Test-Path $log)) { Get-Content $log -Tail 40 }
+
+  release:
+    # Brouillon de release pour l'étiquette poussée (jamais publié ici). Pas de lancement manuel : seulement sur étiquette « v* ».
+    needs: build
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      # actions/download-artifact v8.0.2
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        with:
+          name: lyra-lyrics-windows-installer
+          path: dist
+
+      - name: Vérification de l'artefact puis brouillon de release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ github.ref_name }}
+          VERSION: ${{ needs.build.outputs.version }}
+          SETUP_NAME: ${{ needs.build.outputs.setup_name }}
+        run: |
+          set -euo pipefail
+          [ "$TAG" = "v$VERSION" ] || { echo "étiquette $TAG ≠ v$VERSION" >&2; exit 1; }
+          cd dist
+          ls -l
+          sha256sum -c "$SETUP_NAME.sha256"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            DRAFT="$(gh release view "$TAG" --json isDraft --jq .isDraft)"
+            [ "$DRAFT" = "true" ] || { echo "La release $TAG est déjà publiée : aucune modification automatique." >&2; exit 1; }
+            echo "Brouillon $TAG existant : fichiers remplacés."
+          else
+            gh release create "$TAG" --draft --verify-tag --title "Lyra Lyrics $VERSION" \
+              --notes "Brouillon créé par la CI : notes à compléter puis publier à la main. / Draft created by CI: complete the notes, then publish by hand."
+          fi
+          gh release upload "$TAG" "$SETUP_NAME" "$SETUP_NAME.sha256" --clobber
+          gh release view "$TAG" --json isDraft,assets --jq '"brouillon=\(.isDraft) fichiers=\([.assets[].name] | join(", "))"'

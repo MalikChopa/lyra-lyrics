@@ -20,6 +20,10 @@ public struct RequestGate: Sendable {
     public static let defaultRateLimitWait = 30.0
     public static let defaultServerRetryWait = 2.0
     public static let breakerPauses: [Double] = [10, 20, 40, 60, 120]
+    /// Plafond d'un `Retry-After` (W2, identique sur Windows) : 300 s. Le serveur reste respecté (bien au-delà du disjoncteur, 120 s au plus),
+    /// mais un `Retry-After: 86400` ou une date lointaine ne ferme plus la porte de toute l'app pour des heures : après 5 min on retente,
+    /// et un nouveau 429 refermerait la porte pour 5 min de plus (une requête, pas une rafale).
+    public static let maxRetryAfter = 300.0
 
     public enum ClosedReason: String, Sendable, Equatable { case rateLimited, breaker }
 
@@ -162,7 +166,7 @@ public struct RequestGate: Sendable {
             consecutiveFailures += 1
             breakerTrips += 1                      // compte dans le disjoncteur
             rateLimitRetries += 1
-            let wait = (retryAfter ?? Self.defaultRateLimitWait) + random()
+            let wait = min(max(0, retryAfter ?? Self.defaultRateLimitWait), Self.maxRetryAfter) + random()
             closedUntil = now + wait; closedReason = .rateLimited; notBefore = now + wait
             return rateLimitRetries > 1 ? .giveUp(.rateLimitedAgain) : .retry(after: wait)
         case .serverError(_, let retryAfter):
@@ -181,14 +185,14 @@ public struct RequestGate: Sendable {
         serverRetries += 1
         if titlesBeforeBreaker > 1 {
             if serverRetries < Self.maxServerAttempts {             // 3 essais au plus par tentative
-                let wait = retryAfter ?? (Self.defaultServerRetryWait + random())
+                let wait = retryAfter.map { min(max(0, $0), Self.maxRetryAfter) } ?? (Self.defaultServerRetryWait + random())
                 notBefore = now + wait
                 return .retry(after: wait)
             }
             if !titleFailureCounted { failedTitlesInARow += 1; titleFailureCounted = true }
             if failedTitlesInARow < titlesBeforeBreaker { return .giveUp(.serverErrors) }   // la porte reste ouverte
         } else if breakerTrips == 0 && serverRetries == 1 {
-            let wait = retryAfter ?? (Self.defaultServerRetryWait + random())
+            let wait = retryAfter.map { min(max(0, $0), Self.maxRetryAfter) } ?? (Self.defaultServerRetryWait + random())
             notBefore = now + wait
             return .retry(after: wait)
         }
@@ -200,16 +204,20 @@ public struct RequestGate: Sendable {
 
     // MARK: Retry-After
 
-    /// `Retry-After` en secondes (entier ou décimal) ou en date HTTP (IMF-fixdate, RFC 850, asctime) → secondes d'attente.
+    /// `Retry-After` en secondes (entier ou décimal, signe et exposant admis) ou en date HTTP (IMF-fixdate, RFC 850, asctime) → secondes
+    /// d'attente, bornées à [0, `maxRetryAfter`]. « inf », « nan », hexadécimal et tout texte illisible → `nil` (W2 : plus de porte fermée à l'infini).
     public static func parseRetryAfter(_ value: String?, now: Date) -> Double? {
         guard let v = value?.trimmingCharacters(in: .whitespacesAndNewlines), !v.isEmpty else { return nil }
-        if let seconds = Double(v) { return max(0, seconds) }
+        if v.wholeMatch(of: /[+-]?(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?/) != nil {
+            guard let seconds = Double(v) else { return nil }
+            return min(max(0, seconds), maxRetryAfter)     // « 1e999 » (infini par débordement) → plafond ; « inf » et « nan » ne passent pas l'expression
+        }
         let f = DateFormatter()
         f.locale = Locale(identifier: "en_US_POSIX")
         f.timeZone = TimeZone(identifier: "GMT")
         for format in ["EEE, dd MMM yyyy HH:mm:ss zzz", "EEEE, dd-MMM-yy HH:mm:ss zzz", "EEE MMM d HH:mm:ss yyyy"] {
             f.dateFormat = format
-            if let date = f.date(from: v) { return max(0, date.timeIntervalSince(now)) }
+            if let date = f.date(from: v) { return min(max(0, date.timeIntervalSince(now)), maxRetryAfter) }
         }
         return nil
     }

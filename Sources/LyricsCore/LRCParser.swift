@@ -1,7 +1,7 @@
 import Foundation
 
 /// Analyseur LRC (§3.2) : `[mm:ss.xx]` / `[mm:ss.xxx]` / `[mm:ss]`, plusieurs horodatages par ligne, `[offset:±ms]`,
-/// métadonnées (`[ar:…]`, `[ti:…]`…) ignorées, BOM, CRLF, lignes vides (→ « ♪ »), désordre (tri stable), balises mot à mot
+/// métadonnées (`[ar:…]`, `[ti:…]`…) ignorées, indentation devant les balises tolérée, BOM, CRLF, lignes vides (→ « ♪ »), désordre (tri stable), balises mot à mot
 /// `<mm:ss.xx>` retirées. Fichier vide ou corrompu → aucune ligne.
 public enum LRCParser {
     public struct Result: Sendable, Equatable {
@@ -29,7 +29,8 @@ public enum LRCParser {
         var entries: [Entry] = []
 
         for (order, rawLine) in normalized.split(separator: "\n", omittingEmptySubsequences: false).enumerated() {
-            var rest = Substring(rawLine)
+            // W2 (audit constat 22) : une ligne indentée (« ␠␠[00:30.00] texte », tabulation, espace insécable) est acceptée, comme sur Windows.
+            var rest = Substring(rawLine).drop(while: { $0 == " " || $0 == "\t" || $0 == "\u{00A0}" })
             var times: [Double] = []
             while let tag = leadingTag(rest) {
                 if let t = timestamp(tag.content) {

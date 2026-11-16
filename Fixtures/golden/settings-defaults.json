@@ -1,0 +1,174 @@
+{
+ "comment": "W3 : réglages communs Mac / Windows, lus par SettingsParityTests (Swift) et SettingsParityTests (C#). 'common' : champ -> valeur par défaut de l'encodage (null = champ absent du JSON écrit). Les énumérations se comparent sans tenir compte de la casse (Mac camelCase, Windows PascalCase). 'sameKeyOwnDefault' : clé présente des deux côtés, valeur propre à la plateforme. 'macOnly' / 'windowsOnly' : clés d'une seule plateforme. 'decode' : entrée JSON -> issue + champs attendus après décodage puis ré-encodage.",
+ "common": {
+  "version": 2,
+  "style": "glass",
+  "size": 26,
+  "backgroundOpacity": 38,
+  "font": "system",
+  "colorIndex": 0,
+  "clickThrough": false,
+  "lineCount": 3,
+  "fontWeight": "bold",
+  "glow": false,
+  "neighbourRatio": 0.66,
+  "artworkColors": true,
+  "windowWidth": null,
+  "windowHeight": null,
+  "position": null,
+  "welcomeSeen": false,
+  "launchAtLogin": false,
+  "autoHide": "idle",
+  "checkUpdates": true,
+  "lastUpdateCheck": null,
+  "sceneScreen": "window",
+  "sceneEffects": true,
+  "animatedBackground": false,
+  "karaokeFill": false,
+  "sceneLayout": "withArtwork"
+ },
+ "sameKeyOwnDefault": [
+  "hotKey"
+ ],
+ "macOnly": [
+  "showsDockIcon"
+ ],
+ "windowsOnly": [
+  "systemBackdrop",
+  "indexSalt"
+ ],
+ "decode": [
+  {
+   "name": "objet vide : tous les défauts",
+   "input": "{}",
+   "outcome": "ok",
+   "expect": {
+    "welcomeSeen": false,
+    "autoHide": "idle",
+    "checkUpdates": true,
+    "sceneScreen": "window",
+    "sceneEffects": true,
+    "animatedBackground": false,
+    "karaokeFill": false,
+    "sceneLayout": "withArtwork",
+    "size": 26,
+    "version": 2
+   }
+  },
+  {
+   "name": "champ inconnu ignoré, le reste lu",
+   "input": "{\"futur\":1,\"size\":30,\"nouveau\":{\"a\":[1,2]}}",
+   "outcome": "ok",
+   "expect": {
+    "size": 30,
+    "autoHide": "idle",
+    "welcomeSeen": false
+   }
+  },
+  {
+   "name": "types faux : valeur par défaut champ par champ",
+   "input": "{\"version\":2,\"welcomeSeen\":\"oui\",\"autoHide\":7,\"checkUpdates\":\"non\",\"sceneScreen\":5,\"sceneLayout\":\"inconnu\",\"karaokeFill\":3,\"sceneEffects\":null,\"animatedBackground\":[],\"launchAtLogin\":\"x\",\"lastUpdateCheck\":\"hier\",\"size\":31}",
+   "outcome": "ok",
+   "expect": {
+    "welcomeSeen": false,
+    "autoHide": "idle",
+    "checkUpdates": true,
+    "sceneScreen": "window",
+    "sceneLayout": "withArtwork",
+    "karaokeFill": false,
+    "sceneEffects": true,
+    "animatedBackground": false,
+    "launchAtLogin": false,
+    "lastUpdateCheck": null,
+    "size": 31
+   }
+  },
+  {
+   "name": "valeurs hors plage ramenées dans la plage",
+   "input": "{\"version\":2,\"size\":999,\"backgroundOpacity\":-5,\"lineCount\":4,\"colorIndex\":9,\"neighbourRatio\":3}",
+   "outcome": "ok",
+   "expect": {
+    "size": 44,
+    "backgroundOpacity": 0,
+    "lineCount": 5,
+    "colorIndex": 4,
+    "neighbourRatio": 0.85
+   }
+  },
+  {
+   "name": "version 1 : le karaoké est ramené à désactivé, le reste est conservé",
+   "input": "{\"version\":1,\"karaokeFill\":true,\"welcomeSeen\":true,\"autoHide\":\"never\"}",
+   "outcome": "ok",
+   "expect": {
+    "karaokeFill": false,
+    "welcomeSeen": true,
+    "autoHide": "never",
+    "version": 2
+   }
+  },
+  {
+   "name": "sans version : idem version 1",
+   "input": "{\"karaokeFill\":true,\"checkUpdates\":false}",
+   "outcome": "ok",
+   "expect": {
+    "karaokeFill": false,
+    "checkUpdates": false
+   }
+  },
+  {
+   "name": "version 2 : le karaoké choisi est gardé",
+   "input": "{\"version\":2,\"karaokeFill\":true}",
+   "outcome": "ok",
+   "expect": {
+    "karaokeFill": true,
+    "version": 2
+   }
+  },
+  {
+   "name": "champs 1.1.0 tous renseignés",
+   "input": "{\"version\":2,\"welcomeSeen\":true,\"launchAtLogin\":true,\"autoHide\":\"paused\",\"checkUpdates\":false,\"lastUpdateCheck\":1790000000.5,\"sceneScreen\":\"name:Écran 2\",\"sceneEffects\":false,\"animatedBackground\":true,\"karaokeFill\":true,\"sceneLayout\":\"lyricsOnly\"}",
+   "outcome": "ok",
+   "expect": {
+    "welcomeSeen": true,
+    "launchAtLogin": true,
+    "autoHide": "paused",
+    "checkUpdates": false,
+    "lastUpdateCheck": 1790000000.5,
+    "sceneScreen": "name:Écran 2",
+    "sceneEffects": false,
+    "animatedBackground": true,
+    "karaokeFill": true,
+    "sceneLayout": "lyricsOnly"
+   }
+  },
+  {
+   "name": "version plus récente : défauts, rien n'est interprété",
+   "input": "{\"version\":9,\"size\":30,\"welcomeSeen\":true}",
+   "outcome": "newerVersion",
+   "expect": {
+    "size": 26,
+    "welcomeSeen": false,
+    "version": 2
+   }
+  },
+  {
+   "name": "JSON illisible : défauts",
+   "input": "{pas du json",
+   "outcome": "corrupt",
+   "expect": {
+    "size": 26,
+    "welcomeSeen": false,
+    "version": 2
+   }
+  },
+  {
+   "name": "racine qui n'est pas un objet : défauts",
+   "input": "[1,2,3]",
+   "outcome": "corrupt",
+   "expect": {
+    "size": 26,
+    "version": 2
+   }
+  }
+ ]
+}

@@ -1,0 +1,47 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <AssemblyName>LyraLyrics</AssemblyName>
+    <RootNamespace>LyraLyrics.App</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>AppIcon.ico</ApplicationIcon>
+    <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
+    <AssemblyTitle>Lyra Lyrics</AssemblyTitle>
+    <Product>Lyra Lyrics</Product>
+    <Company>Lyra Lyrics</Company>
+    <Description>Les paroles de Spotify dans une petite fenêtre flottante</Description>
+    <Copyright>MIT</Copyright>
+    <!-- Ressources de version de l'exe (propriétés de fichier) : Version vient de windows/Directory.Build.props. -->
+    <FileVersion>$(Version).0</FileVersion>
+    <AssemblyVersion>$(Version).0</AssemblyVersion>
+    <!-- WFO0003 : l'analyseur WinForms voudrait retirer les paramètres DPI du manifeste ; WPF a besoin de ce manifeste (Per-Monitor-V2). -->
+    <NoWarn>$(NoWarn);WFO0003</NoWarn>
+    <!-- Publication : exe autonome. Les bibliothèques natives de WPF sont extraites au premier lancement (IncludeNativeLibrariesForSelfExtract). -->
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+    <SatelliteResourceLanguages>fr;en</SatelliteResourceLanguages>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Même icône que celle de l'exe, lue par AppIcon.cs (fenêtres, zone de notification). -->
+    <EmbeddedResource Include="AppIcon.ico" LogicalName="AppIcon.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\LyraLyrics.Core\LyraLyrics.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Évite les ambiguïtés WPF / WinForms : les types WinForms et Drawing sont écrits en toutes lettres dans TrayService. -->
+    <Using Include="System" />
+    <Using Include="System.Collections.Generic" />
+    <Using Include="System.IO" />
+    <Using Include="System.Linq" />
+    <Using Include="System.Threading" />
+    <Using Include="System.Threading.Tasks" />
+  </ItemGroup>
+</Project>

@@ -64,7 +64,7 @@ public enum TrackMatcher {
     /// Artistes séparés (« a / b », « a, b », « a & b », « a x b », « a feat. b ») → jetons normalisés.
     public static func artistTokens(_ raw: String) -> Set<String> {
         let s = normalizeArtist(raw)
-        let parts = s.split(separator: /\s*(\/|,|;|\+|\band\b|\bx\b|\bfeat\.?\b|\bfeaturing\b|\bft\.?\b|\bvs\.?\b)\s*/)
+        let parts = s.split(separator: /\s*(\/|,|;|\+|\band\b|\bx\b|\bfeat(?:\.|\b)|\bfeaturing\b|\bft(?:\.|\b)|\bvs(?:\.|\b))\s*/)
         return Set(parts.map { artistToken(String($0)) }.filter { !$0.isEmpty })
     }
 
