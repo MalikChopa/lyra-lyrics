@@ -93,6 +93,39 @@ jobs:
           Write-Host "FileVersion=$($info.FileVersion) ProductName=$($info.ProductName) taille=$size"
           if ($info.FileVersion -ne "$($env:VERSION).0") { throw "FileVersion $($info.FileVersion) attendu $($env:VERSION).0" }
 
+      # Captures d’écran pour le contrôle de la version. Le mode caché `--snapshot <dossier>` rend la petite fenêtre et la Scène
+      # hors écran avec du contenu INVENTÉ (aucun réseau, aucun fichier hors du dossier) puis s'arrête. NON BLOQUANT : si WPF ne sait pas dessiner
+      # sur un exécuteur sans bureau interactif (non vérifié), l'étape échoue sans rien changer ; elle ne touche ni l'installateur ni la release.
+      # Le rapport (snapshot-rapport.txt) est recopié dans le journal de l'étape ; les PNG partent dans un artefact SÉPARÉ.
+      - name: Captures d'écran de contrôle (non bloquant)
+        id: captures
+        continue-on-error: true
+        timeout-minutes: 5
+        run: |
+          $dir = Join-Path $env:RUNNER_TEMP 'lyra-captures'
+          New-Item -ItemType Directory -Force $dir | Out-Null
+          $exe = Join-Path $env:GITHUB_WORKSPACE 'publish\LyraLyrics.exe'
+          $p = Start-Process -FilePath $exe -ArgumentList @('--snapshot', "`"$dir`"") -PassThru
+          if (-not $p.WaitForExit(180000)) { try { $p.Kill() } catch { }; throw "délai de 180 s dépassé : le mode captures n'a pas rendu la main" }
+          Write-Host "code de sortie $($p.ExitCode)"
+          $report = Join-Path $dir 'snapshot-rapport.txt'
+          if (Test-Path $report) { Get-Content $report } else { Write-Host 'aucun rapport écrit' }
+          Get-ChildItem $dir -Filter *.png | ForEach-Object { Write-Host ("{0}  {1} octets" -f $_.Name, $_.Length) }
+          if ($p.ExitCode -ne 0) { throw "le mode captures a échoué (code $($p.ExitCode)) : lire le rapport ci-dessus" }
+
+      # actions/upload-artifact v7.0.2 (même version épinglée que l'artefact de l'installateur)
+      - name: Artefact (captures d'écran)
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: lyra-lyrics-windows-captures
+          path: |
+            ${{ runner.temp }}/lyra-captures/*.png
+            ${{ runner.temp }}/lyra-captures/snapshot-rapport.txt
+          if-no-files-found: ignore
+          retention-days: 14
+
       - name: Installateur (Inno Setup)
         id: installer
         env:
@@ -184,6 +217,7 @@ jobs:
           # Fausses données : la désinstallation silencieuse doit garder les réglages et retirer la clé Run.
           New-Item -ItemType Directory -Force $data | Out-Null
           Set-Content -Path (Join-Path $data 'settings.json') -Value '{}'
+          New-Item -Path $runKey -Force -ErrorAction SilentlyContinue | Out-Null   # la clé Run n'existe pas sur le runner (vu au run 43881901985)
           Set-ItemProperty -Path $runKey -Name 'LyraLyrics' -Value "`"$dir\LyraLyrics.exe`""
 
           Start-Process -FilePath "$dir\unins000.exe" -ArgumentList @('/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART') -Wait

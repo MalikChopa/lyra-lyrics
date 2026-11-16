@@ -17,9 +17,14 @@ Lance un morceau dans Spotify ou Apple Music (l'app Musique, Mac seulement). Lyr
 
 Pas de compte, pas de connexion, pas de serveur à nous : l'app parle à ton lecteur de musique et à lrclib.net, plus (une fois par jour au plus, désactivable) à GitHub pour savoir si une nouvelle version existe. Voir [Vie privée](#vie-privée).
 
-**Mac et Windows.** La version Mac est complète (Spotify et Apple Music, Scène plein écran). La version **Windows est une bêta** : Spotify seulement, **sans la Scène** (prévue en 1.3.0), et elle n'avait **jamais tourné sur un vrai PC** avant sa publication. Voir [Windows (bêta)](#windows-bêta).
+**Mac et Windows.** La version Mac est complète (Spotify et Apple Music, Scène plein écran). La version **Windows est une bêta** : Spotify seulement ; la Scène plein écran y arrive en 1.3.0 ; elle n'avait **jamais tourné sur un vrai PC** avant sa publication. Voir [Windows (bêta)](#windows-bêta).
 
 ## Fonctions
+
+### Nouveautés de la 1.3.0
+
+- **La Scène plein écran arrive sur Windows (bêta)** : mêmes réglages et mêmes règles que sur Mac (écran au choix, mise en page « Avec la pochette » ou « Paroles seules », carte du titre, passages sans paroles animés, grain et vignette, barre de commandes avec Espace, flèches et Échap, sortie des lignes mot à mot) ; double-clic sur la petite fenêtre, bouton plein écran de la barre ou menu de l'icône. Aussi sur Windows : fond de pochette animé et remplissage karaoké en option (désactivés par défaut). Rendu jamais vu sur un vrai PC avant la publication.
+- Mac : aucune fonction nouvelle ; le numéro suit celui de Windows (une version commune).
 
 ### Nouveautés de la 1.2.0
 
@@ -129,7 +134,9 @@ La version Windows est une **bêta** : elle est complète pour l'essentiel, mais
 
 **Ce qu'elle fait** : la même petite fenêtre toujours au-dessus (déplaçable, redimensionnable à la souris, texte qui s'adapte) ; Spotify seulement, lu par le contrôle multimédia de Windows (**rien à autoriser**) ; paroles synchronisées sur une, trois ou cinq lignes avec défilement doux, ou bloc non synchronisé qui défile ; trois fonds (uni, verre, transparent), thèmes de police, couleurs tirées de la pochette (lue localement, jamais téléchargée), décalage manuel de −5 s à +5 s ; boutons précédent, lecture/pause, suivant ; mode clic-à-travers ; raccourci global **Ctrl+Alt+Maj+L** (modifiable) ; icône dans la zone de notification ; écran d'accueil ; masquage automatique (quand rien ne joue par défaut) ; lancement au démarrage de Windows (case à cocher) ; « Mauvaises paroles ? » (recherche LRCLIB et choix d'une autre version, retenu pour ce morceau) ; avis de nouvelle version (une requête par jour au plus, désactivable) ; « Copier le diagnostic » dans le menu de l'icône.
 
-**Ce qu'elle n'a pas (encore)** : la **Scène** plein écran (prévue en 1.3.0), le fond de pochette animé, le remplissage façon karaoké, Apple Music et les autres lecteurs, une interface dans une autre langue. Le style « Verre » n'est qu'un dégradé teinté sans flou ; une option expérimentale « Flou du système » (Windows 11, désactivée par défaut) existe mais n'a jamais été essayée sur un vrai écran.
+**Depuis la 1.3.0** : la **Scène** plein écran, le fond de pochette animé et le remplissage façon karaoké (ces deux derniers désactivés par défaut), comme sur Mac.
+
+**Ce qu'elle n'a pas (encore)** : Apple Music et les autres lecteurs, une interface dans une autre langue. Le style « Verre » n'est qu'un dégradé teinté sans flou ; une option expérimentale « Flou du système » (Windows 11, désactivée par défaut) existe mais n'a jamais été essayée sur un vrai écran.
 
 **Ce qu'elle écrit sur ton disque**
 - `%APPDATA%\LyraLyrics\` : `settings.json` (tes réglages), `lookup-index.json` (index de recherche sans aucun texte : clés brouillées, identifiants LRCLIB), `lyra.log` (journal sans titres, sans paroles ni identifiants LRCLIB, 256 Ko puis rotation).
@@ -211,7 +218,7 @@ L'app WPF ne s'exécute que sous Windows. L'installateur est un script Inno Setu
 - **Niveau de test** : la logique est couverte par des tests unitaires et par des essais automatiques avec un lecteur et un serveur simulés. Les vrais lecteurs ont été essayés sur un seul Mac (macOS 27). La synchro a été vérifiée **à l'oreille** sur Spotify par l'auteur, sans mesure chiffrée. Les chiffres de processeur viennent d'un lecteur simulé sur un Mac.
 - Non notariée : macOS te demande de confirmer le premier lancement.
 - **Windows (bêta) : jamais essayée sur un vrai PC avant sa publication.** L'installateur, le raccourci, la désinstallation, l'affichage de la fenêtre (fond, clic-à-travers, redimensionnement, plusieurs écrans, mise à l'échelle), la détection de Spotify par le contrôle multimédia (y compris la version du Microsoft Store), le raccourci global, l'icône de notification, le lancement au démarrage et la vérification de mise à jour ne sont vérifiés que par des tests sur Mac et par la lecture du code ; le workflow CI qui construit l'installateur n'avait jamais tourné avant la première release.
-- **Windows : sans la Scène** (1.3.0), **Spotify seulement**, installateur **non signé** (SmartScreen, voir [Installation](#installation)), publicités Spotify traitées comme « Rien en lecture » par une heuristique non vérifiée, Windows sur Arm non vérifié.
+- **Windows : Scène jamais vue sur un vrai écran** avant la 1.3.0 (rendu vérifié seulement par compilation et, si l'exécuteur de GitHub sait dessiner, par des captures faites avec des paroles inventées) ; **Spotify seulement**, installateur **non signé** (SmartScreen, voir [Installation](#installation)), publicités Spotify traitées comme « Rien en lecture » par une heuristique non vérifiée, Windows sur Arm non vérifié.
 
 ## Crédits et droits
 

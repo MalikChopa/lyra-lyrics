@@ -30,6 +30,7 @@ internal sealed class AppController : IDisposable
     private WelcomeWindow? _welcome;
     private ManualSearchWindow? _manualWindow;
     private LyricsWindow _window;
+    private readonly SceneController _scene;
     private SettingsWindow? _settingsWindow;
     private AboutWindow? _aboutWindow;
     private bool _lastBackdrop;
@@ -55,6 +56,7 @@ internal sealed class AppController : IDisposable
         _lastBackdrop = _store.Current.SystemBackdrop;
         _lastHotKey = _store.Current.HotKey;
         _window = CreateWindow();
+        _scene = new SceneController(_model, _store, () => _window) { Exited = EvaluateAutoHide, Playback = cmd => _ = SendPlaybackAsync(cmd) };
         _diagnostics = new Diagnostics(() => _window, _smtc, _store) { TrayVisible = () => _tray.IconVisible };
 
         _hotKey.Pressed += () => _ui.BeginInvoke(OnHotKey);
@@ -63,6 +65,8 @@ internal sealed class AppController : IDisposable
         _tray.State = () => (_window.IsVisible, _store.Current.ClickThrough);
         _tray.ToggleVisibility += () => _ui.BeginInvoke(ToggleVisibility);
         _tray.ToggleClickThrough += () => _ui.BeginInvoke(() => SetClickThrough(!_store.Current.ClickThrough));
+        _tray.ToggleScene += () => _ui.BeginInvoke(_scene.Toggle);
+        _tray.SceneActive = () => _scene.IsActive;
         _tray.OpenSettings += () => _ui.BeginInvoke(ShowSettings);
         _tray.OpenAbout += () => _ui.BeginInvoke(ShowAbout);
         _tray.OpenWelcome += () => _ui.BeginInvoke(ShowWelcome);
@@ -140,6 +144,7 @@ internal sealed class AppController : IDisposable
     private void EvaluateAutoHide()
     {
         if (_disposed || _evaluatingAutoHide || _welcomeOpen) return;
+        if (_scene?.IsActive == true) return;            // comme le Mac : le masquage automatique attend la sortie de la Scène (Exited le relance)
         var wait = AutoHideState.GraceWait(Clock.Seconds(), _graceUntil);
         if (wait > 0) { _graceTimer.Stop(); _graceTimer.Interval = TimeSpan.FromSeconds(wait); _graceTimer.Start(); return; }
         _evaluatingAutoHide = true;
@@ -201,7 +206,7 @@ internal sealed class AppController : IDisposable
     {
         var w = new LyricsWindow(_model, _store, _store.Current.SystemBackdrop)
         {
-            OpenSettings = ShowSettings, OpenAbout = ShowAbout, OpenManualSearch = ShowManualSearch, Playback = cmd => _ = SendPlaybackAsync(cmd),
+            OpenSettings = ShowSettings, OpenAbout = ShowAbout, OpenManualSearch = ShowManualSearch, OpenScene = () => _scene?.Toggle(), Playback = cmd => _ = SendPlaybackAsync(cmd),
         };
         return w;
     }
@@ -240,6 +245,7 @@ internal sealed class AppController : IDisposable
     /// <summary>Une seconde instance a été lancée (A3, comme sur le Mac) : on coupe le clic-à-travers, on montre la fenêtre ET on ouvre les réglages.</summary>
     public void ShowFromOtherInstance()
     {
+        if (_scene.IsActive) { _scene.Exit(); return; }
         if (_store.Current.ClickThrough) _store.Update(s => s.ClickThrough = false);
         _window.ShowFloating();
         _autoHide.ManualChange(_window.IsVisible);
@@ -248,6 +254,7 @@ internal sealed class AppController : IDisposable
 
     private void ToggleVisibility()
     {
+        if (_scene.IsActive) { _scene.Exit(); return; }          // clic sur l'icône de notification pendant la Scène : on en sort
         if (_window.IsVisible) _window.HideFloating(); else { if (!_window.IsLoaded) _window.Show(); _window.ShowFloating(); }
         _autoHide.ManualChange(_window.IsVisible);       // jamais défait par le masquage automatique
     }
@@ -261,6 +268,7 @@ internal sealed class AppController : IDisposable
     /// <summary>Raccourci global : coupe le clic-à-travers et montre la fenêtre (comme sur le Mac) ; sinon cache / montre.</summary>
     private void OnHotKey()
     {
+        if (_scene.IsActive) { _scene.Exit(); return; }          // le raccourci global est aussi une sortie de la Scène (comme le Mac)
         if (_store.Current.ClickThrough)
         {
             _store.Update(s => s.ClickThrough = false);
@@ -285,7 +293,7 @@ internal sealed class AppController : IDisposable
         {
             TryHotKey = c => { var ok = _hotKey.Register(c); _settingsWindow!.HotKeyError = _hotKey.LastError; if (ok) _lastHotKey = c; return ok; },
             ResetSize = () => _window.ResetSize(),
-            OpenAbout = ShowAbout, OpenManualSearch = ShowManualSearch, OpenWelcome = ShowWelcome, OpenUpdate = OpenUpdatePage,
+            OpenAbout = ShowAbout, OpenManualSearch = ShowManualSearch, OpenWelcome = ShowWelcome, OpenUpdate = OpenUpdatePage, OpenScene = () => _scene.Toggle(),
         };
         _settingsWindow.Show();
     }
@@ -328,6 +336,7 @@ internal sealed class AppController : IDisposable
         _disposed = true;
         Microsoft.Win32.SystemEvents.DisplaySettingsChanged -= OnDisplaySettingsChanged;
         _graceTimer.Stop();
+        _scene.Dispose();
         SystemPrefs.Stop();
         _diagnostics.Dispose();
         try { _store.SaveNow(); } catch { }

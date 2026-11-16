@@ -1,0 +1,6495 @@
+{
+ "description": "W6c+d : finitions de la Scène (karaokeSpec, FillMask, desiredGap, carte du titre, barre de commandes, sortie de ligne, repli d'écran) produites par scene-generator.py. ORDONNÉES VERS LE BAS. Lu par C# (W6cdParityTests) et par une transcription Swift (SceneFixtureTests) : ces formules vivent dans l'app Mac (AppModel, SceneView, SceneExtras, FillMask), hors de portée des tests. « particleBudget » : naissance 3,4/s × vie 8 s. Le repli d'écran (screenFallback) n'existe que côté Windows (le Mac n'a pas de cas équivalent) : lu par C# seulement.",
+ "tolerance": 1e-09,
+ "karaoke": [
+  {
+   "song": "song",
+   "lines": [
+    {
+     "time": 0,
+     "text": "Une"
+    },
+    {
+     "time": 2.8,
+     "text": "Deux"
+    },
+    {
+     "time": 30,
+     "text": "Trois"
+    },
+    {
+     "time": 31,
+     "text": "Quatre ligne"
+    },
+    {
+     "time": 31.5,
+     "text": "Cinq"
+    }
+   ],
+   "index": -1,
+   "position": 1.0,
+   "playing": true,
+   "enabled": true,
+   "reduceMotion": false,
+   "expected": null
+  },
+  {
+   "song": "song",
+   "lines": [
+    {
+     "time": 0,
+     "text": "Une"
+    },
+    {
+     "time": 2.8,
+     "text": "Deux"
+    },
+    {
+     "time": 30,
+     "text": "Trois"
+    },
+    {
+     "time": 31,
+     "text": "Quatre ligne"
+    },
+    {
+     "time": 31.5,
+     "text": "Cinq"
+    }
+   ],
+   "index": -1,
+   "position": 4.0,
+   "playing": false,
+   "enabled": true,
+   "reduceMotion": false,
+   "expected": null
+  },
+  {
+   "song": "song",
+   "lines": [
+    {
+     "time": 0,
+     "text": "Une"
+    },
+    {
+     "time": 2.8,
+     "text": "Deux"
+    },
+    {
+     "time": 30,
+     "text": "Trois"
+    },
+    {
+     "time": 31,
+     "text": "Quatre ligne"
+    },
+    {
+     "time": 31.5,
+     "text": "Cinq"
+    }
+   ],
+   "index": -1,
+   "position": 4.0,
+   "playing": true,
+   "enabled": false,
+   "reduceMotion": false,
+   "expected": null
+  },
+  {
+   "song": "song",
+   "lines": [
+    {
+     "time": 0,
+     "text": "Une"
+    },
+    {
+     "time": 2.8,
+     "text": "Deux"
+    },
+    {
+     "time": 30,
+     "text": "Trois"
+    },
+    {
+     "time": 31,
+     "text": "Quatre ligne"
+    },
+    {
+     "time": 31.5,
+     "text": "Cinq"
+    }
+   ],
+   "index": -1,
+   "position": 4.0,
+   "playing": true,
+   "enabled": true,
+   "reduceMotion": true,
+   "expected": null
+  },
+  {
+   "song": "song",
+   "lines": [
+    {
+     "time": 0,
+     "text": "Une"
+    },
+    {
+     "time": 2.8,
+     "text": "Deux"
+    },
+    {
+     "time": 30,
+     "text": "Trois"
+    },
+    {
+     "time": 31,
+     "text": "Quatre ligne"
+    },
+    {
+     "time": 31.5,
+     "text": "Cinq"
+    }
+   ],
+   "index": 0,
+   "position": 1.0,
+   "playing": true,
+   "enabled": true,
+   "reduceMotion": false,
+   "expected": {
+    "duration": 2.576,
+    "fraction": 0.38819875776397517,
+    "playing": true
+   }
+  },
+  {
+   "song": "song",
+   "lines": [
+    {
+     "time": 0,
+     "text": "Une"
+    },
+    {
+     "time": 2.8,
+     "text": "Deux"
+    },
+    {
+     "time": 30,
+     "text": "Trois"
+    },
+    {
+     "time": 31,
+     "text": "Quatre ligne"
+    },
+    {
+     "time": 31.5,
+     "text": "Cinq"
+    }
+   ],
+   "index": 0,
+   "position": 4.0,
+   "playing": false,
+   "enabled": true,
+   "reduceMotion": false,
+   "expected": {
+    "duration": 2.576,
+    "fraction": 1.0,
+    "playing": false
+   }
+  },
+  {
+   "song": "song",
+   "lines": [
+    {
+     "time": 0,
+     "text": "Une"
+    },
+    {
+     "time": 2.8,
+     "text": "Deux"
+    },
+    {
+     "time": 30,
+     "text": "Trois"
+    },
+    {
+     "time": 31,
+     "text": "Quatre ligne"
+    },
+    {
+     "time": 31.5,
+     "text": "Cinq"
+    }
+   ],
+   "index": 0,
+   "position": 4.0,
+   "playing": true,
+   "enabled": false,
+   "reduceMotion": false,
+   "expected": null
+  },
+  {
+   "song": "song",
+   "lines": [
+    {
+     "time": 0,
+     "text": "Une"
+    },
+    {
+     "time": 2.8,
+     "text": "Deux"
+    },
+    {
+     "time": 30,
+     "text": "Trois"
+    },
+    {
+     "time": 31,
+     "text": "Quatre ligne"
+    },
+    {
+     "time": 31.5,
+     "text": "Cinq"
+    }
+   ],
+   "index": 0,
+   "position": 4.0,
+   "playing": true,
+   "enabled": true,
+   "reduceMotion": true,
+   "expected": null
+  },
+  {
+   "song": "song",
+   "lines": [
+    {
+     "time": 0,
+     "text": "Une"
+    },
+    {
+     "time": 2.8,
+     "text": "Deux"
+    },
+    {
+     "time": 30,
+     "text": "Trois"
+    },
+    {
+     "time": 31,
+     "text": "Quatre ligne"
+    },
+    {
+     "time": 31.5,
+     "text": "Cinq"
+    }
+   ],
+   "index": 1,
+   "position": 1.0,
+   "playing": true,
+   "enabled": true,
+   "reduceMotion": false,
+   "expected": {
+    "duration": 7.0,
+    "fraction": 0.0,
+    "playing": true
+   }
+  },
+  {
+   "song": "song",
+   "lines": [
+    {
+     "time": 0,
+     "text": "Une"
+    },
+    {
+     "time": 2.8,
+     "text": "Deux"
+    },
+    {
+     "time": 30,
+     "text": "Trois"
+    },
+    {
+     "time": 31,
+     "text": "Quatre ligne"
+    },
+    {
+     "time": 31.5,
+     "text": "Cinq"
+    }
+   ],
+   "index": 1,
+   "position": 4.0,
+   "playing": false,
+   "enabled": true,
+   "reduceMotion": false,
+   "expected": {
+    "duration": 7.0,
+    "fraction": 0.17142857142857146,
+    "playing": false
+   }
+  },
+  {
+   "song": "song",
+   "lines": [
+    {
+     "time": 0,
+     "text": "Une"
+    },
+    {
+     "time": 2.8,
+     "text": "Deux"
+    },
+    {
+     "time": 30,
+     "text": "Trois"
+    },
+    {
+     "time": 31,
+     "text": "Quatre ligne"
+    },
+    {
+     "time": 31.5,
+     "text": "Cinq"
+    }
+   ],
+   "index": 1,
+   "position": 4.0,
+   "playing": true,
+   "enabled": false,
+   "reduceMotion": false,
+   "expected": null
+  },
+  {
+   "song": "song",
+   "lines": [
+    {
+     "time": 0,
+     "text": "Une"
+    },
+    {
+     "time": 2.8,
+     "text": "Deux"
+    },
+    {
+     "time": 30,
+     "text": "Trois"
+    },
+    {
+     "time": 31,
+     "text": "Quatre ligne"
+    },
+    {
+     "time": 31.5,
+     "text": "Cinq"
+    }
+   ],
+   "index": 1,
+   "position": 4.0,
+   "playing": true,
+   "enabled": true,
+   "reduceMotion": true,
+   "expected": null
+  },
+  {
+   "song": "song",
+   "lines": [
+    {
+     "time": 0,
+     "text": "Une"
+    },
+    {
+     "time": 2.8,
+     "text": "Deux"
+    },
+    {
+     "time": 30,
+     "text": "Trois"
+    },
+    {
+     "time": 31,
+     "text": "Quatre ligne"
+    },
+    {
+     "time": 31.5,
+     "text": "Cinq"
+    }
+   ],
+   "index": 2,
+   "position": 1.0,
+   "playing": true,
+   "enabled": true,
+   "reduceMotion": false,
+   "expected": {
+    "duration": 0.92,
+    "fraction": 0.0,
+    "playing": true
+   }
+  },
+  {
+   "song": "song",
+   "lines": [
+    {
+     "time": 0,
+     "text": "Une"
+    },
+    {
+     "time": 2.8,
+     "text": "Deux"
+    },
+    {
+     "time": 30,
+     "text": "Trois"
+    },
+    {
+     "time": 31,
+     "text": "Quatre ligne"
+    },
+    {
+     "time": 31.5,
+     "text": "Cinq"
+    }
+   ],
+   "index": 2,
+   "position": 4.0,
+   "playing": false,
+   "enabled": true,
+   "reduceMotion": false,
+   "expected": {
+    "duration": 0.92,
+    "fraction": 0.0,
+    "playing": false
+   }
+  },
+  {
+   "song": "song",
+   "lines": [
+    {
+     "time": 0,
+     "text": "Une"
+    },
+    {
+     "time": 2.8,
+     "text": "Deux"
+    },
+    {
+     "time": 30,
+     "text": "Trois"
+    },
+    {
+     "time": 31,
+     "text": "Quatre ligne"
+    },
+    {
+     "time": 31.5,
+     "text": "Cinq"
+    }
+   ],
+   "index": 2,
+   "position": 4.0,
+   "playing": true,
+   "enabled": false,
+   "reduceMotion": false,
+   "expected": null
+  },
+  {
+   "song": "song",
+   "lines": [
+    {
+     "time": 0,
+     "text": "Une"
+    },
+    {
+     "time": 2.8,
+     "text": "Deux"
+    },
+    {
+     "time": 30,
+     "text": "Trois"
+    },
+    {
+     "time": 31,
+     "text": "Quatre ligne"
+    },
+    {
+     "time": 31.5,
+     "text": "Cinq"
+    }
+   ],
+   "index": 2,
+   "position": 4.0,
+   "playing": true,
+   "enabled": true,
+   "reduceMotion": true,
+   "expected": null
+  },
+  {
+   "song": "song",
+   "lines": [
+    {
+     "time": 0,
+     "text": "Une"
+    },
+    {
+     "time": 2.8,
+     "text": "Deux"
+    },
+    {
+     "time": 30,
+     "text": "Trois"
+    },
+    {
+     "time": 31,
+     "text": "Quatre ligne"
+    },
+    {
+     "time": 31.5,
+     "text": "Cinq"
+    }
+   ],
+   "index": 3,
+   "position": 1.0,
+   "playing": true,
+   "enabled": true,
+   "reduceMotion": false,
+   "expected": {
+    "duration": 0.8,
+    "fraction": 0.0,
+    "playing": true
+   }
+  },
+  {
+   "song": "song",
+   "lines": [
+    {
+     "time": 0,
+     "text": "Une"
+    },
+    {
+     "time": 2.8,
+     "text": "Deux"
+    },
+    {
+     "time": 30,
+     "text": "Trois"
+    },
+    {
+     "time": 31,
+     "text": "Quatre ligne"
+    },
+    {
+     "time": 31.5,
+     "text": "Cinq"
+    }
+   ],
+   "index": 3,
+   "position": 4.0,
+   "playing": false,
+   "enabled": true,
+   "reduceMotion": false,
+   "expected": {
+    "duration": 0.8,
+    "fraction": 0.0,
+    "playing": false
+   }
+  },
+  {
+   "song": "song",
+   "lines": [
+    {
+     "time": 0,
+     "text": "Une"
+    },
+    {
+     "time": 2.8,
+     "text": "Deux"
+    },
+    {
+     "time": 30,
+     "text": "Trois"
+    },
+    {
+     "time": 31,
+     "text": "Quatre ligne"
+    },
+    {
+     "time": 31.5,
+     "text": "Cinq"
+    }
+   ],
+   "index": 3,
+   "position": 4.0,
+   "playing": true,
+   "enabled": false,
+   "reduceMotion": false,
+   "expected": null
+  },
+  {
+   "song": "song",
+   "lines": [
+    {
+     "time": 0,
+     "text": "Une"
+    },
+    {
+     "time": 2.8,
+     "text": "Deux"
+    },
+    {
+     "time": 30,
+     "text": "Trois"
+    },
+    {
+     "time": 31,
+     "text": "Quatre ligne"
+    },
+    {
+     "time": 31.5,
+     "text": "Cinq"
+    }
+   ],
+   "index": 3,
+   "position": 4.0,
+   "playing": true,
+   "enabled": true,
+   "reduceMotion": true,
+   "expected": null
+  },
+  {
+   "song": "song",
+   "lines": [
+    {
+     "time": 0,
+     "text": "Une"
+    },
+    {
+     "time": 2.8,
+     "text": "Deux"
+    },
+    {
+     "time": 30,
+     "text": "Trois"
+    },
+    {
+     "time": 31,
+     "text": "Quatre ligne"
+    },
+    {
+     "time": 31.5,
+     "text": "Cinq"
+    }
+   ],
+   "index": 4,
+   "position": 1.0,
+   "playing": true,
+   "enabled": true,
+   "reduceMotion": false,
+   "expected": {
+    "duration": 3.68,
+    "fraction": 0.0,
+    "playing": true
+   }
+  },
+  {
+   "song": "song",
+   "lines": [
+    {
+     "time": 0,
+     "text": "Une"
+    },
+    {
+     "time": 2.8,
+     "text": "Deux"
+    },
+    {
+     "time": 30,
+     "text": "Trois"
+    },
+    {
+     "time": 31,
+     "text": "Quatre ligne"
+    },
+    {
+     "time": 31.5,
+     "text": "Cinq"
+    }
+   ],
+   "index": 4,
+   "position": 4.0,
+   "playing": false,
+   "enabled": true,
+   "reduceMotion": false,
+   "expected": {
+    "duration": 3.68,
+    "fraction": 0.0,
+    "playing": false
+   }
+  },
+  {
+   "song": "song",
+   "lines": [
+    {
+     "time": 0,
+     "text": "Une"
+    },
+    {
+     "time": 2.8,
+     "text": "Deux"
+    },
+    {
+     "time": 30,
+     "text": "Trois"
+    },
+    {
+     "time": 31,
+     "text": "Quatre ligne"
+    },
+    {
+     "time": 31.5,
+     "text": "Cinq"
+    }
+   ],
+   "index": 4,
+   "position": 4.0,
+   "playing": true,
+   "enabled": false,
+   "reduceMotion": false,
+   "expected": null
+  },
+  {
+   "song": "song",
+   "lines": [
+    {
+     "time": 0,
+     "text": "Une"
+    },
+    {
+     "time": 2.8,
+     "text": "Deux"
+    },
+    {
+     "time": 30,
+     "text": "Trois"
+    },
+    {
+     "time": 31,
+     "text": "Quatre ligne"
+    },
+    {
+     "time": 31.5,
+     "text": "Cinq"
+    }
+   ],
+   "index": 4,
+   "position": 4.0,
+   "playing": true,
+   "enabled": true,
+   "reduceMotion": true,
+   "expected": null
+  },
+  {
+   "song": "song",
+   "lines": [
+    {
+     "time": 0,
+     "text": "Une"
+    },
+    {
+     "time": 2.8,
+     "text": "Deux"
+    },
+    {
+     "time": 30,
+     "text": "Trois"
+    },
+    {
+     "time": 31,
+     "text": "Quatre ligne"
+    },
+    {
+     "time": 31.5,
+     "text": "Cinq"
+    }
+   ],
+   "index": 5,
+   "position": 1.0,
+   "playing": true,
+   "enabled": true,
+   "reduceMotion": false,
+   "expected": null
+  },
+  {
+   "song": "song",
+   "lines": [
+    {
+     "time": 0,
+     "text": "Une"
+    },
+    {
+     "time": 2.8,
+     "text": "Deux"
+    },
+    {
+     "time": 30,
+     "text": "Trois"
+    },
+    {
+     "time": 31,
+     "text": "Quatre ligne"
+    },
+    {
+     "time": 31.5,
+     "text": "Cinq"
+    }
+   ],
+   "index": 5,
+   "position": 4.0,
+   "playing": false,
+   "enabled": true,
+   "reduceMotion": false,
+   "expected": null
+  },
+  {
+   "song": "song",
+   "lines": [
+    {
+     "time": 0,
+     "text": "Une"
+    },
+    {
+     "time": 2.8,
+     "text": "Deux"
+    },
+    {
+     "time": 30,
+     "text": "Trois"
+    },
+    {
+     "time": 31,
+     "text": "Quatre ligne"
+    },
+    {
+     "time": 31.5,
+     "text": "Cinq"
+    }
+   ],
+   "index": 5,
+   "position": 4.0,
+   "playing": true,
+   "enabled": false,
+   "reduceMotion": false,
+   "expected": null
+  },
+  {
+   "song": "song",
+   "lines": [
+    {
+     "time": 0,
+     "text": "Une"
+    },
+    {
+     "time": 2.8,
+     "text": "Deux"
+    },
+    {
+     "time": 30,
+     "text": "Trois"
+    },
+    {
+     "time": 31,
+     "text": "Quatre ligne"
+    },
+    {
+     "time": 31.5,
+     "text": "Cinq"
+    }
+   ],
+   "index": 5,
+   "position": 4.0,
+   "playing": true,
+   "enabled": true,
+   "reduceMotion": true,
+   "expected": null
+  },
+  {
+   "song": "single",
+   "lines": [
+    {
+     "time": 5,
+     "text": "Seule"
+    }
+   ],
+   "index": -1,
+   "position": 1.0,
+   "playing": true,
+   "enabled": true,
+   "reduceMotion": false,
+   "expected": null
+  },
+  {
+   "song": "single",
+   "lines": [
+    {
+     "time": 5,
+     "text": "Seule"
+    }
+   ],
+   "index": -1,
+   "position": 4.0,
+   "playing": false,
+   "enabled": true,
+   "reduceMotion": false,
+   "expected": null
+  },
+  {
+   "song": "single",
+   "lines": [
+    {
+     "time": 5,
+     "text": "Seule"
+    }
+   ],
+   "index": -1,
+   "position": 4.0,
+   "playing": true,
+   "enabled": false,
+   "reduceMotion": false,
+   "expected": null
+  },
+  {
+   "song": "single",
+   "lines": [
+    {
+     "time": 5,
+     "text": "Seule"
+    }
+   ],
+   "index": -1,
+   "position": 4.0,
+   "playing": true,
+   "enabled": true,
+   "reduceMotion": true,
+   "expected": null
+  },
+  {
+   "song": "single",
+   "lines": [
+    {
+     "time": 5,
+     "text": "Seule"
+    }
+   ],
+   "index": 0,
+   "position": 1.0,
+   "playing": true,
+   "enabled": true,
+   "reduceMotion": false,
+   "expected": {
+    "duration": 3.68,
+    "fraction": 0.0,
+    "playing": true
+   }
+  },
+  {
+   "song": "single",
+   "lines": [
+    {
+     "time": 5,
+     "text": "Seule"
+    }
+   ],
+   "index": 0,
+   "position": 4.0,
+   "playing": false,
+   "enabled": true,
+   "reduceMotion": false,
+   "expected": {
+    "duration": 3.68,
+    "fraction": 0.0,
+    "playing": false
+   }
+  },
+  {
+   "song": "single",
+   "lines": [
+    {
+     "time": 5,
+     "text": "Seule"
+    }
+   ],
+   "index": 0,
+   "position": 4.0,
+   "playing": true,
+   "enabled": false,
+   "reduceMotion": false,
+   "expected": null
+  },
+  {
+   "song": "single",
+   "lines": [
+    {
+     "time": 5,
+     "text": "Seule"
+    }
+   ],
+   "index": 0,
+   "position": 4.0,
+   "playing": true,
+   "enabled": true,
+   "reduceMotion": true,
+   "expected": null
+  },
+  {
+   "song": "single",
+   "lines": [
+    {
+     "time": 5,
+     "text": "Seule"
+    }
+   ],
+   "index": 1,
+   "position": 1.0,
+   "playing": true,
+   "enabled": true,
+   "reduceMotion": false,
+   "expected": null
+  },
+  {
+   "song": "single",
+   "lines": [
+    {
+     "time": 5,
+     "text": "Seule"
+    }
+   ],
+   "index": 1,
+   "position": 4.0,
+   "playing": false,
+   "enabled": true,
+   "reduceMotion": false,
+   "expected": null
+  },
+  {
+   "song": "single",
+   "lines": [
+    {
+     "time": 5,
+     "text": "Seule"
+    }
+   ],
+   "index": 1,
+   "position": 4.0,
+   "playing": true,
+   "enabled": false,
+   "reduceMotion": false,
+   "expected": null
+  },
+  {
+   "song": "single",
+   "lines": [
+    {
+     "time": 5,
+     "text": "Seule"
+    }
+   ],
+   "index": 1,
+   "position": 4.0,
+   "playing": true,
+   "enabled": true,
+   "reduceMotion": true,
+   "expected": null
+  },
+  {
+   "song": "avec ♪",
+   "lines": [
+    {
+     "time": 0,
+     "text": "Une"
+    },
+    {
+     "time": 3,
+     "text": "♪"
+    },
+    {
+     "time": 9,
+     "text": "Trois"
+    }
+   ],
+   "index": -1,
+   "position": 1.0,
+   "playing": true,
+   "enabled": true,
+   "reduceMotion": false,
+   "expected": null
+  },
+  {
+   "song": "avec ♪",
+   "lines": [
+    {
+     "time": 0,
+     "text": "Une"
+    },
+    {
+     "time": 3,
+     "text": "♪"
+    },
+    {
+     "time": 9,
+     "text": "Trois"
+    }
+   ],
+   "index": -1,
+   "position": 4.0,
+   "playing": false,
+   "enabled": true,
+   "reduceMotion": false,
+   "expected": null
+  },
+  {
+   "song": "avec ♪",
+   "lines": [
+    {
+     "time": 0,
+     "text": "Une"
+    },
+    {
+     "time": 3,
+     "text": "♪"
+    },
+    {
+     "time": 9,
+     "text": "Trois"
+    }
+   ],
+   "index": -1,
+   "position": 4.0,
+   "playing": true,
+   "enabled": false,
+   "reduceMotion": false,
+   "expected": null
+  },
+  {
+   "song": "avec ♪",
+   "lines": [
+    {
+     "time": 0,
+     "text": "Une"
+    },
+    {
+     "time": 3,
+     "text": "♪"
+    },
+    {
+     "time": 9,
+     "text": "Trois"
+    }
+   ],
+   "index": -1,
+   "position": 4.0,
+   "playing": true,
+   "enabled": true,
+   "reduceMotion": true,
+   "expected": null
+  },
+  {
+   "song": "avec ♪",
+   "lines": [
+    {
+     "time": 0,
+     "text": "Une"
+    },
+    {
+     "time": 3,
+     "text": "♪"
+    },
+    {
+     "time": 9,
+     "text": "Trois"
+    }
+   ],
+   "index": 0,
+   "position": 1.0,
+   "playing": true,
+   "enabled": true,
+   "reduceMotion": false,
+   "expected": {
+    "duration": 2.7600000000000002,
+    "fraction": 0.3623188405797101,
+    "playing": true
+   }
+  },
+  {
+   "song": "avec ♪",
+   "lines": [
+    {
+     "time": 0,
+     "text": "Une"
+    },
+    {
+     "time": 3,
+     "text": "♪"
+    },
+    {
+     "time": 9,
+     "text": "Trois"
+    }
+   ],
+   "index": 0,
+   "position": 4.0,
+   "playing": false,
+   "enabled": true,
+   "reduceMotion": false,
+   "expected": {
+    "duration": 2.7600000000000002,
+    "fraction": 1.0,
+    "playing": false
+   }
+  },
+  {
+   "song": "avec ♪",
+   "lines": [
+    {
+     "time": 0,
+     "text": "Une"
+    },
+    {
+     "time": 3,
+     "text": "♪"
+    },
+    {
+     "time": 9,
+     "text": "Trois"
+    }
+   ],
+   "index": 0,
+   "position": 4.0,
+   "playing": true,
+   "enabled": false,
+   "reduceMotion": false,
+   "expected": null
+  },
+  {
+   "song": "avec ♪",
+   "lines": [
+    {
+     "time": 0,
+     "text": "Une"
+    },
+    {
+     "time": 3,
+     "text": "♪"
+    },
+    {
+     "time": 9,
+     "text": "Trois"
+    }
+   ],
+   "index": 0,
+   "position": 4.0,
+   "playing": true,
+   "enabled": true,
+   "reduceMotion": true,
+   "expected": null
+  },
+  {
+   "song": "avec ♪",
+   "lines": [
+    {
+     "time": 0,
+     "text": "Une"
+    },
+    {
+     "time": 3,
+     "text": "♪"
+    },
+    {
+     "time": 9,
+     "text": "Trois"
+    }
+   ],
+   "index": 1,
+   "position": 1.0,
+   "playing": true,
+   "enabled": true,
+   "reduceMotion": false,
+   "expected": null
+  },
+  {
+   "song": "avec ♪",
+   "lines": [
+    {
+     "time": 0,
+     "text": "Une"
+    },
+    {
+     "time": 3,
+     "text": "♪"
+    },
+    {
+     "time": 9,
+     "text": "Trois"
+    }
+   ],
+   "index": 1,
+   "position": 4.0,
+   "playing": false,
+   "enabled": true,
+   "reduceMotion": false,
+   "expected": null
+  },
+  {
+   "song": "avec ♪",
+   "lines": [
+    {
+     "time": 0,
+     "text": "Une"
+    },
+    {
+     "time": 3,
+     "text": "♪"
+    },
+    {
+     "time": 9,
+     "text": "Trois"
+    }
+   ],
+   "index": 1,
+   "position": 4.0,
+   "playing": true,
+   "enabled": false,
+   "reduceMotion": false,
+   "expected": null
+  },
+  {
+   "song": "avec ♪",
+   "lines": [
+    {
+     "time": 0,
+     "text": "Une"
+    },
+    {
+     "time": 3,
+     "text": "♪"
+    },
+    {
+     "time": 9,
+     "text": "Trois"
+    }
+   ],
+   "index": 1,
+   "position": 4.0,
+   "playing": true,
+   "enabled": true,
+   "reduceMotion": true,
+   "expected": null
+  },
+  {
+   "song": "avec ♪",
+   "lines": [
+    {
+     "time": 0,
+     "text": "Une"
+    },
+    {
+     "time": 3,
+     "text": "♪"
+    },
+    {
+     "time": 9,
+     "text": "Trois"
+    }
+   ],
+   "index": 2,
+   "position": 1.0,
+   "playing": true,
+   "enabled": true,
+   "reduceMotion": false,
+   "expected": {
+    "duration": 3.68,
+    "fraction": 0.0,
+    "playing": true
+   }
+  },
+  {
+   "song": "avec ♪",
+   "lines": [
+    {
+     "time": 0,
+     "text": "Une"
+    },
+    {
+     "time": 3,
+     "text": "♪"
+    },
+    {
+     "time": 9,
+     "text": "Trois"
+    }
+   ],
+   "index": 2,
+   "position": 4.0,
+   "playing": false,
+   "enabled": true,
+   "reduceMotion": false,
+   "expected": {
+    "duration": 3.68,
+    "fraction": 0.0,
+    "playing": false
+   }
+  },
+  {
+   "song": "avec ♪",
+   "lines": [
+    {
+     "time": 0,
+     "text": "Une"
+    },
+    {
+     "time": 3,
+     "text": "♪"
+    },
+    {
+     "time": 9,
+     "text": "Trois"
+    }
+   ],
+   "index": 2,
+   "position": 4.0,
+   "playing": true,
+   "enabled": false,
+   "reduceMotion": false,
+   "expected": null
+  },
+  {
+   "song": "avec ♪",
+   "lines": [
+    {
+     "time": 0,
+     "text": "Une"
+    },
+    {
+     "time": 3,
+     "text": "♪"
+    },
+    {
+     "time": 9,
+     "text": "Trois"
+    }
+   ],
+   "index": 2,
+   "position": 4.0,
+   "playing": true,
+   "enabled": true,
+   "reduceMotion": true,
+   "expected": null
+  },
+  {
+   "song": "avec ♪",
+   "lines": [
+    {
+     "time": 0,
+     "text": "Une"
+    },
+    {
+     "time": 3,
+     "text": "♪"
+    },
+    {
+     "time": 9,
+     "text": "Trois"
+    }
+   ],
+   "index": 3,
+   "position": 1.0,
+   "playing": true,
+   "enabled": true,
+   "reduceMotion": false,
+   "expected": null
+  },
+  {
+   "song": "avec ♪",
+   "lines": [
+    {
+     "time": 0,
+     "text": "Une"
+    },
+    {
+     "time": 3,
+     "text": "♪"
+    },
+    {
+     "time": 9,
+     "text": "Trois"
+    }
+   ],
+   "index": 3,
+   "position": 4.0,
+   "playing": false,
+   "enabled": true,
+   "reduceMotion": false,
+   "expected": null
+  },
+  {
+   "song": "avec ♪",
+   "lines": [
+    {
+     "time": 0,
+     "text": "Une"
+    },
+    {
+     "time": 3,
+     "text": "♪"
+    },
+    {
+     "time": 9,
+     "text": "Trois"
+    }
+   ],
+   "index": 3,
+   "position": 4.0,
+   "playing": true,
+   "enabled": false,
+   "reduceMotion": false,
+   "expected": null
+  },
+  {
+   "song": "avec ♪",
+   "lines": [
+    {
+     "time": 0,
+     "text": "Une"
+    },
+    {
+     "time": 3,
+     "text": "♪"
+    },
+    {
+     "time": 9,
+     "text": "Trois"
+    }
+   ],
+   "index": 3,
+   "position": 4.0,
+   "playing": true,
+   "enabled": true,
+   "reduceMotion": true,
+   "expected": null
+  }
+ ],
+ "fillPieces": [
+  {
+   "widths": [
+    300.0
+   ],
+   "cumulative": [
+    0.0,
+    1.0
+   ],
+   "startFraction": 0.0,
+   "duration": 5.0,
+   "playing": true,
+   "animated": true,
+   "pieces": [
+    {
+     "start": 0.0,
+     "begin": 0.0,
+     "duration": 5.0,
+     "animated": true
+    }
+   ]
+  },
+  {
+   "widths": [
+    300.0
+   ],
+   "cumulative": [
+    0.0,
+    1.0
+   ],
+   "startFraction": 0.4,
+   "duration": 5.0,
+   "playing": true,
+   "animated": true,
+   "pieces": [
+    {
+     "start": 0.4,
+     "begin": 0.0,
+     "duration": 3.0,
+     "animated": true
+    }
+   ]
+  },
+  {
+   "widths": [
+    300.0
+   ],
+   "cumulative": [
+    0.0,
+    1.0
+   ],
+   "startFraction": 0.4,
+   "duration": 5.0,
+   "playing": false,
+   "animated": true,
+   "pieces": [
+    {
+     "start": 0.4,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "widths": [
+    300.0
+   ],
+   "cumulative": [
+    0.0,
+    1.0
+   ],
+   "startFraction": 0.9,
+   "duration": 3.0,
+   "playing": true,
+   "animated": true,
+   "pieces": [
+    {
+     "start": 0.9,
+     "begin": 0.0,
+     "duration": 0.29999999999999993,
+     "animated": true
+    }
+   ]
+  },
+  {
+   "widths": [
+    300.0
+   ],
+   "cumulative": [
+    0.0,
+    1.0
+   ],
+   "startFraction": 1.0,
+   "duration": 3.0,
+   "playing": true,
+   "animated": true,
+   "pieces": [
+    {
+     "start": 1.0,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "widths": [
+    300.0
+   ],
+   "cumulative": [
+    0.0,
+    1.0
+   ],
+   "startFraction": 0.0,
+   "duration": 0.0,
+   "playing": true,
+   "animated": true,
+   "pieces": [
+    {
+     "start": 0.0,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "widths": [
+    300.0
+   ],
+   "cumulative": [
+    0.0,
+    1.0
+   ],
+   "startFraction": 0.25,
+   "duration": 4.0,
+   "playing": true,
+   "animated": false,
+   "pieces": [
+    {
+     "start": 0.25,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "widths": [
+    300.0
+   ],
+   "cumulative": [
+    0.0,
+    1.0
+   ],
+   "startFraction": -0.5,
+   "duration": 2.0,
+   "playing": true,
+   "animated": true,
+   "pieces": [
+    {
+     "start": 0.0,
+     "begin": 0.0,
+     "duration": 2.0,
+     "animated": true
+    }
+   ]
+  },
+  {
+   "widths": [
+    300.0
+   ],
+   "cumulative": [
+    0.0,
+    1.0
+   ],
+   "startFraction": 1.5,
+   "duration": 2.0,
+   "playing": true,
+   "animated": true,
+   "pieces": [
+    {
+     "start": 1.0,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "widths": [
+    200.0,
+    100.0
+   ],
+   "cumulative": [
+    0.0,
+    0.6666666666666666,
+    1.0
+   ],
+   "startFraction": 0.0,
+   "duration": 5.0,
+   "playing": true,
+   "animated": true,
+   "pieces": [
+    {
+     "start": 0.0,
+     "begin": 0.0,
+     "duration": 3.333333333333333,
+     "animated": true
+    },
+    {
+     "start": 0.0,
+     "begin": 3.333333333333333,
+     "duration": 1.666666666666667,
+     "animated": true
+    }
+   ]
+  },
+  {
+   "widths": [
+    200.0,
+    100.0
+   ],
+   "cumulative": [
+    0.0,
+    0.6666666666666666,
+    1.0
+   ],
+   "startFraction": 0.4,
+   "duration": 5.0,
+   "playing": true,
+   "animated": true,
+   "pieces": [
+    {
+     "start": 0.6000000000000001,
+     "begin": 0.0,
+     "duration": 1.333333333333333,
+     "animated": true
+    },
+    {
+     "start": 0.0,
+     "begin": 1.333333333333333,
+     "duration": 1.666666666666667,
+     "animated": true
+    }
+   ]
+  },
+  {
+   "widths": [
+    200.0,
+    100.0
+   ],
+   "cumulative": [
+    0.0,
+    0.6666666666666666,
+    1.0
+   ],
+   "startFraction": 0.4,
+   "duration": 5.0,
+   "playing": false,
+   "animated": true,
+   "pieces": [
+    {
+     "start": 0.6000000000000001,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    },
+    {
+     "start": 0.0,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "widths": [
+    200.0,
+    100.0
+   ],
+   "cumulative": [
+    0.0,
+    0.6666666666666666,
+    1.0
+   ],
+   "startFraction": 0.9,
+   "duration": 3.0,
+   "playing": true,
+   "animated": true,
+   "pieces": [
+    {
+     "start": 1.0,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    },
+    {
+     "start": 0.7000000000000001,
+     "begin": 0.0,
+     "duration": 0.29999999999999993,
+     "animated": true
+    }
+   ]
+  },
+  {
+   "widths": [
+    200.0,
+    100.0
+   ],
+   "cumulative": [
+    0.0,
+    0.6666666666666666,
+    1.0
+   ],
+   "startFraction": 1.0,
+   "duration": 3.0,
+   "playing": true,
+   "animated": true,
+   "pieces": [
+    {
+     "start": 1.0,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    },
+    {
+     "start": 1.0,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "widths": [
+    200.0,
+    100.0
+   ],
+   "cumulative": [
+    0.0,
+    0.6666666666666666,
+    1.0
+   ],
+   "startFraction": 0.0,
+   "duration": 0.0,
+   "playing": true,
+   "animated": true,
+   "pieces": [
+    {
+     "start": 0.0,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    },
+    {
+     "start": 0.0,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "widths": [
+    200.0,
+    100.0
+   ],
+   "cumulative": [
+    0.0,
+    0.6666666666666666,
+    1.0
+   ],
+   "startFraction": 0.25,
+   "duration": 4.0,
+   "playing": true,
+   "animated": false,
+   "pieces": [
+    {
+     "start": 0.375,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    },
+    {
+     "start": 0.0,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "widths": [
+    200.0,
+    100.0
+   ],
+   "cumulative": [
+    0.0,
+    0.6666666666666666,
+    1.0
+   ],
+   "startFraction": -0.5,
+   "duration": 2.0,
+   "playing": true,
+   "animated": true,
+   "pieces": [
+    {
+     "start": 0.0,
+     "begin": 0.0,
+     "duration": 1.3333333333333333,
+     "animated": true
+    },
+    {
+     "start": 0.0,
+     "begin": 1.3333333333333333,
+     "duration": 0.6666666666666667,
+     "animated": true
+    }
+   ]
+  },
+  {
+   "widths": [
+    200.0,
+    100.0
+   ],
+   "cumulative": [
+    0.0,
+    0.6666666666666666,
+    1.0
+   ],
+   "startFraction": 1.5,
+   "duration": 2.0,
+   "playing": true,
+   "animated": true,
+   "pieces": [
+    {
+     "start": 1.0,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    },
+    {
+     "start": 1.0,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "widths": [
+    120.0,
+    360.0,
+    20.0
+   ],
+   "cumulative": [
+    0.0,
+    0.24,
+    0.96,
+    1.0
+   ],
+   "startFraction": 0.0,
+   "duration": 5.0,
+   "playing": true,
+   "animated": true,
+   "pieces": [
+    {
+     "start": 0.0,
+     "begin": 0.0,
+     "duration": 1.2,
+     "animated": true
+    },
+    {
+     "start": 0.0,
+     "begin": 1.2,
+     "duration": 3.5999999999999996,
+     "animated": true
+    },
+    {
+     "start": 0.0,
+     "begin": 4.8,
+     "duration": 0.20000000000000018,
+     "animated": true
+    }
+   ]
+  },
+  {
+   "widths": [
+    120.0,
+    360.0,
+    20.0
+   ],
+   "cumulative": [
+    0.0,
+    0.24,
+    0.96,
+    1.0
+   ],
+   "startFraction": 0.4,
+   "duration": 5.0,
+   "playing": true,
+   "animated": true,
+   "pieces": [
+    {
+     "start": 1.0,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    },
+    {
+     "start": 0.22222222222222227,
+     "begin": 0.0,
+     "duration": 2.8,
+     "animated": true
+    },
+    {
+     "start": 0.0,
+     "begin": 2.8,
+     "duration": 0.20000000000000018,
+     "animated": true
+    }
+   ]
+  },
+  {
+   "widths": [
+    120.0,
+    360.0,
+    20.0
+   ],
+   "cumulative": [
+    0.0,
+    0.24,
+    0.96,
+    1.0
+   ],
+   "startFraction": 0.4,
+   "duration": 5.0,
+   "playing": false,
+   "animated": true,
+   "pieces": [
+    {
+     "start": 1.0,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    },
+    {
+     "start": 0.22222222222222227,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    },
+    {
+     "start": 0.0,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "widths": [
+    120.0,
+    360.0,
+    20.0
+   ],
+   "cumulative": [
+    0.0,
+    0.24,
+    0.96,
+    1.0
+   ],
+   "startFraction": 0.9,
+   "duration": 3.0,
+   "playing": true,
+   "animated": true,
+   "pieces": [
+    {
+     "start": 1.0,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    },
+    {
+     "start": 0.9166666666666667,
+     "begin": 0.0,
+     "duration": 0.17999999999999983,
+     "animated": true
+    },
+    {
+     "start": 0.0,
+     "begin": 0.17999999999999983,
+     "duration": 0.1200000000000001,
+     "animated": true
+    }
+   ]
+  },
+  {
+   "widths": [
+    120.0,
+    360.0,
+    20.0
+   ],
+   "cumulative": [
+    0.0,
+    0.24,
+    0.96,
+    1.0
+   ],
+   "startFraction": 1.0,
+   "duration": 3.0,
+   "playing": true,
+   "animated": true,
+   "pieces": [
+    {
+     "start": 1.0,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    },
+    {
+     "start": 1.0,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    },
+    {
+     "start": 1.0,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "widths": [
+    120.0,
+    360.0,
+    20.0
+   ],
+   "cumulative": [
+    0.0,
+    0.24,
+    0.96,
+    1.0
+   ],
+   "startFraction": 0.0,
+   "duration": 0.0,
+   "playing": true,
+   "animated": true,
+   "pieces": [
+    {
+     "start": 0.0,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    },
+    {
+     "start": 0.0,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    },
+    {
+     "start": 0.0,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "widths": [
+    120.0,
+    360.0,
+    20.0
+   ],
+   "cumulative": [
+    0.0,
+    0.24,
+    0.96,
+    1.0
+   ],
+   "startFraction": 0.25,
+   "duration": 4.0,
+   "playing": true,
+   "animated": false,
+   "pieces": [
+    {
+     "start": 1.0,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    },
+    {
+     "start": 0.013888888888888902,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    },
+    {
+     "start": 0.0,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "widths": [
+    120.0,
+    360.0,
+    20.0
+   ],
+   "cumulative": [
+    0.0,
+    0.24,
+    0.96,
+    1.0
+   ],
+   "startFraction": -0.5,
+   "duration": 2.0,
+   "playing": true,
+   "animated": true,
+   "pieces": [
+    {
+     "start": 0.0,
+     "begin": 0.0,
+     "duration": 0.48,
+     "animated": true
+    },
+    {
+     "start": 0.0,
+     "begin": 0.48,
+     "duration": 1.44,
+     "animated": true
+    },
+    {
+     "start": 0.0,
+     "begin": 1.92,
+     "duration": 0.08000000000000007,
+     "animated": true
+    }
+   ]
+  },
+  {
+   "widths": [
+    120.0,
+    360.0,
+    20.0
+   ],
+   "cumulative": [
+    0.0,
+    0.24,
+    0.96,
+    1.0
+   ],
+   "startFraction": 1.5,
+   "duration": 2.0,
+   "playing": true,
+   "animated": true,
+   "pieces": [
+    {
+     "start": 1.0,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    },
+    {
+     "start": 1.0,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    },
+    {
+     "start": 1.0,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "widths": [
+    0.5,
+    0.25
+   ],
+   "cumulative": [
+    0.0,
+    0.5,
+    1.0
+   ],
+   "startFraction": 0.0,
+   "duration": 5.0,
+   "playing": true,
+   "animated": true,
+   "pieces": [
+    {
+     "start": 0.0,
+     "begin": 0.0,
+     "duration": 2.5,
+     "animated": true
+    },
+    {
+     "start": 0.0,
+     "begin": 2.5,
+     "duration": 2.5,
+     "animated": true
+    }
+   ]
+  },
+  {
+   "widths": [
+    0.5,
+    0.25
+   ],
+   "cumulative": [
+    0.0,
+    0.5,
+    1.0
+   ],
+   "startFraction": 0.4,
+   "duration": 5.0,
+   "playing": true,
+   "animated": true,
+   "pieces": [
+    {
+     "start": 0.8,
+     "begin": 0.0,
+     "duration": 0.4999999999999999,
+     "animated": true
+    },
+    {
+     "start": 0.0,
+     "begin": 0.4999999999999999,
+     "duration": 2.5,
+     "animated": true
+    }
+   ]
+  },
+  {
+   "widths": [
+    0.5,
+    0.25
+   ],
+   "cumulative": [
+    0.0,
+    0.5,
+    1.0
+   ],
+   "startFraction": 0.4,
+   "duration": 5.0,
+   "playing": false,
+   "animated": true,
+   "pieces": [
+    {
+     "start": 0.8,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    },
+    {
+     "start": 0.0,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "widths": [
+    0.5,
+    0.25
+   ],
+   "cumulative": [
+    0.0,
+    0.5,
+    1.0
+   ],
+   "startFraction": 0.9,
+   "duration": 3.0,
+   "playing": true,
+   "animated": true,
+   "pieces": [
+    {
+     "start": 1.0,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    },
+    {
+     "start": 0.8,
+     "begin": 0.0,
+     "duration": 0.29999999999999993,
+     "animated": true
+    }
+   ]
+  },
+  {
+   "widths": [
+    0.5,
+    0.25
+   ],
+   "cumulative": [
+    0.0,
+    0.5,
+    1.0
+   ],
+   "startFraction": 1.0,
+   "duration": 3.0,
+   "playing": true,
+   "animated": true,
+   "pieces": [
+    {
+     "start": 1.0,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    },
+    {
+     "start": 1.0,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "widths": [
+    0.5,
+    0.25
+   ],
+   "cumulative": [
+    0.0,
+    0.5,
+    1.0
+   ],
+   "startFraction": 0.0,
+   "duration": 0.0,
+   "playing": true,
+   "animated": true,
+   "pieces": [
+    {
+     "start": 0.0,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    },
+    {
+     "start": 0.0,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "widths": [
+    0.5,
+    0.25
+   ],
+   "cumulative": [
+    0.0,
+    0.5,
+    1.0
+   ],
+   "startFraction": 0.25,
+   "duration": 4.0,
+   "playing": true,
+   "animated": false,
+   "pieces": [
+    {
+     "start": 0.5,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    },
+    {
+     "start": 0.0,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "widths": [
+    0.5,
+    0.25
+   ],
+   "cumulative": [
+    0.0,
+    0.5,
+    1.0
+   ],
+   "startFraction": -0.5,
+   "duration": 2.0,
+   "playing": true,
+   "animated": true,
+   "pieces": [
+    {
+     "start": 0.0,
+     "begin": 0.0,
+     "duration": 1.0,
+     "animated": true
+    },
+    {
+     "start": 0.0,
+     "begin": 1.0,
+     "duration": 1.0,
+     "animated": true
+    }
+   ]
+  },
+  {
+   "widths": [
+    0.5,
+    0.25
+   ],
+   "cumulative": [
+    0.0,
+    0.5,
+    1.0
+   ],
+   "startFraction": 1.5,
+   "duration": 2.0,
+   "playing": true,
+   "animated": true,
+   "pieces": [
+    {
+     "start": 1.0,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    },
+    {
+     "start": 1.0,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "widths": [
+    50.0,
+    50.0,
+    50.0,
+    50.0
+   ],
+   "cumulative": [
+    0.0,
+    0.25,
+    0.5,
+    0.75,
+    1.0
+   ],
+   "startFraction": 0.0,
+   "duration": 5.0,
+   "playing": true,
+   "animated": true,
+   "pieces": [
+    {
+     "start": 0.0,
+     "begin": 0.0,
+     "duration": 1.25,
+     "animated": true
+    },
+    {
+     "start": 0.0,
+     "begin": 1.25,
+     "duration": 1.25,
+     "animated": true
+    },
+    {
+     "start": 0.0,
+     "begin": 2.5,
+     "duration": 1.25,
+     "animated": true
+    },
+    {
+     "start": 0.0,
+     "begin": 3.75,
+     "duration": 1.25,
+     "animated": true
+    }
+   ]
+  },
+  {
+   "widths": [
+    50.0,
+    50.0,
+    50.0,
+    50.0
+   ],
+   "cumulative": [
+    0.0,
+    0.25,
+    0.5,
+    0.75,
+    1.0
+   ],
+   "startFraction": 0.4,
+   "duration": 5.0,
+   "playing": true,
+   "animated": true,
+   "pieces": [
+    {
+     "start": 1.0,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    },
+    {
+     "start": 0.6000000000000001,
+     "begin": 0.0,
+     "duration": 0.4999999999999999,
+     "animated": true
+    },
+    {
+     "start": 0.0,
+     "begin": 0.4999999999999999,
+     "duration": 1.25,
+     "animated": true
+    },
+    {
+     "start": 0.0,
+     "begin": 1.75,
+     "duration": 1.25,
+     "animated": true
+    }
+   ]
+  },
+  {
+   "widths": [
+    50.0,
+    50.0,
+    50.0,
+    50.0
+   ],
+   "cumulative": [
+    0.0,
+    0.25,
+    0.5,
+    0.75,
+    1.0
+   ],
+   "startFraction": 0.4,
+   "duration": 5.0,
+   "playing": false,
+   "animated": true,
+   "pieces": [
+    {
+     "start": 1.0,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    },
+    {
+     "start": 0.6000000000000001,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    },
+    {
+     "start": 0.0,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    },
+    {
+     "start": 0.0,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "widths": [
+    50.0,
+    50.0,
+    50.0,
+    50.0
+   ],
+   "cumulative": [
+    0.0,
+    0.25,
+    0.5,
+    0.75,
+    1.0
+   ],
+   "startFraction": 0.9,
+   "duration": 3.0,
+   "playing": true,
+   "animated": true,
+   "pieces": [
+    {
+     "start": 1.0,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    },
+    {
+     "start": 1.0,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    },
+    {
+     "start": 1.0,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    },
+    {
+     "start": 0.6000000000000001,
+     "begin": 0.0,
+     "duration": 0.29999999999999993,
+     "animated": true
+    }
+   ]
+  },
+  {
+   "widths": [
+    50.0,
+    50.0,
+    50.0,
+    50.0
+   ],
+   "cumulative": [
+    0.0,
+    0.25,
+    0.5,
+    0.75,
+    1.0
+   ],
+   "startFraction": 1.0,
+   "duration": 3.0,
+   "playing": true,
+   "animated": true,
+   "pieces": [
+    {
+     "start": 1.0,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    },
+    {
+     "start": 1.0,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    },
+    {
+     "start": 1.0,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    },
+    {
+     "start": 1.0,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "widths": [
+    50.0,
+    50.0,
+    50.0,
+    50.0
+   ],
+   "cumulative": [
+    0.0,
+    0.25,
+    0.5,
+    0.75,
+    1.0
+   ],
+   "startFraction": 0.0,
+   "duration": 0.0,
+   "playing": true,
+   "animated": true,
+   "pieces": [
+    {
+     "start": 0.0,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    },
+    {
+     "start": 0.0,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    },
+    {
+     "start": 0.0,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    },
+    {
+     "start": 0.0,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "widths": [
+    50.0,
+    50.0,
+    50.0,
+    50.0
+   ],
+   "cumulative": [
+    0.0,
+    0.25,
+    0.5,
+    0.75,
+    1.0
+   ],
+   "startFraction": 0.25,
+   "duration": 4.0,
+   "playing": true,
+   "animated": false,
+   "pieces": [
+    {
+     "start": 1.0,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    },
+    {
+     "start": 0.0,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    },
+    {
+     "start": 0.0,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    },
+    {
+     "start": 0.0,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "widths": [
+    50.0,
+    50.0,
+    50.0,
+    50.0
+   ],
+   "cumulative": [
+    0.0,
+    0.25,
+    0.5,
+    0.75,
+    1.0
+   ],
+   "startFraction": -0.5,
+   "duration": 2.0,
+   "playing": true,
+   "animated": true,
+   "pieces": [
+    {
+     "start": 0.0,
+     "begin": 0.0,
+     "duration": 0.5,
+     "animated": true
+    },
+    {
+     "start": 0.0,
+     "begin": 0.5,
+     "duration": 0.5,
+     "animated": true
+    },
+    {
+     "start": 0.0,
+     "begin": 1.0,
+     "duration": 0.5,
+     "animated": true
+    },
+    {
+     "start": 0.0,
+     "begin": 1.5,
+     "duration": 0.5,
+     "animated": true
+    }
+   ]
+  },
+  {
+   "widths": [
+    50.0,
+    50.0,
+    50.0,
+    50.0
+   ],
+   "cumulative": [
+    0.0,
+    0.25,
+    0.5,
+    0.75,
+    1.0
+   ],
+   "startFraction": 1.5,
+   "duration": 2.0,
+   "playing": true,
+   "animated": true,
+   "pieces": [
+    {
+     "start": 1.0,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    },
+    {
+     "start": 1.0,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    },
+    {
+     "start": 1.0,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    },
+    {
+     "start": 1.0,
+     "begin": 0.0,
+     "duration": 0.0,
+     "animated": false
+    }
+   ]
+  }
+ ],
+ "fillResync": [
+  {
+   "currentPlaying": true,
+   "expected": 0.5,
+   "wantPlaying": true,
+   "wantFraction": 0.5,
+   "expectedResync": false
+  },
+  {
+   "currentPlaying": true,
+   "expected": 0.5,
+   "wantPlaying": false,
+   "wantFraction": 0.5,
+   "expectedResync": true
+  },
+  {
+   "currentPlaying": false,
+   "expected": 0.5,
+   "wantPlaying": true,
+   "wantFraction": 0.5,
+   "expectedResync": true
+  },
+  {
+   "currentPlaying": true,
+   "expected": 0.5,
+   "wantPlaying": true,
+   "wantFraction": 0.69,
+   "expectedResync": true
+  },
+  {
+   "currentPlaying": true,
+   "expected": 0.5,
+   "wantPlaying": true,
+   "wantFraction": 0.68,
+   "expectedResync": true
+  },
+  {
+   "currentPlaying": true,
+   "expected": 0.5,
+   "wantPlaying": true,
+   "wantFraction": 0.31,
+   "expectedResync": true
+  },
+  {
+   "currentPlaying": true,
+   "expected": 0.5,
+   "wantPlaying": true,
+   "wantFraction": 0.32,
+   "expectedResync": false
+  },
+  {
+   "currentPlaying": false,
+   "expected": 0.0,
+   "wantPlaying": false,
+   "wantFraction": 1.0,
+   "expectedResync": true
+  }
+ ],
+ "barFormat": [
+  {
+   "seconds": 0,
+   "expected": "0:00"
+  },
+  {
+   "seconds": 0.4,
+   "expected": "0:00"
+  },
+  {
+   "seconds": 0.999,
+   "expected": "0:00"
+  },
+  {
+   "seconds": 1,
+   "expected": "0:01"
+  },
+  {
+   "seconds": 59.9,
+   "expected": "0:59"
+  },
+  {
+   "seconds": 60,
+   "expected": "1:00"
+  },
+  {
+   "seconds": 61,
+   "expected": "1:01"
+  },
+  {
+   "seconds": 125.5,
+   "expected": "2:05"
+  },
+  {
+   "seconds": 599.99,
+   "expected": "9:59"
+  },
+  {
+   "seconds": 600,
+   "expected": "10:00"
+  },
+  {
+   "seconds": 3599,
+   "expected": "59:59"
+  },
+  {
+   "seconds": 3600,
+   "expected": "60:00"
+  },
+  {
+   "seconds": 7325.4,
+   "expected": "122:05"
+  },
+  {
+   "seconds": -3,
+   "expected": "0:00"
+  }
+ ],
+ "barFraction": [
+  {
+   "position": 0,
+   "duration": 200,
+   "expected": 0.0
+  },
+  {
+   "position": 50,
+   "duration": 200,
+   "expected": 0.25
+  },
+  {
+   "position": 200,
+   "duration": 200,
+   "expected": 1.0
+  },
+  {
+   "position": 260,
+   "duration": 200,
+   "expected": 1.0
+  },
+  {
+   "position": -5,
+   "duration": 200,
+   "expected": 0.0
+  },
+  {
+   "position": 30,
+   "duration": null,
+   "expected": 0.0
+  },
+  {
+   "position": 30,
+   "duration": 0,
+   "expected": 0.0
+  }
+ ],
+ "barLayout": [
+  {
+   "width": 1920,
+   "height": 1080,
+   "barWidth": 720.0,
+   "left": 600.0,
+   "top": 938,
+   "prevX": 286.0,
+   "playX": 360.0,
+   "nextX": 434.0,
+   "exitX": 680.0,
+   "rowY": 30,
+   "trackLeft": 84,
+   "trackWidth": 552.0,
+   "trackTop": 72,
+   "elapsedLeft": 14,
+   "totalLeft": 644.0,
+   "timeTop": 66
+  },
+  {
+   "width": 3840,
+   "height": 2160,
+   "barWidth": 720.0,
+   "left": 1560.0,
+   "top": 2018,
+   "prevX": 286.0,
+   "playX": 360.0,
+   "nextX": 434.0,
+   "exitX": 680.0,
+   "rowY": 30,
+   "trackLeft": 84,
+   "trackWidth": 552.0,
+   "trackTop": 72,
+   "elapsedLeft": 14,
+   "totalLeft": 644.0,
+   "timeTop": 66
+  },
+  {
+   "width": 1366,
+   "height": 768,
+   "barWidth": 720.0,
+   "left": 323.0,
+   "top": 626,
+   "prevX": 286.0,
+   "playX": 360.0,
+   "nextX": 434.0,
+   "exitX": 680.0,
+   "rowY": 30,
+   "trackLeft": 84,
+   "trackWidth": 552.0,
+   "trackTop": 72,
+   "elapsedLeft": 14,
+   "totalLeft": 644.0,
+   "timeTop": 66
+  },
+  {
+   "width": 800,
+   "height": 600,
+   "barWidth": 448.00000000000006,
+   "left": 175.99999999999997,
+   "top": 458,
+   "prevX": 150.00000000000003,
+   "playX": 224.00000000000003,
+   "nextX": 298.0,
+   "exitX": 408.00000000000006,
+   "rowY": 30,
+   "trackLeft": 84,
+   "trackWidth": 280.00000000000006,
+   "trackTop": 72,
+   "elapsedLeft": 14,
+   "totalLeft": 372.00000000000006,
+   "timeTop": 66
+  },
+  {
+   "width": 5120,
+   "height": 1440,
+   "barWidth": 720.0,
+   "left": 2200.0,
+   "top": 1298,
+   "prevX": 286.0,
+   "playX": 360.0,
+   "nextX": 434.0,
+   "exitX": 680.0,
+   "rowY": 30,
+   "trackLeft": 84,
+   "trackWidth": 552.0,
+   "trackTop": 72,
+   "elapsedLeft": 14,
+   "totalLeft": 644.0,
+   "timeTop": 66
+  }
+ ],
+ "lineExit": [
+  {
+   "words": 0,
+   "step": 0.0,
+   "wordDuration": 0.6,
+   "total": 0.6
+  },
+  {
+   "words": 1,
+   "step": 0.0,
+   "wordDuration": 0.6,
+   "total": 0.6
+  },
+  {
+   "words": 2,
+   "step": 0.04,
+   "wordDuration": 0.5599999999999999,
+   "total": 0.6
+  },
+  {
+   "words": 3,
+   "step": 0.04,
+   "wordDuration": 0.52,
+   "total": 0.6
+  },
+  {
+   "words": 4,
+   "step": 0.04,
+   "wordDuration": 0.48,
+   "total": 0.6
+  },
+  {
+   "words": 5,
+   "step": 0.04,
+   "wordDuration": 0.43999999999999995,
+   "total": 0.6
+  },
+  {
+   "words": 6,
+   "step": 0.04,
+   "wordDuration": 0.39999999999999997,
+   "total": 0.6
+  },
+  {
+   "words": 7,
+   "step": 0.04,
+   "wordDuration": 0.36,
+   "total": 0.6
+  },
+  {
+   "words": 8,
+   "step": 0.04,
+   "wordDuration": 0.31999999999999995,
+   "total": 0.6
+  },
+  {
+   "words": 9,
+   "step": 0.04,
+   "wordDuration": 0.3,
+   "total": 0.62
+  },
+  {
+   "words": 10,
+   "step": 0.035555555555555556,
+   "wordDuration": 0.3,
+   "total": 0.62
+  },
+  {
+   "words": 11,
+   "step": 0.032,
+   "wordDuration": 0.3,
+   "total": 0.62
+  },
+  {
+   "words": 12,
+   "step": 0.02909090909090909,
+   "wordDuration": 0.3,
+   "total": 0.62
+  },
+  {
+   "words": 13,
+   "step": 0.02666666666666667,
+   "wordDuration": 0.3,
+   "total": 0.62
+  }
+ ],
+ "card": [
+  {
+   "width": 1920,
+   "height": 1080,
+   "side": 432.0,
+   "artLeft": 744.0,
+   "artTop": 108.0,
+   "artCorner": 17.28,
+   "reflectionTop": 542.0,
+   "reflectionHeight": 120.96000000000001,
+   "titleSize": 62.64,
+   "artistSize": 33.48,
+   "textLeft": 384.0,
+   "textWidth": 1152.0,
+   "titleTop": 713.448,
+   "titleHeight": 81.432,
+   "artistTop": 804.924,
+   "artistHeight": 43.524
+  },
+  {
+   "width": 3840,
+   "height": 2160,
+   "side": 864.0,
+   "artLeft": 1488.0,
+   "artTop": 216.0,
+   "artCorner": 34.56,
+   "reflectionTop": 1082.0,
+   "reflectionHeight": 241.92000000000002,
+   "titleSize": 125.28,
+   "artistSize": 66.96,
+   "textLeft": 768.0,
+   "textWidth": 2304.0,
+   "titleTop": 1426.896,
+   "titleHeight": 162.864,
+   "artistTop": 1609.848,
+   "artistHeight": 87.048
+  },
+  {
+   "width": 1366,
+   "height": 768,
+   "side": 307.20000000000005,
+   "artLeft": 529.4,
+   "artTop": 76.79999999999995,
+   "artCorner": 12.288000000000002,
+   "reflectionTop": 386.0,
+   "reflectionHeight": 86.01600000000002,
+   "titleSize": 44.544000000000004,
+   "artistSize": 23.808,
+   "textLeft": 273.2,
+   "textWidth": 819.6,
+   "titleTop": 507.34080000000006,
+   "titleHeight": 57.90720000000001,
+   "artistTop": 572.3904,
+   "artistHeight": 30.950400000000002
+  },
+  {
+   "width": 1080,
+   "height": 1920,
+   "side": 324.0,
+   "artLeft": 378.0,
+   "artTop": 636.0,
+   "artCorner": 12.96,
+   "reflectionTop": 962.0,
+   "reflectionHeight": 90.72000000000001,
+   "titleSize": 111.36,
+   "artistSize": 59.519999999999996,
+   "textLeft": 216.0,
+   "textWidth": 648.0,
+   "titleTop": 1135.152,
+   "titleHeight": 144.768,
+   "artistTop": 1297.776,
+   "artistHeight": 77.37599999999999
+  },
+  {
+   "width": 5120,
+   "height": 1440,
+   "side": 576.0,
+   "artLeft": 2272.0,
+   "artTop": 144.0,
+   "artCorner": 23.04,
+   "reflectionTop": 722.0,
+   "reflectionHeight": 161.28000000000003,
+   "titleSize": 83.52000000000001,
+   "artistSize": 44.64,
+   "textLeft": 1024.0,
+   "textWidth": 3072.0,
+   "titleTop": 951.2639999999999,
+   "titleHeight": 108.57600000000002,
+   "artistTop": 1073.2320000000002,
+   "artistHeight": 58.032000000000004
+  }
+ ],
+ "cardTiming": [
+  {
+   "reduce": false,
+   "in": 0.9,
+   "hold": 1.5,
+   "out": 0.9,
+   "total": 3.3
+  },
+  {
+   "reduce": true,
+   "in": 0.3,
+   "hold": 1.5,
+   "out": 0.3,
+   "total": 2.1
+  }
+ ],
+ "gapWanted": [
+  {
+   "label": "intro 12 s",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 0.0,
+   "gaps": [
+    {
+     "start": 0.0,
+     "end": 12
+    }
+   ],
+   "expected": true
+  },
+  {
+   "label": "intro 12 s",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 0.0,
+   "gaps": [
+    {
+     "start": 0.0,
+     "end": 12
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "intro 12 s",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 3.0,
+   "gaps": [
+    {
+     "start": 0.0,
+     "end": 12
+    }
+   ],
+   "expected": true
+  },
+  {
+   "label": "intro 12 s",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 3.0,
+   "gaps": [
+    {
+     "start": 0.0,
+     "end": 12
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "intro 12 s",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 6.0,
+   "gaps": [
+    {
+     "start": 0.0,
+     "end": 12
+    }
+   ],
+   "expected": true
+  },
+  {
+   "label": "intro 12 s",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 6.0,
+   "gaps": [
+    {
+     "start": 0.0,
+     "end": 12
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "intro 12 s",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 10.5,
+   "gaps": [
+    {
+     "start": 0.0,
+     "end": 12
+    }
+   ],
+   "expected": true
+  },
+  {
+   "label": "intro 12 s",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 10.5,
+   "gaps": [
+    {
+     "start": 0.0,
+     "end": 12
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "intro 12 s",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 11.0,
+   "gaps": [
+    {
+     "start": 0.0,
+     "end": 12
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "intro 12 s",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 11.0,
+   "gaps": [
+    {
+     "start": 0.0,
+     "end": 12
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "intro 12 s",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 12,
+   "gaps": [
+    {
+     "start": 0.0,
+     "end": 12
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "intro 12 s",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 12,
+   "gaps": [
+    {
+     "start": 0.0,
+     "end": 12
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "intro 6 s pile",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 0.0,
+   "gaps": [],
+   "expected": false
+  },
+  {
+   "label": "intro 6 s pile",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 0.0,
+   "gaps": [],
+   "expected": false
+  },
+  {
+   "label": "intro 6 s pile",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 3.0,
+   "gaps": [],
+   "expected": false
+  },
+  {
+   "label": "intro 6 s pile",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 3.0,
+   "gaps": [],
+   "expected": false
+  },
+  {
+   "label": "intro, placeholder",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 0.0,
+   "gaps": [
+    {
+     "start": 20,
+     "end": 40
+    },
+    {
+     "start": 41.5,
+     "end": 60.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "intro, placeholder",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 0.0,
+   "gaps": [
+    {
+     "start": 20,
+     "end": 40
+    },
+    {
+     "start": 41.5,
+     "end": 60.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "intro, placeholder",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 3.0,
+   "gaps": [
+    {
+     "start": 20,
+     "end": 40
+    },
+    {
+     "start": 41.5,
+     "end": 60.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "intro, placeholder",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 3.0,
+   "gaps": [
+    {
+     "start": 20,
+     "end": 40
+    },
+    {
+     "start": 41.5,
+     "end": 60.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "intro, placeholder",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 20,
+   "gaps": [
+    {
+     "start": 20,
+     "end": 40
+    },
+    {
+     "start": 41.5,
+     "end": 60.0
+    }
+   ],
+   "expected": true
+  },
+  {
+   "label": "intro, placeholder",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 20,
+   "gaps": [
+    {
+     "start": 20,
+     "end": 40
+    },
+    {
+     "start": 41.5,
+     "end": 60.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "intro, placeholder",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 30.0,
+   "gaps": [
+    {
+     "start": 20,
+     "end": 40
+    },
+    {
+     "start": 41.5,
+     "end": 60.0
+    }
+   ],
+   "expected": true
+  },
+  {
+   "label": "intro, placeholder",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 30.0,
+   "gaps": [
+    {
+     "start": 20,
+     "end": 40
+    },
+    {
+     "start": 41.5,
+     "end": 60.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "intro, placeholder",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 38.5,
+   "gaps": [
+    {
+     "start": 20,
+     "end": 40
+    },
+    {
+     "start": 41.5,
+     "end": 60.0
+    }
+   ],
+   "expected": true
+  },
+  {
+   "label": "intro, placeholder",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 38.5,
+   "gaps": [
+    {
+     "start": 20,
+     "end": 40
+    },
+    {
+     "start": 41.5,
+     "end": 60.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "intro, placeholder",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 39.0,
+   "gaps": [
+    {
+     "start": 20,
+     "end": 40
+    },
+    {
+     "start": 41.5,
+     "end": 60.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "intro, placeholder",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 39.0,
+   "gaps": [
+    {
+     "start": 20,
+     "end": 40
+    },
+    {
+     "start": 41.5,
+     "end": 60.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "intro, placeholder",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 40,
+   "gaps": [
+    {
+     "start": 20,
+     "end": 40
+    },
+    {
+     "start": 41.5,
+     "end": 60.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "intro, placeholder",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 40,
+   "gaps": [
+    {
+     "start": 20,
+     "end": 40
+    },
+    {
+     "start": 41.5,
+     "end": 60.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "intro, placeholder",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 41.5,
+   "gaps": [
+    {
+     "start": 20,
+     "end": 40
+    },
+    {
+     "start": 41.5,
+     "end": 60.0
+    }
+   ],
+   "expected": true
+  },
+  {
+   "label": "intro, placeholder",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 41.5,
+   "gaps": [
+    {
+     "start": 20,
+     "end": 40
+    },
+    {
+     "start": 41.5,
+     "end": 60.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "intro, placeholder",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 50.75,
+   "gaps": [
+    {
+     "start": 20,
+     "end": 40
+    },
+    {
+     "start": 41.5,
+     "end": 60.0
+    }
+   ],
+   "expected": true
+  },
+  {
+   "label": "intro, placeholder",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 50.75,
+   "gaps": [
+    {
+     "start": 20,
+     "end": 40
+    },
+    {
+     "start": 41.5,
+     "end": 60.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "intro, placeholder",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 58.5,
+   "gaps": [
+    {
+     "start": 20,
+     "end": 40
+    },
+    {
+     "start": 41.5,
+     "end": 60.0
+    }
+   ],
+   "expected": true
+  },
+  {
+   "label": "intro, placeholder",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 58.5,
+   "gaps": [
+    {
+     "start": 20,
+     "end": 40
+    },
+    {
+     "start": 41.5,
+     "end": 60.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "intro, placeholder",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 59.0,
+   "gaps": [
+    {
+     "start": 20,
+     "end": 40
+    },
+    {
+     "start": 41.5,
+     "end": 60.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "intro, placeholder",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 59.0,
+   "gaps": [
+    {
+     "start": 20,
+     "end": 40
+    },
+    {
+     "start": 41.5,
+     "end": 60.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "intro, placeholder",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 60.0,
+   "gaps": [
+    {
+     "start": 20,
+     "end": 40
+    },
+    {
+     "start": 41.5,
+     "end": 60.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "intro, placeholder",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 60.0,
+   "gaps": [
+    {
+     "start": 20,
+     "end": 40
+    },
+    {
+     "start": 41.5,
+     "end": 60.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "pas de trou",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 0.0,
+   "gaps": [],
+   "expected": false
+  },
+  {
+   "label": "pas de trou",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 0.0,
+   "gaps": [],
+   "expected": false
+  },
+  {
+   "label": "pas de trou",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 3.0,
+   "gaps": [],
+   "expected": false
+  },
+  {
+   "label": "pas de trou",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 3.0,
+   "gaps": [],
+   "expected": false
+  },
+  {
+   "label": "trou entre deux lignes",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 0.0,
+   "gaps": [
+    {
+     "start": 3.1,
+     "end": 33
+    },
+    {
+     "start": 41.38,
+     "end": 60.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "trou entre deux lignes",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 0.0,
+   "gaps": [
+    {
+     "start": 3.1,
+     "end": 33
+    },
+    {
+     "start": 41.38,
+     "end": 60.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "trou entre deux lignes",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 3.0,
+   "gaps": [
+    {
+     "start": 3.1,
+     "end": 33
+    },
+    {
+     "start": 41.38,
+     "end": 60.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "trou entre deux lignes",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 3.0,
+   "gaps": [
+    {
+     "start": 3.1,
+     "end": 33
+    },
+    {
+     "start": 41.38,
+     "end": 60.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "trou entre deux lignes",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 3.1,
+   "gaps": [
+    {
+     "start": 3.1,
+     "end": 33
+    },
+    {
+     "start": 41.38,
+     "end": 60.0
+    }
+   ],
+   "expected": true
+  },
+  {
+   "label": "trou entre deux lignes",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 3.1,
+   "gaps": [
+    {
+     "start": 3.1,
+     "end": 33
+    },
+    {
+     "start": 41.38,
+     "end": 60.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "trou entre deux lignes",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 18.05,
+   "gaps": [
+    {
+     "start": 3.1,
+     "end": 33
+    },
+    {
+     "start": 41.38,
+     "end": 60.0
+    }
+   ],
+   "expected": true
+  },
+  {
+   "label": "trou entre deux lignes",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 18.05,
+   "gaps": [
+    {
+     "start": 3.1,
+     "end": 33
+    },
+    {
+     "start": 41.38,
+     "end": 60.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "trou entre deux lignes",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 31.5,
+   "gaps": [
+    {
+     "start": 3.1,
+     "end": 33
+    },
+    {
+     "start": 41.38,
+     "end": 60.0
+    }
+   ],
+   "expected": true
+  },
+  {
+   "label": "trou entre deux lignes",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 31.5,
+   "gaps": [
+    {
+     "start": 3.1,
+     "end": 33
+    },
+    {
+     "start": 41.38,
+     "end": 60.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "trou entre deux lignes",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 32.0,
+   "gaps": [
+    {
+     "start": 3.1,
+     "end": 33
+    },
+    {
+     "start": 41.38,
+     "end": 60.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "trou entre deux lignes",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 32.0,
+   "gaps": [
+    {
+     "start": 3.1,
+     "end": 33
+    },
+    {
+     "start": 41.38,
+     "end": 60.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "trou entre deux lignes",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 33,
+   "gaps": [
+    {
+     "start": 3.1,
+     "end": 33
+    },
+    {
+     "start": 41.38,
+     "end": 60.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "trou entre deux lignes",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 33,
+   "gaps": [
+    {
+     "start": 3.1,
+     "end": 33
+    },
+    {
+     "start": 41.38,
+     "end": 60.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "trou entre deux lignes",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 41.38,
+   "gaps": [
+    {
+     "start": 3.1,
+     "end": 33
+    },
+    {
+     "start": 41.38,
+     "end": 60.0
+    }
+   ],
+   "expected": true
+  },
+  {
+   "label": "trou entre deux lignes",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 41.38,
+   "gaps": [
+    {
+     "start": 3.1,
+     "end": 33
+    },
+    {
+     "start": 41.38,
+     "end": 60.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "trou entre deux lignes",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 50.69,
+   "gaps": [
+    {
+     "start": 3.1,
+     "end": 33
+    },
+    {
+     "start": 41.38,
+     "end": 60.0
+    }
+   ],
+   "expected": true
+  },
+  {
+   "label": "trou entre deux lignes",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 50.69,
+   "gaps": [
+    {
+     "start": 3.1,
+     "end": 33
+    },
+    {
+     "start": 41.38,
+     "end": 60.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "trou entre deux lignes",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 58.5,
+   "gaps": [
+    {
+     "start": 3.1,
+     "end": 33
+    },
+    {
+     "start": 41.38,
+     "end": 60.0
+    }
+   ],
+   "expected": true
+  },
+  {
+   "label": "trou entre deux lignes",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 58.5,
+   "gaps": [
+    {
+     "start": 3.1,
+     "end": 33
+    },
+    {
+     "start": 41.38,
+     "end": 60.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "trou entre deux lignes",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 59.0,
+   "gaps": [
+    {
+     "start": 3.1,
+     "end": 33
+    },
+    {
+     "start": 41.38,
+     "end": 60.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "trou entre deux lignes",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 59.0,
+   "gaps": [
+    {
+     "start": 3.1,
+     "end": 33
+    },
+    {
+     "start": 41.38,
+     "end": 60.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "trou entre deux lignes",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 60.0,
+   "gaps": [
+    {
+     "start": 3.1,
+     "end": 33
+    },
+    {
+     "start": 41.38,
+     "end": 60.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "trou entre deux lignes",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 60.0,
+   "gaps": [
+    {
+     "start": 3.1,
+     "end": 33
+    },
+    {
+     "start": 41.38,
+     "end": 60.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "après la dernière",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 0.0,
+   "gaps": [
+    {
+     "start": 3.44,
+     "end": 60.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "après la dernière",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 0.0,
+   "gaps": [
+    {
+     "start": 3.44,
+     "end": 60.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "après la dernière",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 3.0,
+   "gaps": [
+    {
+     "start": 3.44,
+     "end": 60.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "après la dernière",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 3.0,
+   "gaps": [
+    {
+     "start": 3.44,
+     "end": 60.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "après la dernière",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 3.44,
+   "gaps": [
+    {
+     "start": 3.44,
+     "end": 60.0
+    }
+   ],
+   "expected": true
+  },
+  {
+   "label": "après la dernière",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 3.44,
+   "gaps": [
+    {
+     "start": 3.44,
+     "end": 60.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "après la dernière",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 31.72,
+   "gaps": [
+    {
+     "start": 3.44,
+     "end": 60.0
+    }
+   ],
+   "expected": true
+  },
+  {
+   "label": "après la dernière",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 31.72,
+   "gaps": [
+    {
+     "start": 3.44,
+     "end": 60.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "après la dernière",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 58.5,
+   "gaps": [
+    {
+     "start": 3.44,
+     "end": 60.0
+    }
+   ],
+   "expected": true
+  },
+  {
+   "label": "après la dernière",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 58.5,
+   "gaps": [
+    {
+     "start": 3.44,
+     "end": 60.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "après la dernière",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 59.0,
+   "gaps": [
+    {
+     "start": 3.44,
+     "end": 60.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "après la dernière",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 59.0,
+   "gaps": [
+    {
+     "start": 3.44,
+     "end": 60.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "après la dernière",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 60.0,
+   "gaps": [
+    {
+     "start": 3.44,
+     "end": 60.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "après la dernière",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 60.0,
+   "gaps": [
+    {
+     "start": 3.44,
+     "end": 60.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "durée inconnue",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 0.0,
+   "gaps": [],
+   "expected": false
+  },
+  {
+   "label": "durée inconnue",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 0.0,
+   "gaps": [],
+   "expected": false
+  },
+  {
+   "label": "durée inconnue",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 3.0,
+   "gaps": [],
+   "expected": false
+  },
+  {
+   "label": "durée inconnue",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 3.0,
+   "gaps": [],
+   "expected": false
+  },
+  {
+   "label": "♪ de 3 s",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 0.0,
+   "gaps": [
+    {
+     "start": 5,
+     "end": 8
+    },
+    {
+     "start": 9.56,
+     "end": 20.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "♪ de 3 s",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 0.0,
+   "gaps": [
+    {
+     "start": 5,
+     "end": 8
+    },
+    {
+     "start": 9.56,
+     "end": 20.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "♪ de 3 s",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 3.0,
+   "gaps": [
+    {
+     "start": 5,
+     "end": 8
+    },
+    {
+     "start": 9.56,
+     "end": 20.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "♪ de 3 s",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 3.0,
+   "gaps": [
+    {
+     "start": 5,
+     "end": 8
+    },
+    {
+     "start": 9.56,
+     "end": 20.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "♪ de 3 s",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 5,
+   "gaps": [
+    {
+     "start": 5,
+     "end": 8
+    },
+    {
+     "start": 9.56,
+     "end": 20.0
+    }
+   ],
+   "expected": true
+  },
+  {
+   "label": "♪ de 3 s",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 5,
+   "gaps": [
+    {
+     "start": 5,
+     "end": 8
+    },
+    {
+     "start": 9.56,
+     "end": 20.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "♪ de 3 s",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 6.5,
+   "gaps": [
+    {
+     "start": 5,
+     "end": 8
+    },
+    {
+     "start": 9.56,
+     "end": 20.0
+    }
+   ],
+   "expected": true
+  },
+  {
+   "label": "♪ de 3 s",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 6.5,
+   "gaps": [
+    {
+     "start": 5,
+     "end": 8
+    },
+    {
+     "start": 9.56,
+     "end": 20.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "♪ de 3 s",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 7.0,
+   "gaps": [
+    {
+     "start": 5,
+     "end": 8
+    },
+    {
+     "start": 9.56,
+     "end": 20.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "♪ de 3 s",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 7.0,
+   "gaps": [
+    {
+     "start": 5,
+     "end": 8
+    },
+    {
+     "start": 9.56,
+     "end": 20.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "♪ de 3 s",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 8,
+   "gaps": [
+    {
+     "start": 5,
+     "end": 8
+    },
+    {
+     "start": 9.56,
+     "end": 20.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "♪ de 3 s",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 8,
+   "gaps": [
+    {
+     "start": 5,
+     "end": 8
+    },
+    {
+     "start": 9.56,
+     "end": 20.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "♪ de 3 s",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 9.56,
+   "gaps": [
+    {
+     "start": 5,
+     "end": 8
+    },
+    {
+     "start": 9.56,
+     "end": 20.0
+    }
+   ],
+   "expected": true
+  },
+  {
+   "label": "♪ de 3 s",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 9.56,
+   "gaps": [
+    {
+     "start": 5,
+     "end": 8
+    },
+    {
+     "start": 9.56,
+     "end": 20.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "♪ de 3 s",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 14.780000000000001,
+   "gaps": [
+    {
+     "start": 5,
+     "end": 8
+    },
+    {
+     "start": 9.56,
+     "end": 20.0
+    }
+   ],
+   "expected": true
+  },
+  {
+   "label": "♪ de 3 s",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 14.780000000000001,
+   "gaps": [
+    {
+     "start": 5,
+     "end": 8
+    },
+    {
+     "start": 9.56,
+     "end": 20.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "♪ de 3 s",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 18.5,
+   "gaps": [
+    {
+     "start": 5,
+     "end": 8
+    },
+    {
+     "start": 9.56,
+     "end": 20.0
+    }
+   ],
+   "expected": true
+  },
+  {
+   "label": "♪ de 3 s",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 18.5,
+   "gaps": [
+    {
+     "start": 5,
+     "end": 8
+    },
+    {
+     "start": 9.56,
+     "end": 20.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "♪ de 3 s",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 19.0,
+   "gaps": [
+    {
+     "start": 5,
+     "end": 8
+    },
+    {
+     "start": 9.56,
+     "end": 20.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "♪ de 3 s",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 19.0,
+   "gaps": [
+    {
+     "start": 5,
+     "end": 8
+    },
+    {
+     "start": 9.56,
+     "end": 20.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "♪ de 3 s",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 20.0,
+   "gaps": [
+    {
+     "start": 5,
+     "end": 8
+    },
+    {
+     "start": 9.56,
+     "end": 20.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "♪ de 3 s",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 20.0,
+   "gaps": [
+    {
+     "start": 5,
+     "end": 8
+    },
+    {
+     "start": 9.56,
+     "end": 20.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "♪ de 2,9 s",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 0.0,
+   "gaps": [
+    {
+     "start": 9.46,
+     "end": 20.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "♪ de 2,9 s",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 0.0,
+   "gaps": [
+    {
+     "start": 9.46,
+     "end": 20.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "♪ de 2,9 s",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 3.0,
+   "gaps": [
+    {
+     "start": 9.46,
+     "end": 20.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "♪ de 2,9 s",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 3.0,
+   "gaps": [
+    {
+     "start": 9.46,
+     "end": 20.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "♪ de 2,9 s",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 9.46,
+   "gaps": [
+    {
+     "start": 9.46,
+     "end": 20.0
+    }
+   ],
+   "expected": true
+  },
+  {
+   "label": "♪ de 2,9 s",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 9.46,
+   "gaps": [
+    {
+     "start": 9.46,
+     "end": 20.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "♪ de 2,9 s",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 14.73,
+   "gaps": [
+    {
+     "start": 9.46,
+     "end": 20.0
+    }
+   ],
+   "expected": true
+  },
+  {
+   "label": "♪ de 2,9 s",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 14.73,
+   "gaps": [
+    {
+     "start": 9.46,
+     "end": 20.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "♪ de 2,9 s",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 18.5,
+   "gaps": [
+    {
+     "start": 9.46,
+     "end": 20.0
+    }
+   ],
+   "expected": true
+  },
+  {
+   "label": "♪ de 2,9 s",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 18.5,
+   "gaps": [
+    {
+     "start": 9.46,
+     "end": 20.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "♪ de 2,9 s",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 19.0,
+   "gaps": [
+    {
+     "start": 9.46,
+     "end": 20.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "♪ de 2,9 s",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 19.0,
+   "gaps": [
+    {
+     "start": 9.46,
+     "end": 20.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "♪ de 2,9 s",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 20.0,
+   "gaps": [
+    {
+     "start": 9.46,
+     "end": 20.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "♪ de 2,9 s",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 20.0,
+   "gaps": [
+    {
+     "start": 9.46,
+     "end": 20.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "ligne longue (plafond 6 s)",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 0.0,
+   "gaps": [
+    {
+     "start": 6.0,
+     "end": 12.1
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "ligne longue (plafond 6 s)",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 0.0,
+   "gaps": [
+    {
+     "start": 6.0,
+     "end": 12.1
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "ligne longue (plafond 6 s)",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 3.0,
+   "gaps": [
+    {
+     "start": 6.0,
+     "end": 12.1
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "ligne longue (plafond 6 s)",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 3.0,
+   "gaps": [
+    {
+     "start": 6.0,
+     "end": 12.1
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "ligne longue (plafond 6 s)",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 6.0,
+   "gaps": [
+    {
+     "start": 6.0,
+     "end": 12.1
+    }
+   ],
+   "expected": true
+  },
+  {
+   "label": "ligne longue (plafond 6 s)",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 6.0,
+   "gaps": [
+    {
+     "start": 6.0,
+     "end": 12.1
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "ligne longue (plafond 6 s)",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 9.05,
+   "gaps": [
+    {
+     "start": 6.0,
+     "end": 12.1
+    }
+   ],
+   "expected": true
+  },
+  {
+   "label": "ligne longue (plafond 6 s)",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 9.05,
+   "gaps": [
+    {
+     "start": 6.0,
+     "end": 12.1
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "ligne longue (plafond 6 s)",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 10.6,
+   "gaps": [
+    {
+     "start": 6.0,
+     "end": 12.1
+    }
+   ],
+   "expected": true
+  },
+  {
+   "label": "ligne longue (plafond 6 s)",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 10.6,
+   "gaps": [
+    {
+     "start": 6.0,
+     "end": 12.1
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "ligne longue (plafond 6 s)",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 11.1,
+   "gaps": [
+    {
+     "start": 6.0,
+     "end": 12.1
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "ligne longue (plafond 6 s)",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 11.1,
+   "gaps": [
+    {
+     "start": 6.0,
+     "end": 12.1
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "ligne longue (plafond 6 s)",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 12.1,
+   "gaps": [
+    {
+     "start": 6.0,
+     "end": 12.1
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "ligne longue (plafond 6 s)",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 12.1,
+   "gaps": [
+    {
+     "start": 6.0,
+     "end": 12.1
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "accents et emoji",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 0.0,
+   "gaps": [
+    {
+     "start": 1.38,
+     "end": 10
+    },
+    {
+     "start": 11.32,
+     "end": 30
+    },
+    {
+     "start": 31.38,
+     "end": 40.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "accents et emoji",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 0.0,
+   "gaps": [
+    {
+     "start": 1.38,
+     "end": 10
+    },
+    {
+     "start": 11.32,
+     "end": 30
+    },
+    {
+     "start": 31.38,
+     "end": 40.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "accents et emoji",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 1.38,
+   "gaps": [
+    {
+     "start": 1.38,
+     "end": 10
+    },
+    {
+     "start": 11.32,
+     "end": 30
+    },
+    {
+     "start": 31.38,
+     "end": 40.0
+    }
+   ],
+   "expected": true
+  },
+  {
+   "label": "accents et emoji",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 1.38,
+   "gaps": [
+    {
+     "start": 1.38,
+     "end": 10
+    },
+    {
+     "start": 11.32,
+     "end": 30
+    },
+    {
+     "start": 31.38,
+     "end": 40.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "accents et emoji",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 3.0,
+   "gaps": [
+    {
+     "start": 1.38,
+     "end": 10
+    },
+    {
+     "start": 11.32,
+     "end": 30
+    },
+    {
+     "start": 31.38,
+     "end": 40.0
+    }
+   ],
+   "expected": true
+  },
+  {
+   "label": "accents et emoji",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 3.0,
+   "gaps": [
+    {
+     "start": 1.38,
+     "end": 10
+    },
+    {
+     "start": 11.32,
+     "end": 30
+    },
+    {
+     "start": 31.38,
+     "end": 40.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "accents et emoji",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 5.6899999999999995,
+   "gaps": [
+    {
+     "start": 1.38,
+     "end": 10
+    },
+    {
+     "start": 11.32,
+     "end": 30
+    },
+    {
+     "start": 31.38,
+     "end": 40.0
+    }
+   ],
+   "expected": true
+  },
+  {
+   "label": "accents et emoji",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 5.6899999999999995,
+   "gaps": [
+    {
+     "start": 1.38,
+     "end": 10
+    },
+    {
+     "start": 11.32,
+     "end": 30
+    },
+    {
+     "start": 31.38,
+     "end": 40.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "accents et emoji",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 8.5,
+   "gaps": [
+    {
+     "start": 1.38,
+     "end": 10
+    },
+    {
+     "start": 11.32,
+     "end": 30
+    },
+    {
+     "start": 31.38,
+     "end": 40.0
+    }
+   ],
+   "expected": true
+  },
+  {
+   "label": "accents et emoji",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 8.5,
+   "gaps": [
+    {
+     "start": 1.38,
+     "end": 10
+    },
+    {
+     "start": 11.32,
+     "end": 30
+    },
+    {
+     "start": 31.38,
+     "end": 40.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "accents et emoji",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 9.0,
+   "gaps": [
+    {
+     "start": 1.38,
+     "end": 10
+    },
+    {
+     "start": 11.32,
+     "end": 30
+    },
+    {
+     "start": 31.38,
+     "end": 40.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "accents et emoji",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 9.0,
+   "gaps": [
+    {
+     "start": 1.38,
+     "end": 10
+    },
+    {
+     "start": 11.32,
+     "end": 30
+    },
+    {
+     "start": 31.38,
+     "end": 40.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "accents et emoji",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 10,
+   "gaps": [
+    {
+     "start": 1.38,
+     "end": 10
+    },
+    {
+     "start": 11.32,
+     "end": 30
+    },
+    {
+     "start": 31.38,
+     "end": 40.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "accents et emoji",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 10,
+   "gaps": [
+    {
+     "start": 1.38,
+     "end": 10
+    },
+    {
+     "start": 11.32,
+     "end": 30
+    },
+    {
+     "start": 31.38,
+     "end": 40.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "accents et emoji",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 11.32,
+   "gaps": [
+    {
+     "start": 1.38,
+     "end": 10
+    },
+    {
+     "start": 11.32,
+     "end": 30
+    },
+    {
+     "start": 31.38,
+     "end": 40.0
+    }
+   ],
+   "expected": true
+  },
+  {
+   "label": "accents et emoji",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 11.32,
+   "gaps": [
+    {
+     "start": 1.38,
+     "end": 10
+    },
+    {
+     "start": 11.32,
+     "end": 30
+    },
+    {
+     "start": 31.38,
+     "end": 40.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "accents et emoji",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 20.66,
+   "gaps": [
+    {
+     "start": 1.38,
+     "end": 10
+    },
+    {
+     "start": 11.32,
+     "end": 30
+    },
+    {
+     "start": 31.38,
+     "end": 40.0
+    }
+   ],
+   "expected": true
+  },
+  {
+   "label": "accents et emoji",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 20.66,
+   "gaps": [
+    {
+     "start": 1.38,
+     "end": 10
+    },
+    {
+     "start": 11.32,
+     "end": 30
+    },
+    {
+     "start": 31.38,
+     "end": 40.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "accents et emoji",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 28.5,
+   "gaps": [
+    {
+     "start": 1.38,
+     "end": 10
+    },
+    {
+     "start": 11.32,
+     "end": 30
+    },
+    {
+     "start": 31.38,
+     "end": 40.0
+    }
+   ],
+   "expected": true
+  },
+  {
+   "label": "accents et emoji",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 28.5,
+   "gaps": [
+    {
+     "start": 1.38,
+     "end": 10
+    },
+    {
+     "start": 11.32,
+     "end": 30
+    },
+    {
+     "start": 31.38,
+     "end": 40.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "accents et emoji",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 29.0,
+   "gaps": [
+    {
+     "start": 1.38,
+     "end": 10
+    },
+    {
+     "start": 11.32,
+     "end": 30
+    },
+    {
+     "start": 31.38,
+     "end": 40.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "accents et emoji",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 29.0,
+   "gaps": [
+    {
+     "start": 1.38,
+     "end": 10
+    },
+    {
+     "start": 11.32,
+     "end": 30
+    },
+    {
+     "start": 31.38,
+     "end": 40.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "accents et emoji",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 30,
+   "gaps": [
+    {
+     "start": 1.38,
+     "end": 10
+    },
+    {
+     "start": 11.32,
+     "end": 30
+    },
+    {
+     "start": 31.38,
+     "end": 40.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "accents et emoji",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 30,
+   "gaps": [
+    {
+     "start": 1.38,
+     "end": 10
+    },
+    {
+     "start": 11.32,
+     "end": 30
+    },
+    {
+     "start": 31.38,
+     "end": 40.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "accents et emoji",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 31.38,
+   "gaps": [
+    {
+     "start": 1.38,
+     "end": 10
+    },
+    {
+     "start": 11.32,
+     "end": 30
+    },
+    {
+     "start": 31.38,
+     "end": 40.0
+    }
+   ],
+   "expected": true
+  },
+  {
+   "label": "accents et emoji",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 31.38,
+   "gaps": [
+    {
+     "start": 1.38,
+     "end": 10
+    },
+    {
+     "start": 11.32,
+     "end": 30
+    },
+    {
+     "start": 31.38,
+     "end": 40.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "accents et emoji",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 35.69,
+   "gaps": [
+    {
+     "start": 1.38,
+     "end": 10
+    },
+    {
+     "start": 11.32,
+     "end": 30
+    },
+    {
+     "start": 31.38,
+     "end": 40.0
+    }
+   ],
+   "expected": true
+  },
+  {
+   "label": "accents et emoji",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 35.69,
+   "gaps": [
+    {
+     "start": 1.38,
+     "end": 10
+    },
+    {
+     "start": 11.32,
+     "end": 30
+    },
+    {
+     "start": 31.38,
+     "end": 40.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "accents et emoji",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 38.5,
+   "gaps": [
+    {
+     "start": 1.38,
+     "end": 10
+    },
+    {
+     "start": 11.32,
+     "end": 30
+    },
+    {
+     "start": 31.38,
+     "end": 40.0
+    }
+   ],
+   "expected": true
+  },
+  {
+   "label": "accents et emoji",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 38.5,
+   "gaps": [
+    {
+     "start": 1.38,
+     "end": 10
+    },
+    {
+     "start": 11.32,
+     "end": 30
+    },
+    {
+     "start": 31.38,
+     "end": 40.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "accents et emoji",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 39.0,
+   "gaps": [
+    {
+     "start": 1.38,
+     "end": 10
+    },
+    {
+     "start": 11.32,
+     "end": 30
+    },
+    {
+     "start": 31.38,
+     "end": 40.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "accents et emoji",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 39.0,
+   "gaps": [
+    {
+     "start": 1.38,
+     "end": 10
+    },
+    {
+     "start": 11.32,
+     "end": 30
+    },
+    {
+     "start": 31.38,
+     "end": 40.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "accents et emoji",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 40.0,
+   "gaps": [
+    {
+     "start": 1.38,
+     "end": 10
+    },
+    {
+     "start": 11.32,
+     "end": 30
+    },
+    {
+     "start": 31.38,
+     "end": 40.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "accents et emoji",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 40.0,
+   "gaps": [
+    {
+     "start": 1.38,
+     "end": 10
+    },
+    {
+     "start": 11.32,
+     "end": 30
+    },
+    {
+     "start": 31.38,
+     "end": 40.0
+    }
+   ],
+   "expected": false
+  },
+  {
+   "label": "vide",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 0.0,
+   "gaps": [],
+   "expected": false
+  },
+  {
+   "label": "vide",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 0.0,
+   "gaps": [],
+   "expected": false
+  },
+  {
+   "label": "vide",
+   "mode": "synced",
+   "playingOrPaused": true,
+   "position": 3.0,
+   "gaps": [],
+   "expected": false
+  },
+  {
+   "label": "vide",
+   "mode": "synced",
+   "playingOrPaused": false,
+   "position": 3.0,
+   "gaps": [],
+   "expected": false
+  },
+  {
+   "label": "état searching",
+   "mode": "searching",
+   "playingOrPaused": true,
+   "position": 5.0,
+   "gaps": [],
+   "expected": false
+  },
+  {
+   "label": "état offline",
+   "mode": "offline",
+   "playingOrPaused": true,
+   "position": 5.0,
+   "gaps": [],
+   "expected": false
+  },
+  {
+   "label": "état busy",
+   "mode": "busy",
+   "playingOrPaused": true,
+   "position": 5.0,
+   "gaps": [],
+   "expected": false
+  },
+  {
+   "label": "état other",
+   "mode": "other",
+   "playingOrPaused": true,
+   "position": 5.0,
+   "gaps": [],
+   "expected": true
+  }
+ ],
+ "particleBudget": {
+  "birthRate": 3.4,
+  "lifetime": 8.0,
+  "budget": 27,
+  "maximum": 30
+ },
+ "screenFallback": [
+  {
+   "label": "rien ne change",
+   "screens": [
+    [
+     "Écran A",
+     0,
+     0,
+     1920,
+     1080
+    ],
+    [
+     "Écran B",
+     1920,
+     0,
+     2560,
+     1440
+    ]
+   ],
+   "mainIndex": 0,
+   "current": [
+    "Écran B",
+    1920,
+    0,
+    2560,
+    1440
+   ],
+   "expected": 1
+  },
+  {
+   "label": "l'écran courant est débranché",
+   "screens": [
+    [
+     "Écran A",
+     0,
+     0,
+     1920,
+     1080
+    ]
+   ],
+   "mainIndex": 0,
+   "current": [
+    "Écran B",
+    1920,
+    0,
+    2560,
+    1440
+   ],
+   "expected": 0
+  },
+  {
+   "label": "débranché, l'autre est le principal (indice 1)",
+   "screens": [
+    [
+     "Écran B",
+     1920,
+     0,
+     2560,
+     1440
+    ]
+   ],
+   "mainIndex": 0,
+   "current": [
+    "Écran A",
+    0,
+    0,
+    1920,
+    1080
+   ],
+   "expected": 0
+  },
+  {
+   "label": "même nom, autre résolution",
+   "screens": [
+    [
+     "Écran A",
+     0,
+     0,
+     1920,
+     1080
+    ],
+    [
+     "Écran B",
+     1920,
+     0,
+     1920,
+     1080
+    ]
+   ],
+   "mainIndex": 0,
+   "current": [
+    "Écran B",
+    1920,
+    0,
+    2560,
+    1440
+   ],
+   "expected": 1
+  },
+  {
+   "label": "principal en deuxième",
+   "screens": [
+    [
+     "Écran B",
+     1920,
+     0,
+     2560,
+     1440
+    ],
+    [
+     "Écran A",
+     0,
+     0,
+     1920,
+     1080
+    ]
+   ],
+   "mainIndex": 1,
+   "current": [
+    "Écran C",
+    -1280,
+    0,
+    1280,
+    1024
+   ],
+   "expected": 1
+  },
+  {
+   "label": "aucun écran",
+   "screens": [],
+   "mainIndex": 0,
+   "current": [
+    "Écran A",
+    0,
+    0,
+    1920,
+    1080
+   ],
+   "expected": -1
+  },
+  {
+   "label": "indice principal hors limites (trop grand)",
+   "screens": [
+    [
+     "Écran A",
+     0,
+     0,
+     1920,
+     1080
+    ],
+    [
+     "Écran B",
+     1920,
+     0,
+     2560,
+     1440
+    ]
+   ],
+   "mainIndex": 9,
+   "current": [
+    "Écran C",
+    -1280,
+    0,
+    1280,
+    1024
+   ],
+   "expected": 1
+  },
+  {
+   "label": "indice principal négatif",
+   "screens": [
+    [
+     "Écran A",
+     0,
+     0,
+     1920,
+     1080
+    ],
+    [
+     "Écran B",
+     1920,
+     0,
+     2560,
+     1440
+    ]
+   ],
+   "mainIndex": -3,
+   "current": [
+    "Écran C",
+    -1280,
+    0,
+    1280,
+    1024
+   ],
+   "expected": 0
+  },
+  {
+   "label": "noms en double : le premier gagne",
+   "screens": [
+    [
+     "Écran A",
+     5,
+     5,
+     10,
+     10
+    ],
+    [
+     "Écran A",
+     0,
+     0,
+     1920,
+     1080
+    ]
+   ],
+   "mainIndex": 0,
+   "current": [
+    "Écran A",
+    0,
+    0,
+    1920,
+    1080
+   ],
+   "expected": 1
+  },
+  {
+   "label": "même nom, rectangle différent, plusieurs",
+   "screens": [
+    [
+     "Écran B",
+     0,
+     0,
+     100,
+     100
+    ],
+    [
+     "Écran B",
+     1,
+     1,
+     100,
+     100
+    ]
+   ],
+   "mainIndex": 0,
+   "current": [
+    "Écran B",
+    7,
+    7,
+    7,
+    7
+   ],
+   "expected": 0
+  }
+ ]
+}

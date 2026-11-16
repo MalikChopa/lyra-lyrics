@@ -72,6 +72,52 @@ internal static class Native
     [DllImport("dwmapi.dll")]
     public static extern int DwmExtendFrameIntoClientArea(IntPtr hwnd, ref MARGINS margins);
 
+    // ---- Scène (W6b) : écrans, DPI, veille de l'écran
+    [StructLayout(LayoutKind.Sequential)]
+    public struct POINT { public int X, Y; }
+
+    public const uint MONITOR_DEFAULTTONEAREST = 2;
+    public const int MDT_EFFECTIVE_DPI = 0;
+
+    [DllImport("user32.dll")]
+    public static extern IntPtr MonitorFromPoint(POINT pt, uint flags);
+
+    [DllImport("user32.dll")]
+    public static extern IntPtr MonitorFromWindow(IntPtr hwnd, uint flags);
+
+    [DllImport("shcore.dll")]
+    public static extern int GetDpiForMonitor(IntPtr hmonitor, int dpiType, out uint dpiX, out uint dpiY);
+
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+    public struct DISPLAY_DEVICE
+    {
+        public int cb;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)] public string DeviceName;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)] public string DeviceString;
+        public int StateFlags;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)] public string DeviceID;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)] public string DeviceKey;
+    }
+
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool EnumDisplayDevices(string? lpDevice, uint iDevNum, ref DISPLAY_DEVICE lpDisplayDevice, uint dwFlags);
+
+    /// <summary>Notification de l'état de l'écran (allumé / éteint / atténué) : GUID_CONSOLE_DISPLAY_STATE.</summary>
+    public static readonly Guid GuidConsoleDisplayState = new("6fe69556-704a-47a0-8f24-c28d936fda47");
+    public const uint DEVICE_NOTIFY_WINDOW_HANDLE = 0;
+    public const int WM_POWERBROADCAST = 0x0218, PBT_POWERSETTINGCHANGE = 0x8013;
+
+    [DllImport("user32.dll", SetLastError = true)]
+    public static extern IntPtr RegisterPowerSettingNotification(IntPtr hRecipient, ref Guid powerSettingGuid, uint flags);
+
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool UnregisterPowerSettingNotification(IntPtr handle);
+
+    [StructLayout(LayoutKind.Sequential, Pack = 4)]
+    public struct POWERBROADCAST_SETTING { public Guid PowerSetting; public uint DataLength; public byte Data; }
+
     public static long GetExStyle(IntPtr hwnd) => GetWindowLongPtr(hwnd, GWL_EXSTYLE).ToInt64();
 
     /// <summary>Ajoute / retire des bits de style étendu. Rend le code d'erreur Win32 du dernier SetWindowLongPtr (0 = rien à signaler).</summary>
@@ -95,6 +141,18 @@ internal static class Native
         if ((style & WS_EX_TOOLWINDOW) != 0) names.Add("TOOLWINDOW");
         if ((style & WS_EX_TOPMOST) != 0) names.Add("TOPMOST");
         return $"0x{style:x8} [{string.Join(" ", names)}]";
+    }
+
+    public const int DWMWA_CLOAKED = 13;
+
+    [DllImport("dwmapi.dll")]
+    private static extern int DwmGetWindowAttribute(IntPtr hwnd, int attr, out int attrValue, int attrSize);
+
+    /// <summary>Vrai si DWM a « masqué » la fenêtre (cloaked) : c'est le cas d'une fenêtre qui se trouve sur un AUTRE bureau virtuel. Faux en cas d'échec.</summary>
+    public static bool IsCloaked(IntPtr hwnd)
+    {
+        try { return hwnd != IntPtr.Zero && DwmGetWindowAttribute(hwnd, DWMWA_CLOAKED, out var v, sizeof(int)) == 0 && v != 0; }
+        catch (Exception e) when (e is DllNotFoundException or EntryPointNotFoundException) { return false; }
     }
 
     public static bool SetDwmInt(IntPtr hwnd, int attr, int value) => DwmSetWindowAttribute(hwnd, attr, ref value, sizeof(int)) == 0;

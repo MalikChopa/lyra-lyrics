@@ -172,7 +172,7 @@ public class CacheIndexTests
     public void AppIdentity_Token_And_UserAgent_AreAscii()
     {
         Assert.Equal("LyraLyrics", AppIdentity.UserAgentToken);
-        Assert.Equal("LyraLyrics/1.2.0 (+https://github.com/MalikChopa/lyra-lyrics)", AppIdentity.UserAgent);
+        Assert.Equal("LyraLyrics/1.3.0 (+https://github.com/MalikChopa/lyra-lyrics)", AppIdentity.UserAgent);
         Assert.All(AppIdentity.UserAgent, ch => Assert.True(ch < 128));
         Assert.Equal("EleveEte", AppIdentity.Token("Élève été"));
     }

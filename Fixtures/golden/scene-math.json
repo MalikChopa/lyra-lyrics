@@ -1,0 +1,1599 @@
+{
+ "description": "Calculs purs de la Scène (SceneMath de Sources/AppSupport/Features110.swift) : S5 remplissage, S6 passages sans paroles, S4 taille du texte, contraste du fond, dégradé S1. Valeurs produites par scene-generator.py (Python, indépendant). Lu par Swift (SceneFixtureTests) et C# (W6ParityTests). Mesure factice de fitSize : lignes = ceil(nbCaractères / max(1, floor(largeur / (taille × 0,5)))), hauteur = lignes × taille × 1,2. « characters » = nombre de caractères au sens de Swift (grappes de graphèmes).",
+ "tolerance": 1e-09,
+ "fill": {
+  "songs": {
+   "song": [
+    {
+     "time": 0,
+     "text": "Une"
+    },
+    {
+     "time": 2.8,
+     "text": "Deux"
+    },
+    {
+     "time": 30,
+     "text": "Trois"
+    },
+    {
+     "time": 31,
+     "text": "Quatre ligne"
+    },
+    {
+     "time": 31.5,
+     "text": "Cinq"
+    }
+   ],
+   "single": [
+    {
+     "time": 5,
+     "text": "Seule"
+    }
+   ],
+   "same": [
+    {
+     "time": 1,
+     "text": "a"
+    },
+    {
+     "time": 1,
+     "text": "b"
+    }
+   ],
+   "backwards": [
+    {
+     "time": 10,
+     "text": "a"
+    },
+    {
+     "time": 8,
+     "text": "b"
+    }
+   ]
+  },
+  "durations": [
+   {
+    "song": "song",
+    "index": -1,
+    "expected": 0.8
+   },
+   {
+    "song": "song",
+    "index": 0,
+    "expected": 2.576
+   },
+   {
+    "song": "song",
+    "index": 1,
+    "expected": 7.0
+   },
+   {
+    "song": "song",
+    "index": 2,
+    "expected": 0.92
+   },
+   {
+    "song": "song",
+    "index": 3,
+    "expected": 0.8
+   },
+   {
+    "song": "song",
+    "index": 4,
+    "expected": 3.68
+   },
+   {
+    "song": "song",
+    "index": 5,
+    "expected": 0.8
+   },
+   {
+    "song": "single",
+    "index": -1,
+    "expected": 0.8
+   },
+   {
+    "song": "single",
+    "index": 0,
+    "expected": 3.68
+   },
+   {
+    "song": "single",
+    "index": 1,
+    "expected": 0.8
+   },
+   {
+    "song": "same",
+    "index": -1,
+    "expected": 0.8
+   },
+   {
+    "song": "same",
+    "index": 0,
+    "expected": 0.8
+   },
+   {
+    "song": "same",
+    "index": 1,
+    "expected": 3.68
+   },
+   {
+    "song": "same",
+    "index": 2,
+    "expected": 0.8
+   },
+   {
+    "song": "backwards",
+    "index": -1,
+    "expected": 0.8
+   },
+   {
+    "song": "backwards",
+    "index": 0,
+    "expected": 0.8
+   },
+   {
+    "song": "backwards",
+    "index": 1,
+    "expected": 3.68
+   },
+   {
+    "song": "backwards",
+    "index": 2,
+    "expected": 0.8
+   }
+  ],
+  "fractions": [
+   {
+    "position": 1,
+    "start": 0,
+    "duration": 2,
+    "expected": 0.5
+   },
+   {
+    "position": -1,
+    "start": 0,
+    "duration": 2,
+    "expected": 0.0
+   },
+   {
+    "position": 9,
+    "start": 0,
+    "duration": 2,
+    "expected": 1.0
+   },
+   {
+    "position": 0,
+    "start": 0,
+    "duration": 2,
+    "expected": 0.0
+   },
+   {
+    "position": 2,
+    "start": 0,
+    "duration": 2,
+    "expected": 1.0
+   },
+   {
+    "position": 3.3,
+    "start": 3,
+    "duration": 0.8,
+    "expected": 0.3749999999999998
+   },
+   {
+    "position": 5,
+    "start": 5,
+    "duration": 0,
+    "expected": 1.0
+   },
+   {
+    "position": 5,
+    "start": 5,
+    "duration": -1,
+    "expected": 1.0
+   },
+   {
+    "position": 12.5,
+    "start": 10,
+    "duration": 7,
+    "expected": 0.35714285714285715
+   },
+   {
+    "position": 0.5,
+    "start": 1,
+    "duration": 4,
+    "expected": 0.0
+   },
+   {
+    "position": 100,
+    "start": 1,
+    "duration": 7,
+    "expected": 1.0
+   }
+  ]
+ },
+ "sungDuration": [
+  {
+   "text": "",
+   "characters": 0,
+   "expected": 1.2
+  },
+  {
+   "text": "a",
+   "characters": 1,
+   "expected": 1.26
+  },
+  {
+   "text": "Bonjour",
+   "characters": 7,
+   "expected": 1.6199999999999999
+  },
+  {
+   "text": "Il était une fois",
+   "characters": 17,
+   "expected": 2.2199999999999998
+  },
+  {
+   "text": "é",
+   "characters": 1,
+   "expected": 1.26
+  },
+  {
+   "text": "é",
+   "characters": 1,
+   "expected": 1.26
+  },
+  {
+   "text": "👍🏽",
+   "characters": 1,
+   "expected": 1.26
+  },
+  {
+   "text": "🇫🇷🇯🇵",
+   "characters": 2,
+   "expected": 1.3199999999999998
+  },
+  {
+   "text": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+   "characters": 80,
+   "expected": 6.0
+  },
+  {
+   "text": "Ça va très bien, merci beaucoup pour tout",
+   "characters": 41,
+   "expected": 3.66
+  },
+  {
+   "text": "日本語の歌詞",
+   "characters": 6,
+   "expected": 1.56
+  },
+  {
+   "text": "🎵 ♪ 🎶",
+   "characters": 5,
+   "expected": 1.5
+  }
+ ],
+ "gaps": [
+  {
+   "label": "intro 12 s",
+   "lines": [
+    {
+     "time": 12,
+     "text": "Après l'introduction"
+    }
+   ],
+   "placeholder": "♪",
+   "duration": null,
+   "expected": [
+    {
+     "start": 0.0,
+     "end": 12,
+     "fadeOutAt": 11.0
+    }
+   ]
+  },
+  {
+   "label": "intro 6 s pile",
+   "lines": [
+    {
+     "time": 6,
+     "text": "Tout juste"
+    }
+   ],
+   "placeholder": "♪",
+   "duration": null,
+   "expected": []
+  },
+  {
+   "label": "intro, placeholder",
+   "lines": [
+    {
+     "time": 20,
+     "text": "♪"
+    },
+    {
+     "time": 40,
+     "text": "Texte"
+    }
+   ],
+   "placeholder": "♪",
+   "duration": 60.0,
+   "expected": [
+    {
+     "start": 20,
+     "end": 40,
+     "fadeOutAt": 39.0
+    },
+    {
+     "start": 41.5,
+     "end": 60.0,
+     "fadeOutAt": 59.0
+    }
+   ]
+  },
+  {
+   "label": "pas de trou",
+   "lines": [
+    {
+     "time": 0,
+     "text": "Court"
+    },
+    {
+     "time": 4,
+     "text": "Court"
+    }
+   ],
+   "placeholder": "♪",
+   "duration": 8.0,
+   "expected": []
+  },
+  {
+   "label": "trou entre deux lignes",
+   "lines": [
+    {
+     "time": 0,
+     "text": "Bonjour"
+    },
+    {
+     "time": 1.6,
+     "text": "Suite"
+    },
+    {
+     "time": 33,
+     "text": "Après"
+    },
+    {
+     "time": 40,
+     "text": "Fin"
+    }
+   ],
+   "placeholder": "♪",
+   "duration": 60.0,
+   "expected": [
+    {
+     "start": 3.1,
+     "end": 33,
+     "fadeOutAt": 32.0
+    },
+    {
+     "start": 41.38,
+     "end": 60.0,
+     "fadeOutAt": 59.0
+    }
+   ]
+  },
+  {
+   "label": "après la dernière",
+   "lines": [
+    {
+     "time": 1,
+     "text": "Une seule ligne"
+    },
+    {
+     "time": 2,
+     "text": "Deux"
+    }
+   ],
+   "placeholder": "♪",
+   "duration": 60.0,
+   "expected": [
+    {
+     "start": 3.44,
+     "end": 60.0,
+     "fadeOutAt": 59.0
+    }
+   ]
+  },
+  {
+   "label": "durée inconnue",
+   "lines": [
+    {
+     "time": 1,
+     "text": "Une"
+    },
+    {
+     "time": 2,
+     "text": "Deux"
+    }
+   ],
+   "placeholder": "♪",
+   "duration": null,
+   "expected": []
+  },
+  {
+   "label": "♪ de 3 s",
+   "lines": [
+    {
+     "time": 0,
+     "text": "Début"
+    },
+    {
+     "time": 5,
+     "text": "♪"
+    },
+    {
+     "time": 8,
+     "text": "Retour"
+    }
+   ],
+   "placeholder": "♪",
+   "duration": 20.0,
+   "expected": [
+    {
+     "start": 5,
+     "end": 8,
+     "fadeOutAt": 7.0
+    },
+    {
+     "start": 9.56,
+     "end": 20.0,
+     "fadeOutAt": 19.0
+    }
+   ]
+  },
+  {
+   "label": "♪ de 2,9 s",
+   "lines": [
+    {
+     "time": 0,
+     "text": "Début"
+    },
+    {
+     "time": 5,
+     "text": "♪"
+    },
+    {
+     "time": 7.9,
+     "text": "Retour"
+    }
+   ],
+   "placeholder": "♪",
+   "duration": 20.0,
+   "expected": [
+    {
+     "start": 9.46,
+     "end": 20.0,
+     "fadeOutAt": 19.0
+    }
+   ]
+  },
+  {
+   "label": "ligne longue (plafond 6 s)",
+   "lines": [
+    {
+     "time": 0,
+     "text": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    },
+    {
+     "time": 12.1,
+     "text": "Suite"
+    },
+    {
+     "time": 12.5,
+     "text": "Fin"
+    }
+   ],
+   "placeholder": "♪",
+   "duration": 13.0,
+   "expected": [
+    {
+     "start": 6.0,
+     "end": 12.1,
+     "fadeOutAt": 11.1
+    }
+   ]
+  },
+  {
+   "label": "accents et emoji",
+   "lines": [
+    {
+     "time": 0,
+     "text": "ééé"
+    },
+    {
+     "time": 10,
+     "text": "👍🏽👍🏽"
+    },
+    {
+     "time": 30,
+     "text": "Fin"
+    }
+   ],
+   "placeholder": "♪",
+   "duration": 40.0,
+   "expected": [
+    {
+     "start": 1.38,
+     "end": 10,
+     "fadeOutAt": 9.0
+    },
+    {
+     "start": 11.32,
+     "end": 30,
+     "fadeOutAt": 29.0
+    },
+    {
+     "start": 31.38,
+     "end": 40.0,
+     "fadeOutAt": 39.0
+    }
+   ]
+  },
+  {
+   "label": "vide",
+   "lines": [],
+   "placeholder": "♪",
+   "duration": 60.0,
+   "expected": []
+  }
+ ],
+ "gapAt": [
+  {
+   "position": 0,
+   "gaps": [
+    {
+     "start": 3.0,
+     "end": 10.0
+    },
+    {
+     "start": 20.0,
+     "end": 25.0
+    }
+   ],
+   "expectedIndex": -1
+  },
+  {
+   "position": 3,
+   "gaps": [
+    {
+     "start": 3.0,
+     "end": 10.0
+    },
+    {
+     "start": 20.0,
+     "end": 25.0
+    }
+   ],
+   "expectedIndex": 0
+  },
+  {
+   "position": 3.0001,
+   "gaps": [
+    {
+     "start": 3.0,
+     "end": 10.0
+    },
+    {
+     "start": 20.0,
+     "end": 25.0
+    }
+   ],
+   "expectedIndex": 0
+  },
+  {
+   "position": 9.999,
+   "gaps": [
+    {
+     "start": 3.0,
+     "end": 10.0
+    },
+    {
+     "start": 20.0,
+     "end": 25.0
+    }
+   ],
+   "expectedIndex": 0
+  },
+  {
+   "position": 10,
+   "gaps": [
+    {
+     "start": 3.0,
+     "end": 10.0
+    },
+    {
+     "start": 20.0,
+     "end": 25.0
+    }
+   ],
+   "expectedIndex": -1
+  },
+  {
+   "position": 15,
+   "gaps": [
+    {
+     "start": 3.0,
+     "end": 10.0
+    },
+    {
+     "start": 20.0,
+     "end": 25.0
+    }
+   ],
+   "expectedIndex": -1
+  },
+  {
+   "position": 20,
+   "gaps": [
+    {
+     "start": 3.0,
+     "end": 10.0
+    },
+    {
+     "start": 20.0,
+     "end": 25.0
+    }
+   ],
+   "expectedIndex": 1
+  },
+  {
+   "position": 24.9,
+   "gaps": [
+    {
+     "start": 3.0,
+     "end": 10.0
+    },
+    {
+     "start": 20.0,
+     "end": 25.0
+    }
+   ],
+   "expectedIndex": 1
+  },
+  {
+   "position": 25,
+   "gaps": [
+    {
+     "start": 3.0,
+     "end": 10.0
+    },
+    {
+     "start": 20.0,
+     "end": 25.0
+    }
+   ],
+   "expectedIndex": -1
+  },
+  {
+   "position": 99,
+   "gaps": [
+    {
+     "start": 3.0,
+     "end": 10.0
+    },
+    {
+     "start": 20.0,
+     "end": 25.0
+    }
+   ],
+   "expectedIndex": -1
+  },
+  {
+   "position": -1,
+   "gaps": [
+    {
+     "start": 3.0,
+     "end": 10.0
+    },
+    {
+     "start": 20.0,
+     "end": 25.0
+    }
+   ],
+   "expectedIndex": -1
+  }
+ ],
+ "fitSize": [
+  {
+   "label": "court, tient",
+   "text": "Court",
+   "width": 1000,
+   "maxHeight": 300,
+   "maxSize": 110,
+   "minSize": 28,
+   "expected": 110.0
+  },
+  {
+   "label": "long, réduit",
+   "text": "mot mot mot mot mot mot mot mot mot mot mot mot mot mot mot mot mot mot mot mot mot mot mot mot mot mot mot mot mot mot ",
+   "width": 1000,
+   "maxHeight": 300,
+   "maxSize": 110,
+   "minSize": 28,
+   "expected": 59
+  },
+  {
+   "label": "très long, plancher",
+   "text": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+   "width": 600,
+   "maxHeight": 100,
+   "maxSize": 124,
+   "minSize": 28,
+   "expected": 28.0
+  },
+  {
+   "label": "plancher personnalisé",
+   "text": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+   "width": 600,
+   "maxHeight": 100,
+   "maxSize": 124,
+   "minSize": 40,
+   "expected": 40.0
+  },
+  {
+   "label": "juste à la limite",
+   "text": "aaaaaaaaaaaaaaaaaaaa",
+   "width": 500,
+   "maxHeight": 132,
+   "maxSize": 100,
+   "minSize": 28,
+   "expected": 54
+  },
+  {
+   "label": "largeur étroite",
+   "text": "Une phrase de taille moyenne pour la ligne",
+   "width": 300,
+   "maxHeight": 200,
+   "maxSize": 90,
+   "minSize": 28,
+   "expected": 41
+  },
+  {
+   "label": "taille max sous le plancher",
+   "text": "Court",
+   "width": 1000,
+   "maxHeight": 300,
+   "maxSize": 20,
+   "minSize": 28,
+   "expected": 20.0
+  },
+  {
+   "label": "texte vide",
+   "text": "",
+   "width": 800,
+   "maxHeight": 200,
+   "maxSize": 120,
+   "minSize": 28,
+   "expected": 120.0
+  },
+  {
+   "label": "écran 1080p, ligne courante",
+   "text": "Je marche seul dans la nuit, le vent dans les cheveux",
+   "width": 1100,
+   "maxHeight": 291.6,
+   "maxSize": 91.8,
+   "minSize": 28,
+   "expected": 80
+  },
+  {
+   "label": "écran 1080p, suivante (rôle 1)",
+   "text": "Je marche seul dans la nuit, le vent dans les cheveux",
+   "width": 2200,
+   "maxHeight": 583.2,
+   "maxSize": 91.8,
+   "minSize": 28,
+   "expected": 91.8
+  }
+ ],
+ "contrast": {
+  "maxBackground": [
+   {
+    "text": 0,
+    "expected": 0.0
+   },
+   {
+    "text": 0.05,
+    "expected": 0.0
+   },
+   {
+    "text": 0.2,
+    "expected": 0.00555555555555555
+   },
+   {
+    "text": 0.5,
+    "expected": 0.07222222222222223
+   },
+   {
+    "text": 0.7,
+    "expected": 0.11666666666666665
+   },
+   {
+    "text": 1.0,
+    "expected": 0.18333333333333335
+   }
+  ],
+  "scrim": [
+   {
+    "background": 0.0,
+    "text": 0.3,
+    "expected": 0.3
+   },
+   {
+    "background": 0.0,
+    "text": 0.7,
+    "expected": 0.3
+   },
+   {
+    "background": 0.0,
+    "text": 1.0,
+    "expected": 0.3
+   },
+   {
+    "background": 0.01,
+    "text": 0.3,
+    "expected": 0.3
+   },
+   {
+    "background": 0.01,
+    "text": 0.7,
+    "expected": 0.3
+   },
+   {
+    "background": 0.01,
+    "text": 1.0,
+    "expected": 0.3
+   },
+   {
+    "background": 0.02,
+    "text": 0.3,
+    "expected": 0.3
+   },
+   {
+    "background": 0.02,
+    "text": 0.7,
+    "expected": 0.3
+   },
+   {
+    "background": 0.02,
+    "text": 1.0,
+    "expected": 0.3
+   },
+   {
+    "background": 0.05,
+    "text": 0.3,
+    "expected": 0.44444444444444453
+   },
+   {
+    "background": 0.05,
+    "text": 0.7,
+    "expected": 0.3
+   },
+   {
+    "background": 0.05,
+    "text": 1.0,
+    "expected": 0.3
+   },
+   {
+    "background": 0.1,
+    "text": 0.3,
+    "expected": 0.7222222222222223
+   },
+   {
+    "background": 0.1,
+    "text": 0.7,
+    "expected": 0.3
+   },
+   {
+    "background": 0.1,
+    "text": 1.0,
+    "expected": 0.3
+   },
+   {
+    "background": 0.2,
+    "text": 0.3,
+    "expected": 0.8611111111111112
+   },
+   {
+    "background": 0.2,
+    "text": 0.7,
+    "expected": 0.41666666666666674
+   },
+   {
+    "background": 0.2,
+    "text": 1.0,
+    "expected": 0.3
+   },
+   {
+    "background": 0.35,
+    "text": 0.3,
+    "expected": 0.92
+   },
+   {
+    "background": 0.35,
+    "text": 0.7,
+    "expected": 0.6666666666666667
+   },
+   {
+    "background": 0.35,
+    "text": 1.0,
+    "expected": 0.47619047619047616
+   },
+   {
+    "background": 0.5,
+    "text": 0.3,
+    "expected": 0.92
+   },
+   {
+    "background": 0.5,
+    "text": 0.7,
+    "expected": 0.7666666666666667
+   },
+   {
+    "background": 0.5,
+    "text": 1.0,
+    "expected": 0.6333333333333333
+   },
+   {
+    "background": 0.7,
+    "text": 0.3,
+    "expected": 0.92
+   },
+   {
+    "background": 0.7,
+    "text": 0.7,
+    "expected": 0.8333333333333334
+   },
+   {
+    "background": 0.7,
+    "text": 1.0,
+    "expected": 0.7380952380952381
+   },
+   {
+    "background": 0.85,
+    "text": 0.3,
+    "expected": 0.92
+   },
+   {
+    "background": 0.85,
+    "text": 0.7,
+    "expected": 0.8627450980392157
+   },
+   {
+    "background": 0.85,
+    "text": 1.0,
+    "expected": 0.7843137254901961
+   },
+   {
+    "background": 1.0,
+    "text": 0.3,
+    "expected": 0.92
+   },
+   {
+    "background": 1.0,
+    "text": 0.7,
+    "expected": 0.8833333333333333
+   },
+   {
+    "background": 1.0,
+    "text": 1.0,
+    "expected": 0.8166666666666667
+   }
+  ],
+  "contrast": [
+   {
+    "text": 1.0,
+    "background": 0.0,
+    "scrim": 0.0,
+    "expected": 21.0
+   },
+   {
+    "text": 1.0,
+    "background": 1.0,
+    "scrim": 0.0,
+    "expected": 1.0
+   },
+   {
+    "text": 0.5,
+    "background": 0.1,
+    "scrim": 0.3,
+    "expected": 4.583333333333334
+   },
+   {
+    "text": 0.7,
+    "background": 0.9,
+    "scrim": 0.5,
+    "expected": 1.5
+   },
+   {
+    "text": 0.2,
+    "background": 0.2,
+    "scrim": 0.0,
+    "expected": 1.0
+   },
+   {
+    "text": 1.0,
+    "background": 0.5,
+    "scrim": 0.92,
+    "expected": 11.66666666666667
+   }
+  ],
+  "background": [
+   {
+    "art": 0.0,
+    "gradient": 0.02,
+    "text": 0.3,
+    "artOpacity": 0.92,
+    "scrim": 0.3,
+    "contrast": 6.846635367762128
+   },
+   {
+    "art": 0.0,
+    "gradient": 0.02,
+    "text": 0.7,
+    "artOpacity": 0.92,
+    "scrim": 0.3,
+    "contrast": 14.671361502347418
+   },
+   {
+    "art": 0.0,
+    "gradient": 0.02,
+    "text": 1.0,
+    "artOpacity": 0.92,
+    "scrim": 0.3,
+    "contrast": 20.539906103286388
+   },
+   {
+    "art": 0.0,
+    "gradient": 0.1,
+    "text": 0.3,
+    "artOpacity": 0.92,
+    "scrim": 0.3,
+    "contrast": 6.294964028776978
+   },
+   {
+    "art": 0.0,
+    "gradient": 0.1,
+    "text": 0.7,
+    "artOpacity": 0.92,
+    "scrim": 0.3,
+    "contrast": 13.489208633093526
+   },
+   {
+    "art": 0.0,
+    "gradient": 0.1,
+    "text": 1.0,
+    "artOpacity": 0.92,
+    "scrim": 0.3,
+    "contrast": 18.884892086330936
+   },
+   {
+    "art": 0.0,
+    "gradient": 0.4,
+    "text": 0.3,
+    "artOpacity": 0.92,
+    "scrim": 0.3,
+    "contrast": 4.834254143646409
+   },
+   {
+    "art": 0.0,
+    "gradient": 0.4,
+    "text": 0.7,
+    "artOpacity": 0.92,
+    "scrim": 0.3,
+    "contrast": 10.359116022099448
+   },
+   {
+    "art": 0.0,
+    "gradient": 0.4,
+    "text": 1.0,
+    "artOpacity": 0.92,
+    "scrim": 0.3,
+    "contrast": 14.502762430939228
+   },
+   {
+    "art": 0.01,
+    "gradient": 0.02,
+    "text": 0.3,
+    "artOpacity": 0.92,
+    "scrim": 0.3,
+    "contrast": 6.080611535788742
+   },
+   {
+    "art": 0.01,
+    "gradient": 0.02,
+    "text": 0.7,
+    "artOpacity": 0.92,
+    "scrim": 0.3,
+    "contrast": 13.029881862404448
+   },
+   {
+    "art": 0.01,
+    "gradient": 0.02,
+    "text": 1.0,
+    "artOpacity": 0.92,
+    "scrim": 0.3,
+    "contrast": 18.241834607366226
+   },
+   {
+    "art": 0.01,
+    "gradient": 0.1,
+    "text": 0.3,
+    "artOpacity": 0.92,
+    "scrim": 0.3,
+    "contrast": 5.641521598968407
+   },
+   {
+    "art": 0.01,
+    "gradient": 0.1,
+    "text": 0.7,
+    "artOpacity": 0.92,
+    "scrim": 0.3,
+    "contrast": 12.088974854932301
+   },
+   {
+    "art": 0.01,
+    "gradient": 0.1,
+    "text": 1.0,
+    "artOpacity": 0.92,
+    "scrim": 0.3,
+    "contrast": 16.924564796905223
+   },
+   {
+    "art": 0.01,
+    "gradient": 0.4,
+    "text": 0.3,
+    "artOpacity": 0.92,
+    "scrim": 0.35,
+    "contrast": 4.558478770513155
+   },
+   {
+    "art": 0.01,
+    "gradient": 0.4,
+    "text": 0.7,
+    "artOpacity": 0.92,
+    "scrim": 0.3,
+    "contrast": 9.512937595129376
+   },
+   {
+    "art": 0.01,
+    "gradient": 0.4,
+    "text": 1.0,
+    "artOpacity": 0.92,
+    "scrim": 0.3,
+    "contrast": 13.318112633181128
+   },
+   {
+    "art": 0.2,
+    "gradient": 0.02,
+    "text": 0.3,
+    "artOpacity": 0.07999999999999977,
+    "scrim": 0.3,
+    "contrast": 4.724622030237582
+   },
+   {
+    "art": 0.2,
+    "gradient": 0.02,
+    "text": 0.7,
+    "artOpacity": 0.7999999999999999,
+    "scrim": 0.3,
+    "contrast": 4.550970873786408
+   },
+   {
+    "art": 0.2,
+    "gradient": 0.02,
+    "text": 1.0,
+    "artOpacity": 0.92,
+    "scrim": 0.3,
+    "contrast": 5.835927078701645
+   },
+   {
+    "art": 0.2,
+    "gradient": 0.1,
+    "text": 0.3,
+    "artOpacity": 0.07999999999999977,
+    "scrim": 0.7500000000000001,
+    "contrast": 4.545454545454546
+   },
+   {
+    "art": 0.2,
+    "gradient": 0.1,
+    "text": 0.7,
+    "artOpacity": 0.6399999999999998,
+    "scrim": 0.3,
+    "contrast": 4.550970873786408
+   },
+   {
+    "art": 0.2,
+    "gradient": 0.1,
+    "text": 1.0,
+    "artOpacity": 0.92,
+    "scrim": 0.3,
+    "contrast": 5.6941431670282
+   },
+   {
+    "art": 0.2,
+    "gradient": 0.4,
+    "text": 0.3,
+    "artOpacity": 0.92,
+    "scrim": 0.9000000000000002,
+    "contrast": 4.888268156424584
+   },
+   {
+    "art": 0.2,
+    "gradient": 0.4,
+    "text": 0.7,
+    "artOpacity": 0.92,
+    "scrim": 0.49999999999999994,
+    "contrast": 4.746835443037974
+   },
+   {
+    "art": 0.2,
+    "gradient": 0.4,
+    "text": 1.0,
+    "artOpacity": 0.92,
+    "scrim": 0.3,
+    "contrast": 5.21868787276342
+   },
+   {
+    "art": 0.6,
+    "gradient": 0.02,
+    "text": 0.3,
+    "artOpacity": 0.039999999999999765,
+    "scrim": 0.39999999999999997,
+    "contrast": 4.610115911485778
+   },
+   {
+    "art": 0.6,
+    "gradient": 0.02,
+    "text": 0.7,
+    "artOpacity": 0.2399999999999998,
+    "scrim": 0.3,
+    "contrast": 4.6456888007928665
+   },
+   {
+    "art": 0.6,
+    "gradient": 0.02,
+    "text": 1.0,
+    "artOpacity": 0.39999999999999974,
+    "scrim": 0.3,
+    "contrast": 4.637809187279155
+   },
+   {
+    "art": 0.6,
+    "gradient": 0.1,
+    "text": 0.3,
+    "artOpacity": 0.039999999999999765,
+    "scrim": 0.8000000000000002,
+    "contrast": 4.7297297297297325
+   },
+   {
+    "art": 0.6,
+    "gradient": 0.1,
+    "text": 0.7,
+    "artOpacity": 0.11999999999999977,
+    "scrim": 0.3,
+    "contrast": 4.629629629629632
+   },
+   {
+    "art": 0.6,
+    "gradient": 0.1,
+    "text": 1.0,
+    "artOpacity": 0.3199999999999998,
+    "scrim": 0.3,
+    "contrast": 4.525862068965519
+   },
+   {
+    "art": 0.6,
+    "gradient": 0.4,
+    "text": 0.3,
+    "artOpacity": 0.0,
+    "scrim": 0.95,
+    "contrast": 4.999999999999998
+   },
+   {
+    "art": 0.6,
+    "gradient": 0.4,
+    "text": 0.7,
+    "artOpacity": 0.3199999999999998,
+    "scrim": 0.7500000000000001,
+    "contrast": 4.5180722891566285
+   },
+   {
+    "art": 0.6,
+    "gradient": 0.4,
+    "text": 1.0,
+    "artOpacity": 0.2799999999999998,
+    "scrim": 0.6,
+    "contrast": 4.518072289156627
+   },
+   {
+    "art": 1.0,
+    "gradient": 0.02,
+    "text": 0.3,
+    "artOpacity": 0.039999999999999765,
+    "scrim": 0.5499999999999999,
+    "contrast": 4.566805845511488
+   },
+   {
+    "art": 1.0,
+    "gradient": 0.02,
+    "text": 0.7,
+    "artOpacity": 0.11999999999999977,
+    "scrim": 0.3,
+    "contrast": 5.125751776927288
+   },
+   {
+    "art": 1.0,
+    "gradient": 0.02,
+    "text": 1.0,
+    "artOpacity": 0.2399999999999998,
+    "scrim": 0.3,
+    "contrast": 4.592372288313509
+   },
+   {
+    "art": 1.0,
+    "gradient": 0.1,
+    "text": 0.3,
+    "artOpacity": 0.039999999999999765,
+    "scrim": 0.8000000000000002,
+    "contrast": 4.533678756476688
+   },
+   {
+    "art": 1.0,
+    "gradient": 0.1,
+    "text": 0.7,
+    "artOpacity": 0.039999999999999765,
+    "scrim": 0.3,
+    "contrast": 5.165289256198353
+   },
+   {
+    "art": 1.0,
+    "gradient": 0.1,
+    "text": 1.0,
+    "artOpacity": 0.15999999999999978,
+    "scrim": 0.3,
+    "contrast": 4.7554347826087
+   },
+   {
+    "art": 1.0,
+    "gradient": 0.4,
+    "text": 0.3,
+    "artOpacity": 0.0,
+    "scrim": 0.95,
+    "contrast": 4.999999999999998
+   },
+   {
+    "art": 1.0,
+    "gradient": 0.4,
+    "text": 0.7,
+    "artOpacity": 0.07999999999999977,
+    "scrim": 0.7500000000000001,
+    "contrast": 4.6296296296296315
+   },
+   {
+    "art": 1.0,
+    "gradient": 0.4,
+    "text": 1.0,
+    "artOpacity": 0.07999999999999977,
+    "scrim": 0.6,
+    "contrast": 4.581151832460734
+   }
+  ]
+ },
+ "gradient": {
+  "neutral": {
+   "colors": [
+    [
+     0.1,
+     0.13,
+     0.24
+    ],
+    [
+     0.05,
+     0.06,
+     0.12
+    ],
+    [
+     0.14,
+     0.08,
+     0.2
+    ]
+   ],
+   "luminance": 0.02
+  },
+  "palettes": [
+   {
+    "label": "rouge vif",
+    "dominant": [
+     0.85,
+     0.12,
+     0.1
+    ],
+    "secondary": [
+     0.95,
+     0.75,
+     0.2
+    ],
+    "tint": [
+     0.3,
+     0.081,
+     0.07500000000000001
+    ],
+    "colors": [
+     [
+      0.527,
+      0.0744,
+      0.062
+     ],
+     [
+      0.3,
+      0.081,
+      0.07500000000000001
+     ],
+     [
+      0.4275,
+      0.3375,
+      0.09000000000000001
+     ]
+    ],
+    "luminance": 0.14132818226785904
+   },
+   {
+    "label": "bleu nuit",
+    "dominant": [
+     0.1,
+     0.18,
+     0.55
+    ],
+    "secondary": [
+     0.4,
+     0.75,
+     0.95
+    ],
+    "tint": [
+     0.06875,
+     0.10541666666666663,
+     0.275
+    ],
+    "colors": [
+     [
+      0.062,
+      0.11159999999999999,
+      0.341
+     ],
+     [
+      0.06875,
+      0.10541666666666663,
+      0.275
+     ],
+     [
+      0.18000000000000002,
+      0.3375,
+      0.4275
+     ]
+    ],
+    "luminance": 0.11655340273636712
+   },
+   {
+    "label": "pastel clair",
+    "dominant": [
+     0.92,
+     0.85,
+     0.8
+    ],
+    "secondary": [
+     0.7,
+     0.8,
+     0.95
+    ],
+    "tint": [
+     0.3,
+     0.2771739130434782,
+     0.2608695652173913
+    ],
+    "colors": [
+     [
+      0.5704,
+      0.527,
+      0.496
+     ],
+     [
+      0.3,
+      0.2771739130434782,
+      0.2608695652173913
+     ],
+     [
+      0.315,
+      0.36000000000000004,
+      0.4275
+     ]
+    ],
+    "luminance": 0.28580284490823005
+   },
+   {
+    "label": "presque noir",
+    "dominant": [
+     0.04,
+     0.04,
+     0.06
+    ],
+    "secondary": [
+     0.2,
+     0.1,
+     0.3
+    ],
+    "tint": [
+     0.09333333333333335,
+     0.09333333333333335,
+     0.14
+    ],
+    "colors": [
+     [
+      0.0248,
+      0.0248,
+      0.0372
+     ],
+     [
+      0.09333333333333335,
+      0.09333333333333335,
+      0.14
+     ],
+     [
+      0.09000000000000001,
+      0.045000000000000005,
+      0.135
+     ]
+    ],
+    "luminance": 0.009623489502443095
+   },
+   {
+    "label": "vert",
+    "dominant": [
+     0.15,
+     0.6,
+     0.3
+    ],
+    "secondary": [
+     0.9,
+     0.9,
+     0.2
+    ],
+    "tint": [
+     0.07500000000000001,
+     0.3,
+     0.15000000000000002
+    ],
+    "colors": [
+     [
+      0.093,
+      0.372,
+      0.186
+     ],
+     [
+      0.07500000000000001,
+      0.3,
+      0.15000000000000002
+     ],
+     [
+      0.405,
+      0.405,
+      0.09000000000000001
+     ]
+    ],
+    "luminance": 0.18323782156191792
+   }
+  ]
+ }
+}

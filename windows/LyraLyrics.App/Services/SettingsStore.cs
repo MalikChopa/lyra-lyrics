@@ -43,7 +43,7 @@ internal sealed class SettingsStore
     {
         try
         {
-            Directory.CreateDirectory(AppPaths.Dir);
+            Directory.CreateDirectory(Path.GetDirectoryName(_path) ?? AppPaths.Dir);
             var tmp = _path + ".tmp";
             File.WriteAllBytes(tmp, Current.Encode());
             File.Move(tmp, _path, overwrite: true);

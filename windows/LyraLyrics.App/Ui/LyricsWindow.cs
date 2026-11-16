@@ -20,7 +20,7 @@ namespace LyraLyrics.App.Ui;
 /// « compatible » (AllowsTransparency, fonctionne partout) ou « flou du système » (fond acrylique DWM, Windows 11 ≥ 22621, expérimental).
 /// Aucune de ces API ne peut être exécutée sur la machine de développement : tout le comportement visuel est à vérifier sur le PC.
 /// </summary>
-internal sealed class LyricsWindow : Window
+internal sealed partial class LyricsWindow : Window
 {
     private static readonly FontFamily IconFont = new("Segoe Fluent Icons, Segoe MDL2 Assets");
     private readonly AppModel _model;
@@ -79,6 +79,8 @@ internal sealed class LyricsWindow : Window
     public Action? OpenSettings { get; set; }
     public Action? OpenAbout { get; set; }
     public Action? OpenManualSearch { get; set; }
+    /// <summary>Double-clic sur la fenêtre et bouton « Scène plein écran » de la barre (comme le Mac 1.1.0).</summary>
+    public Action? OpenScene { get; set; }
     public Action<PlaybackCommand>? Playback { get; set; }
 
     public IntPtr Hwnd => _hwnd;
@@ -127,6 +129,7 @@ internal sealed class LyricsWindow : Window
         _model.Changed += OnModelChanged;
         _store.Changed += OnSettingsChanged;
         SystemPrefs.Changed += OnSystemPrefsChanged;
+        IsVisibleChanged += (_, _) => RefreshEffects();             // fond et remplissage s'arrêtent avec la fenêtre masquée
     }
 
     // ---- Construction
@@ -161,6 +164,7 @@ internal sealed class LyricsWindow : Window
         _content.Children.Add(_statePanel);
         _content.Children.Add(_shimmer);
 
+        BuildDrift();
         BuildBar();
         _noticePill.Child = _noticeText;
         _attribution.MouseLeftButtonDown += (_, e) => e.Handled = true;
@@ -176,6 +180,7 @@ internal sealed class LyricsWindow : Window
 
         var root = new Grid { Background = Brushes.Transparent };
         root.Children.Add(_background);
+        root.Children.Add(_driftHost);
         root.Children.Add(_glassSheen);
         root.Children.Add(_content);
         root.Children.Add(_bar);
@@ -215,6 +220,7 @@ internal sealed class LyricsWindow : Window
         buttons.Children.Add(IconButton("", "Lecture / pause", () => Playback?.Invoke(PlaybackCommand.PlayPause), _playGlyph));
         buttons.Children.Add(IconButton("", "Titre suivant", () => Playback?.Invoke(PlaybackCommand.Next)));
         buttons.Children.Add(IconButton("", "Style du fond (uni, verre, transparent)", CycleStyle));
+        buttons.Children.Add(IconButton("\uE740", "Scène plein écran", () => OpenScene?.Invoke()));
         buttons.Children.Add(IconButton("", "Réglages", () => OpenSettings?.Invoke()));
         Grid.SetColumn(buttons, 1);
         _bar.Children.Add(buttons);
@@ -317,6 +323,7 @@ internal sealed class LyricsWindow : Window
     private void OnDrag(object sender, MouseButtonEventArgs e)
     {
         if (e.ButtonState != MouseButtonState.Pressed || ClickThroughActive) return;
+        if (e.ClickCount >= 2) { e.Handled = true; OpenScene?.Invoke(); return; }       // double-clic : la Scène (comme le Mac)
         try { DragMove(); } catch (InvalidOperationException) { }
     }
 
@@ -447,6 +454,12 @@ internal sealed class LyricsWindow : Window
     }
 
     private void Refresh(bool force)
+    {
+        RefreshCore(force);
+        RefreshEffects();                         // S24 : fond animé et karaoké (réglages, désactivés par défaut)
+    }
+
+    private void RefreshCore(bool force)
     {
         if (!IsLoaded && !force) return;
         var s = _store.Current;
@@ -748,6 +761,7 @@ internal sealed class LyricsWindow : Window
         _hwnd = IntPtr.Zero;
         _topmostTimer?.Stop();
         _geometryTimer?.Stop();
+        StopEffects(); _fillTimer?.Stop();
         _model.Changed -= OnModelChanged;
         _store.Changed -= OnSettingsChanged;
         SystemPrefs.Changed -= OnSystemPrefsChanged;

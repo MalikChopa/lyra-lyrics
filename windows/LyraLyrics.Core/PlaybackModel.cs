@@ -75,6 +75,8 @@ public sealed class PlaybackModel
     public string PlainText => Lyrics?.PlainText ?? "";
     public int LineCountTotal => _engine.Lines.Count;
     public double Position => _estimator.Estimate(_clock());
+    /// <summary>Position dans les paroles (position estimée + avance + décalage manuel), comme pour le choix de la ligne (Mac : lyricPosition).</summary>
+    public double LyricPosition => _engine.EffectivePosition(Position);
 
     public (string Title, string? Artist) BarText =>
         Track is null ? (Display.BarTitleWhenIdle ?? "Aucune lecture", null) : (Track.Title, IsPaused ? $"{Track.Artist} · En pause" : Track.Artist);

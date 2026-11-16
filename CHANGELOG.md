@@ -3,6 +3,17 @@
 All notable changes to this project are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.3.0] - 2026-11-16
+
+### Added
+- **Scene on Windows (beta).** The full-screen mode of the Mac, with the same settings and rules: screen choice (window's screen, main screen, or by name), smooth zoom from the small window, blurred drifting cover with a breathing gradient, large lines sized to about 70 % of the screen width, "Avec la pochette" and "Paroles seules" layouts, title card with reflection (lyrics-only layout), breathing note and particles during gaps, grain and vignette, control bar (previous, play/pause, next, progress, exit) with Space, arrows and Esc, word-by-word exit of the leaving line; pauses when hidden, on another virtual desktop or when the display sleeps; falls back to another screen when one is unplugged.
+- **Windows small window**: optional animated cover background and karaoke-style fill (off by default); "Scène plein écran" group in the settings.
+- Shared test files for the Scene calculations (screen choice, fill timing, gaps, text size, layout geometry), read by both apps.
+
+### Notes
+- Mac: no functional change; version number shared with Windows.
+- The Windows Scene had never been seen on a real screen before this release.
+
 ## [1.2.0] - 2026-11-16
 
 ### Added

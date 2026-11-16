@@ -1,0 +1,210 @@
+{
+ "description": "S10 : choix de l'écran de la Scène (SceneScreenChoice.pick). Lu par Swift (Tests/AppSupportTests/SceneFixtureTests.swift) et C# (W6ParityTests). Les noms d'écran sont comparés exactement.",
+ "cases": [
+  {
+   "label": "fenêtre : écran 0",
+   "setting": "window",
+   "names": [
+    "Écran intégré",
+    "Dell U2720Q",
+    "LG HDR 4K"
+   ],
+   "mainIndex": 0,
+   "windowIndex": 0,
+   "expected": 0
+  },
+  {
+   "label": "fenêtre : écran 2",
+   "setting": "window",
+   "names": [
+    "Écran intégré",
+    "Dell U2720Q",
+    "LG HDR 4K"
+   ],
+   "mainIndex": 0,
+   "windowIndex": 2,
+   "expected": 2
+  },
+  {
+   "label": "fenêtre : indice trop grand",
+   "setting": "window",
+   "names": [
+    "Écran intégré",
+    "Dell U2720Q",
+    "LG HDR 4K"
+   ],
+   "mainIndex": 0,
+   "windowIndex": 9,
+   "expected": 2
+  },
+  {
+   "label": "fenêtre : indice négatif",
+   "setting": "window",
+   "names": [
+    "Écran intégré",
+    "Dell U2720Q",
+    "LG HDR 4K"
+   ],
+   "mainIndex": 0,
+   "windowIndex": -3,
+   "expected": 0
+  },
+  {
+   "label": "principal : 0",
+   "setting": "main",
+   "names": [
+    "Écran intégré",
+    "Dell U2720Q",
+    "LG HDR 4K"
+   ],
+   "mainIndex": 0,
+   "windowIndex": 2,
+   "expected": 0
+  },
+  {
+   "label": "principal : autre indice",
+   "setting": "main",
+   "names": [
+    "Écran intégré",
+    "Dell U2720Q",
+    "LG HDR 4K"
+   ],
+   "mainIndex": 1,
+   "windowIndex": 2,
+   "expected": 1
+  },
+  {
+   "label": "principal : indice trop grand",
+   "setting": "main",
+   "names": [
+    "Écran intégré",
+    "Dell U2720Q",
+    "LG HDR 4K"
+   ],
+   "mainIndex": 7,
+   "windowIndex": 0,
+   "expected": 2
+  },
+  {
+   "label": "nom : deuxième",
+   "setting": "name:Dell U2720Q",
+   "names": [
+    "Écran intégré",
+    "Dell U2720Q",
+    "LG HDR 4K"
+   ],
+   "mainIndex": 0,
+   "windowIndex": 2,
+   "expected": 1
+  },
+  {
+   "label": "nom : accent",
+   "setting": "name:Écran intégré",
+   "names": [
+    "Écran intégré",
+    "Dell U2720Q",
+    "LG HDR 4K"
+   ],
+   "mainIndex": 2,
+   "windowIndex": 1,
+   "expected": 0
+  },
+  {
+   "label": "nom : débranché",
+   "setting": "name:Débranché",
+   "names": [
+    "Écran intégré",
+    "Dell U2720Q",
+    "LG HDR 4K"
+   ],
+   "mainIndex": 0,
+   "windowIndex": 2,
+   "expected": 2
+  },
+  {
+   "label": "nom : casse différente (sensible à la casse)",
+   "setting": "name:dell u2720q",
+   "names": [
+    "Écran intégré",
+    "Dell U2720Q",
+    "LG HDR 4K"
+   ],
+   "mainIndex": 0,
+   "windowIndex": 1,
+   "expected": 1
+  },
+  {
+   "label": "nom : vide",
+   "setting": "name:",
+   "names": [
+    "Écran intégré",
+    "Dell U2720Q",
+    "LG HDR 4K"
+   ],
+   "mainIndex": 0,
+   "windowIndex": 1,
+   "expected": 1
+  },
+  {
+   "label": "nom : deux écrans de même nom (le premier)",
+   "setting": "name:Generic PnP Monitor",
+   "names": [
+    "Generic PnP Monitor",
+    "Generic PnP Monitor"
+   ],
+   "mainIndex": 0,
+   "windowIndex": 1,
+   "expected": 0
+  },
+  {
+   "label": "réglage inconnu = fenêtre",
+   "setting": "n'importe quoi",
+   "names": [
+    "Écran intégré",
+    "Dell U2720Q",
+    "LG HDR 4K"
+   ],
+   "mainIndex": 0,
+   "windowIndex": 1,
+   "expected": 1
+  },
+  {
+   "label": "réglage vide = fenêtre",
+   "setting": "",
+   "names": [
+    "Écran intégré",
+    "Dell U2720Q",
+    "LG HDR 4K"
+   ],
+   "mainIndex": 0,
+   "windowIndex": 2,
+   "expected": 2
+  },
+  {
+   "label": "un seul écran",
+   "setting": "name:Autre",
+   "names": [
+    "Seul"
+   ],
+   "mainIndex": 0,
+   "windowIndex": 0,
+   "expected": 0
+  },
+  {
+   "label": "aucun écran : 0",
+   "setting": "window",
+   "names": [],
+   "mainIndex": 0,
+   "windowIndex": 0,
+   "expected": 0
+  },
+  {
+   "label": "aucun écran, nom : 0",
+   "setting": "name:X",
+   "names": [],
+   "mainIndex": 0,
+   "windowIndex": 0,
+   "expected": 0
+  }
+ ]
+}

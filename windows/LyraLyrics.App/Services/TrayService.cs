@@ -13,11 +13,13 @@ internal sealed class TrayService : IDisposable
     private readonly WinForms.NotifyIcon _icon;
     private readonly WinForms.ToolStripMenuItem _toggle = new("Cacher les paroles");
     private readonly WinForms.ToolStripMenuItem _clickThrough = new("Clic-à-travers") { CheckOnClick = false };
+    private readonly WinForms.ToolStripMenuItem _scene = new("Scène plein écran");
     private readonly Drawing.Icon _drawn;
     private readonly IntPtr _hIcon;
 
     public event Action? ToggleVisibility;
     public event Action? ToggleClickThrough;
+    public event Action? ToggleScene;
     public event Action? OpenSettings;
     public event Action? OpenAbout;
     public event Action? OpenWelcome;
@@ -27,6 +29,8 @@ internal sealed class TrayService : IDisposable
     public bool IconVisible => _icon.Visible;
     /// <summary>Rappelé à l'ouverture du menu pour rafraîchir les libellés.</summary>
     public Func<(bool Visible, bool ClickThrough)>? State { get; set; }
+    /// <summary>La Scène est affichée : l'entrée du menu devient « Quitter la Scène ».</summary>
+    public Func<bool>? SceneActive { get; set; }
     /// <summary>Étiquette de la version annoncée (« v1.2.0 »), null s'il n'y en a pas : l'entrée du menu n'apparaît que dans ce cas.</summary>
     public Func<string?>? UpdateTag { get; set; }
     private readonly WinForms.ToolStripMenuItem _update = new("Nouvelle version disponible") { Visible = false };
@@ -58,16 +62,18 @@ internal sealed class TrayService : IDisposable
         var menu = new WinForms.ContextMenuStrip();
         _toggle.Click += (_, _) => ToggleVisibility?.Invoke();
         _clickThrough.Click += (_, _) => ToggleClickThrough?.Invoke();
+        _scene.Click += (_, _) => ToggleScene?.Invoke();
         var settings = new WinForms.ToolStripMenuItem("Réglages…"); settings.Click += (_, _) => OpenSettings?.Invoke();
         var about = new WinForms.ToolStripMenuItem("À propos et droits…"); about.Click += (_, _) => OpenAbout?.Invoke();
         var welcome = new WinForms.ToolStripMenuItem("Bienvenue…"); welcome.Click += (_, _) => OpenWelcome?.Invoke();
         _update.Click += (_, _) => OpenUpdate?.Invoke();
         var diag = new WinForms.ToolStripMenuItem("Copier le diagnostic"); diag.Click += (_, _) => CopyDiagnostic?.Invoke();
         var quit = new WinForms.ToolStripMenuItem("Quitter " + name); quit.Click += (_, _) => Quit?.Invoke();
-        menu.Items.AddRange(new WinForms.ToolStripItem[] { _toggle, _clickThrough, new WinForms.ToolStripSeparator(), settings, welcome, about, diag, _update, new WinForms.ToolStripSeparator(), quit });
+        menu.Items.AddRange(new WinForms.ToolStripItem[] { _toggle, _clickThrough, _scene, new WinForms.ToolStripSeparator(), settings, welcome, about, diag, _update, new WinForms.ToolStripSeparator(), quit });
         menu.Opening += (_, _) =>
         {
             if (UpdateTag?.Invoke() is { } tag) { _update.Text = "Nouvelle version disponible : " + tag; _update.Visible = true; } else _update.Visible = false;
+            _scene.Text = SceneActive?.Invoke() == true ? "Quitter la Scène" : "Scène plein écran";
             if (State?.Invoke() is { } st) { _toggle.Text = st.Visible ? "Cacher les paroles" : "Montrer les paroles"; _clickThrough.Checked = st.ClickThrough; }
         };
         _icon = new WinForms.NotifyIcon { Text = name, Icon = _drawn, Visible = true, ContextMenuStrip = menu };

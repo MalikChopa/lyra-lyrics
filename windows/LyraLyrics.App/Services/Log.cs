@@ -14,8 +14,12 @@ internal static class Log
     /// <summary>Valeurs à masquer en plus des motifs connus (titre et artiste courants, fournis par le modèle) : jamais écrites sur disque.</summary>
     public static Func<IEnumerable<string>>? Secrets { get; set; }
 
+    /// <summary>Mode captures (<c>--snapshot</c>) : rien n'est écrit dans le journal de l'utilisateur.</summary>
+    public static bool Silent { get; set; }
+
     public static void Write(string area, string message)
     {
+        if (Silent) return;
         try
         {
             var clean = LogScrub.Scrub(message, Secrets?.Invoke());

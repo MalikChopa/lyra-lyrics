@@ -17,9 +17,14 @@ Play a song in Spotify or Apple Music (the Music app, Mac only). Lyra Lyrics not
 
 No account, no sign-in, no server of ours: the app talks to your music player and to lrclib.net, plus (once a day at most, can be switched off) to GitHub to know whether a new version exists. See [Privacy](#privacy).
 
-**Mac and Windows.** The Mac version is complete (Spotify and Apple Music, full-screen Scene). The **Windows version is a beta**: Spotify only, **no Scene yet** (planned for 1.3.0), and it had **never run on a real PC** before it was published. See [Windows (beta)](#windows-beta).
+**Mac and Windows.** The Mac version is complete (Spotify and Apple Music, full-screen Scene). The **Windows version is a beta**: Spotify only; the full-screen Scene arrives there in 1.3.0; it had **never run on a real PC** before it was published. See [Windows (beta)](#windows-beta).
 
 ## Features
+
+### New in 1.3.0
+
+- **The full-screen Scene comes to Windows (beta)**: same settings and rules as on the Mac (screen of your choice, "Avec la pochette" or "Paroles seules" layout, title card, animated passages without lyrics, grain and vignette, control bar with Space, arrows and Esc, lines leaving word by word); double-click the small window, use the full-screen button of the hover bar or the icon menu. Also on Windows: optional animated cover background and karaoke-style fill (off by default). The rendering had never been seen on a real PC before publication.
+- Mac: no new feature; the number follows Windows (one shared version).
 
 ### New in 1.2.0
 
@@ -129,7 +134,9 @@ The Windows version is a **beta**: it is complete in its essentials, but it had 
 
 **What it does**: the same small always-on-top window (draggable, resizable with the mouse, text that adapts); Spotify only, read through the Windows media controls (**nothing to authorise**); synchronised lyrics on one, three or five lines with soft scrolling, or a scrolling block of plain text; three backgrounds (solid, glass, transparent), font themes, colours taken from the album cover (read locally, never downloaded), manual offset from -5 s to +5 s; previous, play/pause and next buttons; click-through mode; global shortcut **Ctrl+Alt+Shift+L** (changeable); notification-area icon; welcome screen; auto-hide (when nothing plays by default); launch at Windows start (checkbox); "Mauvaises paroles ?" (search LRCLIB and pick another version, remembered for that song); update notice (one request a day at most, can be switched off); "Copier le diagnostic" in the icon menu.
 
-**What it does not have (yet)**: the full-screen **Scene** (planned for 1.3.0), the animated cover background, the karaoke-style fill, Apple Music and other players, an interface in another language. The "Verre" style is only a tinted gradient with no blur; an experimental "Flou du système" option (Windows 11, off by default) exists but has never been tried on a real screen.
+**Since 1.3.0**: the full-screen **Scene**, the animated cover background and the karaoke-style fill (the last two off by default), as on the Mac.
+
+**What it does not have (yet)**: Apple Music and other players, an interface in another language. The "Verre" style is only a tinted gradient with no blur; an experimental "Flou du système" option (Windows 11, off by default) exists but has never been tried on a real screen.
 
 **What it writes on your disk**
 - `%APPDATA%\LyraLyrics\`: `settings.json` (your settings), `lookup-index.json` (a lookup index with no text at all: hashed keys, LRCLIB identifiers), `lyra.log` (a log with no titles, no lyrics and no LRCLIB identifiers, 256 KB then rotation).
@@ -211,7 +218,7 @@ The WPF app only runs on Windows. The installer is an Inno Setup 6 script (`wind
 - **How well it is tested**: the logic is covered by unit tests and by automated runs with a simulated player and a simulated server. Real players were tested on one Mac (macOS 27). The synchronisation was checked **by ear** on Spotify by the author, without a numeric measurement. The CPU figures come from a simulated player on one Mac.
 - Not notarised: macOS asks you to confirm the first launch.
 - **Windows (beta): never tried on a real PC before it was published.** The installer, the shortcut, uninstalling, the window rendering (background, click-through, resizing, several screens, scaling), Spotify detection through the media controls (including the Microsoft Store version), the global shortcut, the notification icon, launch at start and the update check are only verified by tests on a Mac and by reading the code; the CI workflow that builds the installer had never run before the first release.
-- **Windows: no Scene** (1.3.0), **Spotify only**, **unsigned** installer (SmartScreen, see [Install](#install)), Spotify ads treated as "Nothing playing" by an unverified heuristic, Windows on Arm not verified.
+- **Windows: the Scene was never seen on a real screen** before 1.3.0 (rendering checked only by compiling and, if GitHub's runner can draw, by screenshots made with invented lyrics); **Spotify only**, **unsigned** installer (SmartScreen, see [Install](#install)), Spotify ads treated as "Nothing playing" by an unverified heuristic, Windows on Arm not verified.
 
 ## Credits and rights
 

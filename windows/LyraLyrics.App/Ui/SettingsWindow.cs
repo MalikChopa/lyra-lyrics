@@ -24,6 +24,15 @@ internal sealed class SettingsWindow : Window
     private readonly ComboBox _font = new(), _weight = new(), _theme = new();
     private readonly CheckBox _artwork = new() { Content = "Couleurs de la pochette" };
     private readonly CheckBox _clickThrough = new() { Content = "Clic-à-travers (la souris traverse la fenêtre)" };
+    // Scène plein écran (W6c+d)
+    private readonly ComboBox _sceneScreen = new();
+    private readonly RadioButton[] _layoutRadios = new RadioButton[2];
+    private static readonly SceneLayoutMode[] LayoutChoices = { SceneLayoutMode.WithArtwork, SceneLayoutMode.LyricsOnly };
+    private readonly CheckBox _sceneEffects = new() { Content = "Grain et vignette" };
+    private readonly CheckBox _karaoke = new() { Content = "Remplissage karaoké" };
+    private readonly CheckBox _animatedBackground = new() { Content = "Fond animé" };
+    private List<string> _screenNames = new();
+    private string _screenListKey = "";
     private readonly CheckBox _startup = new() { Content = "Lancer au démarrage de Windows" };
     private readonly CheckBox _backdrop = new() { Content = "Flou du système (Windows 11, expérimental)" };
     private readonly ClickableBorder[] _swatches = new ClickableBorder[Settings.Swatches.Length];
@@ -45,6 +54,7 @@ internal sealed class SettingsWindow : Window
     public Action? OpenManualSearch { get; set; }
     public Action? OpenWelcome { get; set; }
     public Action? OpenUpdate { get; set; }
+    public Action? OpenScene { get; set; }
 
     public SettingsWindow(SettingsStore store, AppModel model)
     {
@@ -121,6 +131,34 @@ internal sealed class SettingsWindow : Window
             _lineRadios[i] = r; lineRow.Children.Add(r);
         }
         panel.Children.Add(Row("Lignes visibles", lineRow));
+
+        // Scène plein écran (mêmes réglages et mêmes textes que le Mac)
+        panel.Children.Add(Header("Scène plein écran"));
+        var openScene = new Button { Content = "Ouvrir la Scène", Padding = new Thickness(12, 3, 12, 3), HorizontalAlignment = HorizontalAlignment.Left };
+        openScene.Click += (_, _) => OpenScene?.Invoke();
+        panel.Children.Add(openScene);
+        panel.Children.Add(Note("Double-clic sur la fenêtre pour y entrer ; Échap, double-clic ou le bouton en haut à droite pour en sortir. Espace : lecture/pause ; ← → : précédent/suivant.", new Thickness(0, 4, 0, 0)));
+        _sceneScreen.SelectionChanged += (_, _) => SceneScreenPicked();
+        panel.Children.Add(Row("Écran", _sceneScreen));
+        var layoutRow = new StackPanel { Orientation = Orientation.Horizontal };
+        for (var i = 0; i < LayoutChoices.Length; i++)
+        {
+            var mode = LayoutChoices[i];
+            var label = mode == SceneLayoutMode.WithArtwork ? "Avec la pochette" : "Paroles seules";
+            var r = new RadioButton { Content = label, GroupName = "sceneLayout", Margin = new Thickness(0, 0, 18, 0) };
+            A11y.Name(r, "Mise en page de la Scène : " + label);
+            r.Checked += (_, _) => { if (!_loading) _store.Update(s => s.SceneLayout = mode); };
+            _layoutRadios[i] = r; layoutRow.Children.Add(r);
+        }
+        panel.Children.Add(Row("Mise en page", layoutRow));
+        _sceneEffects.Checked += (_, _) => SceneEffectsChanged(); _sceneEffects.Unchecked += (_, _) => SceneEffectsChanged();
+        panel.Children.Add(Pad(_sceneEffects));
+        _animatedBackground.Checked += (_, _) => AnimatedChanged(); _animatedBackground.Unchecked += (_, _) => AnimatedChanged();
+        panel.Children.Add(Pad(_animatedBackground));
+        panel.Children.Add(Note("La pochette, très floue, dérive lentement derrière les paroles (si « Couleurs de la pochette » est actif).", new Thickness(18, 0, 0, 0)));
+        _karaoke.Checked += (_, _) => KaraokeChanged(); _karaoke.Unchecked += (_, _) => KaraokeChanged();
+        panel.Children.Add(Pad(_karaoke));
+        panel.Children.Add(Note("La ligne courante se remplit de gauche à droite pendant qu'elle est chantée.", new Thickness(18, 0, 0, 0)));
 
         // Fenêtre
         panel.Children.Add(Header("Fenêtre"));
@@ -203,6 +241,9 @@ internal sealed class SettingsWindow : Window
         A11y.Name(_updateText, "Nouvelle version disponible"); A11y.Name(_updateButton, "Télécharger la nouvelle version : ouvre sa page sur GitHub");
         A11y.Name(welcome, "Rouvrir l'écran de bienvenue");
         A11y.Name(clear, "Vider le cache des paroles"); A11y.Name(about, "Ouvrir À propos et droits"); A11y.Name(cacheMessage, "Résultat");
+        A11y.Name(_sceneScreen, "Écran de la Scène : écran de la fenêtre, écran principal, ou un écran par son nom");
+        A11y.Name(_sceneEffects, "Grain et vignette de la Scène"); A11y.Name(_animatedBackground, "Fond animé : la pochette floue dérive derrière les paroles");
+        A11y.Name(_karaoke, "Remplissage karaoké : la ligne courante se remplit de gauche à droite"); A11y.Name(openScene, "Ouvrir la Scène plein écran");
         A11y.Name(this, AppIdentity.DisplayName + " : réglages");
 
         PreviewKeyDown += OnPreviewKeyDown;
@@ -211,6 +252,7 @@ internal sealed class SettingsWindow : Window
         Loaded += (_, _) => { LoadFromSettings(); UpdateOffsetLabel(); };
     }
 
+    private static TextBlock Note(string text, Thickness margin) => new() { Text = text, FontSize = 11, Foreground = Brushes.Gray, TextWrapping = TextWrapping.Wrap, Margin = margin };
     private static TextBlock Header(string text) => new() { Text = text, FontWeight = FontWeights.Bold, FontSize = 14, Margin = new Thickness(0, 16, 0, 6) };
     private static FrameworkElement Pad(FrameworkElement e) { e.Margin = new Thickness(0, 6, 0, 2); return e; }
 
@@ -253,6 +295,9 @@ internal sealed class SettingsWindow : Window
             _checkUpdates.IsChecked = s.CheckUpdates;
             _manualNote.Text = _model.IsManualChoice ? "Une version choisie par toi est utilisée pour ce titre." : "Cherche une autre version sur LRCLIB si celle-ci ne correspond pas au morceau.";
             RefreshUpdate();
+            LoadSceneScreens(s.SceneScreen);
+            for (var i = 0; i < LayoutChoices.Length; i++) _layoutRadios[i].IsChecked = LayoutChoices[i] == s.SceneLayout;
+            _sceneEffects.IsChecked = s.SceneEffects; _animatedBackground.IsChecked = s.AnimatedBackground; _karaoke.IsChecked = s.KaraokeFill;
             _backdrop.IsChecked = s.SystemBackdrop;
             _backdrop.IsEnabled = Native.SupportsSystemBackdrop;
             if (!Native.SupportsSystemBackdrop) _backdrop.ToolTip = "Nécessite Windows 11 (build 22621 ou plus).";
@@ -268,6 +313,34 @@ internal sealed class SettingsWindow : Window
     }
 
     private void UpdateOffsetLabel() => _offsetLabel.Text = (_model.ManualOffset >= 0 ? "+" : "−") + Math.Abs(_model.ManualOffset).ToString("0.0") + " s";
+
+    /// <summary>Liste des écrans : « Écran de la fenêtre », « Écran principal », puis chaque écran par son nom ; un nom enregistré mais débranché reste dans la liste.</summary>
+    private void LoadSceneScreens(string setting)
+    {
+        List<string> names;
+        try { names = ScreenCatalog.Names().ToList(); } catch { names = new List<string>(); }
+        if (setting.StartsWith("name:", StringComparison.Ordinal) && !names.Contains(setting.Substring(5))) names.Add(setting.Substring(5));
+        var key = string.Join("\u001F", names);
+        if (key != _screenListKey)
+        {
+            _screenListKey = key; _screenNames = names;
+            _sceneScreen.Items.Clear();
+            _sceneScreen.Items.Add("Écran de la fenêtre"); _sceneScreen.Items.Add("Écran principal");
+            foreach (var n in names) _sceneScreen.Items.Add(n);
+        }
+        _sceneScreen.SelectedIndex = setting == SceneScreenChoice.Main ? 1 : setting.StartsWith("name:", StringComparison.Ordinal) ? Math.Max(0, _screenNames.IndexOf(setting.Substring(5))) + 2 : 0;
+    }
+
+    private void SceneScreenPicked()
+    {
+        if (_loading || _sceneScreen.SelectedIndex < 0) return;
+        var i = _sceneScreen.SelectedIndex;
+        var value = i == 0 ? SceneScreenChoice.Window : i == 1 ? SceneScreenChoice.Main : SceneScreenChoice.Named(_screenNames[Math.Min(i - 2, _screenNames.Count - 1)]);
+        _store.Update(s => s.SceneScreen = value);
+    }
+    private void SceneEffectsChanged() { if (!_loading) _store.Update(s => s.SceneEffects = _sceneEffects.IsChecked == true); }
+    private void AnimatedChanged() { if (!_loading) _store.Update(s => s.AnimatedBackground = _animatedBackground.IsChecked == true); }
+    private void KaraokeChanged() { if (!_loading) _store.Update(s => s.KaraokeFill = _karaoke.IsChecked == true); }
 
     private void ArtworkChanged() { if (_loading) return; _store.Update(s => s.ArtworkColors = _artwork.IsChecked == true); _model.RefreshPaletteVisibility(); }
     private void ClickThroughChanged()

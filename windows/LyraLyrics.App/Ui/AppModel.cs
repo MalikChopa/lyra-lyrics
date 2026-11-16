@@ -43,10 +43,19 @@ internal sealed class AppModel : IPlaybackEffects
 
     // ---- Effets demandés par le modèle
 
-    void IPlaybackEffects.StartLookup(TrackInfo track, string identity) =>
+    /// <summary>Mode captures (<c>--snapshot</c>) : aucune recherche, aucun appel réseau ; le contenu est inventé et injecté par <see cref="LoadDemo"/>.</summary>
+    public bool Offline { get; set; }
+
+    void IPlaybackEffects.StartLookup(TrackInfo track, string identity)
+    {
+        if (Offline) return;
         _ = _service.LookupAsync(track, e => _ui.BeginInvoke(() => _m.OnServiceEvent(e, identity)));
-    void IPlaybackEffects.RetryLookup(TrackInfo track, string identity) =>
+    }
+    void IPlaybackEffects.RetryLookup(TrackInfo track, string identity)
+    {
+        if (Offline) return;
         _ = _service.RetryAsync(track, e => _ui.BeginInvoke(() => _m.OnServiceEvent(e, identity)));
+    }
     void IPlaybackEffects.RevertToAutomatic(TrackInfo track, string identity) =>
         _ = _service.RevertToAutomaticAsync(track, e => _ui.BeginInvoke(() => _m.OnServiceEvent(e, identity)));
     void IPlaybackEffects.CancelLookup() => _service.Cancel();
@@ -78,6 +87,10 @@ internal sealed class AppModel : IPlaybackEffects
     public PlaybackActivity Activity => _m.Activity;
     /// <summary>Nouvelle version annoncée par la vérification quotidienne (E1), null sinon.</summary>
     public UpdateCheck.Release? UpdateRelease { get; set; }
+    /// <summary>Position de lecture estimée (secondes) et position dans les paroles (avance et décalage compris).</summary>
+    public double Position => _m.Position;
+    public double LyricPosition => _m.LyricPosition;
+    public bool IsPlaying => _m.IsPlaying;
     public IEnumerable<string> SecretsForLog() => _m.SecretsForLog();
     public IReadOnlyList<LineItem> LineItems(int count) => _m.LineItems(count);
     public bool PlaybackAvailable => _m.Track is not null && _smtc.SessionAppId is not null;
@@ -109,16 +122,41 @@ internal sealed class AppModel : IPlaybackEffects
     public void AdjustOffset(double delta) => _m.AdjustOffset(delta);
     public void ClearCache() => _service.ClearAll();
     public void ShowNotice(string text, double seconds = 3.5) { _m.ShowNotice(text, seconds); UpdateTimer(); }
-    public void SetWindowVisible(bool visible) { _m.SetWindowVisible(visible); UpdateTimer(); }
+    // Le minuteur et les publications du modèle continuent tant que la petite fenêtre OU la Scène est affichée (comme le Mac : setSceneVisible).
+    private bool _smallVisible, _sceneVisible;
+    public bool SceneVisible => _sceneVisible;
+    public void SetWindowVisible(bool visible) { _smallVisible = visible; _m.SetWindowVisible(_smallVisible || _sceneVisible); UpdateTimer(); }
+    public void SetSceneVisible(bool visible) { _sceneVisible = visible; _m.SetWindowVisible(_smallVisible || _sceneVisible); UpdateTimer(); }
     /// <summary>Redimensionnement ou autre événement de mise en page : le défilement non synchronisé est ré-armé (une seule animation).</summary>
     public void RefreshUnsyncedScroll() => _m.RefreshUnsynced(force: true);
     public void RefreshPaletteVisibility() => _m.Touch();
 
+    /// <summary>Mode captures : injecte un titre INVENTÉ, ses paroles inventées, une position et (option) une pochette générée. Jamais appelé hors <c>--snapshot</c>.</summary>
+    public void LoadDemo(TrackInfo track, Lyrics lyrics, double position, bool playing, byte[]? artwork, ArtworkPalette? palette)
+    {
+        Offline = true;
+        var now = Clock.Seconds();
+        _m.OnUpdate(new SmtcUpdate(true, track, playing ? PlaybackState.Playing : PlaybackState.Paused, position, track.Duration, now, true));
+        _m.OnServiceEvent(new LyricsServiceEvent.Found(lyrics, false), track.Identity);
+        _m.OnUpdate(new SmtcUpdate(true, track, playing ? PlaybackState.Playing : PlaybackState.Paused, position, track.Duration, Clock.Seconds(), true));
+        if (artwork is not null) { _artIdentity = track.Identity; _artBytes = artwork; ArtworkRevision++; }
+        if (palette is not null) _m.SetPalette(track.Identity, palette);
+        _m.Tick();
+    }
+
     // ---- Pochette
+
+    private string? _artIdentity;
+    private byte[] _artBytes = Array.Empty<byte>();
+    /// <summary>Octets de la pochette du titre en cours (lus localement via SMTC, en mémoire seulement) ; null s'il n'y en a pas (encore).</summary>
+    public byte[]? ArtworkBytes => _artBytes.Length > 0 && _artIdentity == _m.Track?.Identity ? _artBytes : null;
+    /// <summary>Change à chaque nouvelle pochette reçue.</summary>
+    public int ArtworkRevision { get; private set; }
 
     private void OnArtwork(string identity, byte[] bytes)
     {
         if (identity != _m.Track?.Identity) return;
+        _artIdentity = identity; _artBytes = bytes; ArtworkRevision++;
         if (ArtworkEnabled?.Invoke() == false || bytes.Length == 0) { _m.SetPalette(identity, null); return; }
         try { _m.SetPalette(identity, PaletteDecoder?.Invoke(bytes)); }
         catch (Exception e) { Log.Write("model", "palette : " + e.GetType().Name); _m.SetPalette(identity, null); }
