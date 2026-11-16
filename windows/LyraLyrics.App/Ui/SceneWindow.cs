@@ -259,15 +259,46 @@ internal sealed partial class SceneWindow : Window
         _root.UpdateLayout();
     }
 
-    /// <summary>Photo de la Scène à la résolution de l'écran (en pixels).</summary>
+    /// <summary>
+    /// Photo de la Scène à la résolution de l'écran (en pixels). La mise en page est TOUJOURS refaite avant le rendu : <see cref="RenderTargetBitmap"/> ne la lance pas, et
+    /// ajouter des enfants à un Canvas ne marque pas la racine comme invalide (<c>IsArrangeValid</c> reste vrai) ; l'ancien test « seulement si invalide » sautait donc la
+    /// mise en page des enfants ajoutés après <see cref="Prepare"/> (cause de la carte du titre absente sur les captures de la CI 1.3.0).
+    /// </summary>
     public BitmapSource Snapshot()
     {
         var pw = Math.Max(1, (int)Math.Round(_w * _screen.Scale)); var ph = Math.Max(1, (int)Math.Round(_h * _screen.Scale));
-        if (!_root.IsArrangeValid || _root.ActualWidth < 1) { _root.Measure(new Size(_w, _h)); _root.Arrange(new Rect(0, 0, _w, _h)); _root.UpdateLayout(); }
+        InvalidateTree(_root);
+        _root.Measure(new Size(_w, _h));
+        _root.Arrange(new Rect(0, 0, _w, _h));
+        _root.UpdateLayout();
         var rtb = new RenderTargetBitmap(pw, ph, 96 * _screen.Scale, 96 * _screen.Scale, PixelFormats.Pbgra32);
         rtb.Render(_root);
         rtb.Freeze();
         return rtb;
+    }
+
+    private static void InvalidateTree(DependencyObject node)
+    {
+        if (node is UIElement ui) { ui.InvalidateMeasure(); ui.InvalidateArrange(); }
+        for (var i = 0; i < VisualTreeHelper.GetChildrenCount(node); i++) InvalidateTree(VisualTreeHelper.GetChild(node, i));
+    }
+
+    /// <summary>Contrôle des captures : nombre d'éléments réellement visibles (taille mise en page non nulle, visibilité, opacité cumulée) dans la carte et dans les lignes. Aucun texte.</summary>
+    public readonly record struct SnapshotStats(int CardVisible, int CardTotal, int LinesVisible, int CurrentLinesVisible);
+
+    public SnapshotStats Inspect()
+    {
+        bool Shown(UIElement e)
+        {
+            if (e.RenderSize.Width < 1 || e.RenderSize.Height < 1) return false;
+            double op = 1;
+            for (DependencyObject? n = e; n is not null && !ReferenceEquals(n, _root); n = VisualTreeHelper.GetParent(n))
+                if (n is UIElement u) { if (u.Visibility != Visibility.Visible) return false; op *= u.Opacity; }
+            return op * _root.Opacity > 0.05;
+        }
+        var shownCard = CardLayer.Children.OfType<UIElement>().Count(e => Shown(CardLayer) && Shown(e));
+        var lines = _lines.Values.Where(l => Shown(l.Block)).ToList();
+        return new SnapshotStats(shownCard, CardLayer.Children.Count, lines.Count, lines.Count(l => l.Role == 0));
     }
 
     public void Shutdown()

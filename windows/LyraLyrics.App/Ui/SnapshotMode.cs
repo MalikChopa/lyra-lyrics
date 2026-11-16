@@ -58,10 +58,13 @@ internal static class SnapshotMode
                 }
                 foreach (var style in new[] { BackgroundStyle.Solid, BackgroundStyle.Glass, BackgroundStyle.Clear })
                     Shot("fenetre-" + style.ToString().ToLowerInvariant(), () => SmallWindow(dir, style, size, art));
-                Shot("scene-avec-pochette", () => Scene(dir, size, art, SceneLayoutMode.WithArtwork, position: 40.5, playing: false, SceneWindow.DemoKind.Normal));
-                Shot("scene-paroles-seules-carte", () => Scene(dir, size, art, SceneLayoutMode.LyricsOnly, position: 40.5, playing: false, SceneWindow.DemoKind.Card));
-                Shot("scene-passage-sans-paroles", () => Scene(dir, size, art, SceneLayoutMode.LyricsOnly, position: 45, playing: false, SceneWindow.DemoKind.Gap));
-                Shot("scene-barre-de-commandes", () => Scene(dir, size, art, SceneLayoutMode.WithArtwork, position: 40.5, playing: true, SceneWindow.DemoKind.Controls));
+                // positions : 26 s tombe dans la ligne de 24 s (ligne chantée, pas de passage) ; 45 s dans le passage sans paroles de 30 à 60 s
+                const double Sung = 26;
+                Shot("scene-avec-pochette", () => Scene(dir, size, art, SceneLayoutMode.WithArtwork, Sung, playing: false, SceneWindow.DemoKind.Normal, "scene-avec-pochette-" + size.Name, Expect.Lines, report));
+                Shot("scene-paroles-seules-lignes", () => Scene(dir, size, art, SceneLayoutMode.LyricsOnly, Sung, playing: false, SceneWindow.DemoKind.Lines, "scene-paroles-seules-lignes-" + size.Name, Expect.Lines, report));
+                Shot("scene-paroles-seules-carte", () => Scene(dir, size, art, SceneLayoutMode.LyricsOnly, Sung, playing: false, SceneWindow.DemoKind.Card, "scene-paroles-seules-carte-" + size.Name, Expect.Card, report));
+                Shot("scene-passage-sans-paroles", () => Scene(dir, size, art, SceneLayoutMode.LyricsOnly, position: 45, playing: false, SceneWindow.DemoKind.Gap, "scene-passage-sans-paroles-" + size.Name, Expect.None, report));
+                Shot("scene-barre-de-commandes", () => Scene(dir, size, art, SceneLayoutMode.WithArtwork, Sung, playing: true, SceneWindow.DemoKind.Controls, "scene-barre-de-commandes-" + size.Name, Expect.Lines, report));
             }
             app.Dispatcher.InvokeShutdown();
         }
@@ -123,7 +126,10 @@ internal static class SnapshotMode
         return w.RenderForSnapshot(size.W, size.H, size.Scale, Color.FromRgb(36, 52, 92), Color.FromRgb(20, 120, 140));
     }
 
-    private static BitmapSource Scene(string dir, (int W, int H, double Scale, string Name) size, Art art, SceneLayoutMode layout, double position, bool playing, SceneWindow.DemoKind kind)
+    /// <summary>Ce qu'un cliché doit montrer : des lignes dont la courante (chantée), la carte du titre, ou rien de particulier (passage).</summary>
+    private enum Expect { None, Lines, Card }
+
+    private static BitmapSource Scene(string dir, (int W, int H, double Scale, string Name) size, Art art, SceneLayoutMode layout, double position, bool playing, SceneWindow.DemoKind kind, string shot, Expect expect, List<string> report)
     {
         var (model, store) = Setup(dir, art, position, playing, s => { s.SceneLayout = layout; s.KaraokeFill = false; s.SceneEffects = true; });
         var screen = new ScreenInfo("Écran de démonstration", 0, 0, size.W, size.H, size.Scale, true);
@@ -132,7 +138,13 @@ internal static class SnapshotMode
         {
             scene.Prepare();
             scene.ApplyDemo(kind);
-            return scene.Snapshot();
+            var image = scene.Snapshot();                       // refait la mise en page avant le rendu ; le contrôle ci-dessous la lit
+            var st = scene.Inspect();
+            report.Add($"INFO {shot} carte={st.CardVisible}/{st.CardTotal} lignes={st.LinesVisible} courante={st.CurrentLinesVisible}");
+            if (expect == Expect.Card && st.CardVisible < 3) report.Add($"WARNING {shot} : cliché suspect, carte du titre attendue mais {st.CardVisible} élément(s) visible(s) sur {st.CardTotal}");
+            if (expect == Expect.Lines && (st.LinesVisible < 1 || st.CurrentLinesVisible < 1)) report.Add($"WARNING {shot} : cliché suspect, ligne chantée attendue mais lignes={st.LinesVisible} courante={st.CurrentLinesVisible}");
+            if (expect == Expect.Lines && st.CardVisible > 0) report.Add($"WARNING {shot} : cliché suspect, carte visible alors qu'elle n'est pas attendue ({st.CardVisible})");
+            return image;
         }
         finally { try { scene.Shutdown(); } catch { } }
     }

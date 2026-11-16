@@ -719,7 +719,7 @@ internal sealed partial class SceneWindow
 
     // ================================================================ Captures (--snapshot) : états forcés, sans minuterie ni animation
 
-    public enum DemoKind { Normal, Card, Gap, Controls }
+    public enum DemoKind { Normal, Card, Gap, Controls, Lines }
 
     /// <summary>Mode captures : met la Scène dans l'état voulu, immédiatement (aucune animation, aucune minuterie).</summary>
     public void ApplyDemo(DemoKind kind)
@@ -743,6 +743,9 @@ internal sealed partial class SceneWindow
                     e.Fill = new RadialGradientBrush(tint, Color.FromArgb(0, tint.R, tint.G, tint.B));
                     var tr = (TranslateTransform)e.RenderTransform; tr.X = p.Vx * age; tr.Y = p.Vy * age; e.Opacity = GapParticles.OpacityAt(age);
                 }
+                break;
+            case DemoKind.Lines:                                  // lignes seules : ni carte, ni passage (la minuterie de carte n'est jamais lancée sans boucle de messages)
+                CancelCard(); _content.Opacity = 1; _linesKey = ""; Refresh(false);
                 break;
             case DemoKind.Controls:
                 _controlsVisible = true; _barHost.Opacity = 1; _exitButton.Opacity = 1; UpdateBar();
