@@ -1,0 +1,19 @@
+# 1.1.0 (E1) : vérification des mises à jour contre un FAUX point d'accès local (pf-fake-lrclib, /fake-github/latest).
+# Lancer avec : --lyrics-endpoint http://127.0.0.1:4181
+expect checkUpdates=true updateTag=none updateRequests=0
+update newer
+expect updateTag=v9.9.9 updateRequests=1 updateMenuItem=true lastUpdateCheckSet=true
+settings open
+wait 0.6
+ax-press settings Voir la nouvelle version sur GitHub
+expect openedURLLast=https://github.com/MalikChopa/lyra-lyrics/releases/tag/v9.9.9
+update same
+expect updateTag=none updateRequests=2 updateMenuItem=false
+update error
+expect updateTag=none updateRequests=3
+update evil
+expect updateTag=none updateRequests=4 updateOutcome=failed
+# cadence : la vérification automatique ne repart pas le même jour
+update-auto
+expect updateRequests=4
+state maj

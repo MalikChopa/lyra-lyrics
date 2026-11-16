@@ -6,11 +6,20 @@ import AppSupport
 class KeyablePanel: NSPanel {
     var onEscape: (() -> Void)?
     override var canBecomeKey: Bool { true }
+    #if DEBUG
+    /// Autotest (1.1.0, F1) : pendant un autotest, seul l'Échap ENVOYÉ par le script ferme un volet ; un Échap réel tapé par la personne
+    /// qui se sert du Mac (cause probable de l'échec intermittent de `clic-travers`) est ignoré.
+    nonisolated(unsafe) static var selftestActive = false
+    nonisolated(unsafe) static var injecting = false
+    private var escapeAllowed: Bool { !Self.selftestActive || Self.injecting }
+    #else
+    private var escapeAllowed: Bool { true }
+    #endif
     override func keyDown(with event: NSEvent) {
-        if event.keyCode == 53, let onEscape { onEscape() } else { super.keyDown(with: event) }
+        if event.keyCode == 53, let onEscape { if escapeAllowed { onEscape() } } else { super.keyDown(with: event) }
     }
     override func cancelOperation(_ sender: Any?) {
-        if let onEscape { onEscape() } else { super.cancelOperation(sender) }
+        if let onEscape { if escapeAllowed { onEscape() } } else { super.cancelOperation(sender) }
     }
 }
 

@@ -17,12 +17,29 @@ No account, no sign-in, no server of ours: the app talks to your music player an
 
 ## Features
 
+### New in 1.1.0
+
+![Demo (invented lyrics and artwork)](docs/images/demo.gif)
+
+- **Scene (full-screen mode).** Click the full-screen button in the hover bar of the floating window (or double-click it): it zooms smoothly to full screen on the screen you choose (Esc, double-click, the exit button that appears when the mouse moves, or your shortcut to leave). The cover, very blurred, drifts slowly behind big lyrics (the current line is highlighted in the accent colour; the next lines wait below; the optional "Remplissage karaoké" setting fills it from left to right as it is sung); a title card with the cover and its soft reflection appears for about 3 seconds at each new song; during intros, gaps and instrumentals a breathing note and a few slow particles take over; a light grain and vignette (one setting). Restraint rules: one accent colour from the cover, at most two moving effects at a time, soft ease-in-out curves, text contrast of at least 4.5:1, "Reduce motion" and "Reduce transparency" respected. Measured: about 1.7 to 2.1 % CPU on average in the Scene and about 0.2 % in the small window (release build with debug flags, fake player, 2026-10-28; see CHANGELOG).
+  ![Scene: title card](docs/images/scene-01-carte.jpg)
+  ![Scene: lyrics, the current line highlighted](docs/images/scene-02-lignes.jpg)
+  ![Scene: instrumental passage](docs/images/scene-05-passage.jpg)
+  ![Scene: cover on the left, lyrics on the right, control bar](docs/images/scene-03-barre-commandes.jpg)
+  ![Scene: lyrics only](docs/images/scene-04-paroles-seules.jpg)
+- **Scene layouts and controls.** Setting "Mise en page": "Avec la pochette" (default: sharp cover with the title and artist on the left, lyrics on the right) or "Paroles seules" (centred lyrics and the title card). Move the mouse to show a bar at the bottom (previous, play/pause, next, progress with elapsed and total time, exit); it hides after 3 seconds. Keyboard: Space = play/pause, left/right arrows = previous/next, Esc = exit. The line that leaves rises, shrinks slightly and fades word by word.
+- **Wrong lyrics?** A search panel (settings, menu bar, or the button in the "unavailable" state) lists LRCLIB versions (title, artist, album, duration, "synced" badge); the one you pick is used at once and remembered for that song (its LRCLIB identifier only, never text), with a way back to the automatic choice.
+- **Welcome screen** at the first launch (3 cards, an "Allow Spotify" button that asks for the permission only when you click it); reopen it from the menu.
+- **Launch at login** (settings), **auto-hide** (never / when paused / when nothing plays, with a soft fade, never overriding your own hide/show), **re-opening the app** shows the window and the settings, **update notice** (one request a day at most to GitHub, can be switched off).
+- **Elegant waiting animation** (ghost lines that softly shimmer) while lyrics are being searched, **optional animated cover background** and **karaoke-style fill** (small window and Scene) (both off by default), and a plain-text block that now scrolls with a single Core Animation animation (about 0 % CPU instead of about 2 %).
+  ![Small window with the animated background and the fill](docs/images/small-s24.jpg)
+
 - **Always on top**, draggable anywhere, also over other apps' windows (but see the [Dock icon trade-off](#the-dock-icon-and-full-screen-apps)). **Resizable with the mouse**: drag any edge or corner (6 pt grab zone, 280 x 110 pt minimum, 90 % of the visible screen at most); the text **adapts automatically**: the font size is the largest at which the visible lines fit the window in width and height (the "Max size" setting is the upper limit), so a bigger window means bigger text. A line wraps only if it does not fit even at 14 pt. The size is remembered; "Default size" in the settings resets it. Disabled in click-through mode.
 - **Smooth scrolling** like Apple Music: on each line change the lines glide up, the new current line scales up and brightens, the neighbours fade and get a light blur. Done with Core Animation layer animations (no per-frame redraw), smooth at 60 and 120 Hz; with "Reduce motion" on, a simple cross-fade replaces the glide.
 - **Colours from the album cover** (on by default, can be switched off): the background tint and the current-line colour come from the cover of the song playing, with a contrast of at least 4.5:1 for the current line against the tint. Apple Music: the cover is read from the Music app. Spotify: the cover is downloaded once per song (see [Privacy](#privacy)). Off, or no cover: the plain styles.
 - **Playback buttons** in the bar that appears when the pointer is over the window: previous, play/pause, next, for the player that is playing. The first time, if macOS has not been asked yet, the first click asks for the Automation permission (a one-line explanation appears in the window, then the system prompt) and then sends the command; if you refused it, the buttons stay greyed and a click offers "Open Settings" (nothing is ever asked twice).
 - **One, three or five lines** (setting "Lines"); the window height adapts, long lines still wrap and shrink the font as needed.
-- **Font themes**: Classic, Elegant (New York serif), Neon (rounded bold with a glow), Minimal (light), each setting font, weight, colour, glow and neighbour size in one click. Changing any single control afterwards shows "Custom".
+- **Font themes**: Classic, Elegant (New York serif), Neon (rounded bold with a tight glow that follows the letters), Minimal (light), each setting font, weight, colour, glow and neighbour size in one click. Changing any single control afterwards shows "Custom".
 - **Synchronised lyrics**: current line highlighted, neighbours dimmed. When LRCLIB only has plain text, it is shown as a slowly scrolling block, with a notice that it is not synchronised.
 - **Three backgrounds**: solid, frosted glass, transparent (text with a soft shadow).
 - **Settings**: font, weight, max size, text colour, glow, background opacity.
@@ -66,7 +83,7 @@ No account, no sign-in, no server of ours: the app talks to your music player an
 
 ## Install
 
-1. Download `Lyra-Lyrics-1.0.1-macOS.zip` from the [Releases page](https://github.com/MalikChopa/lyra-lyrics/releases) and unzip it.
+1. Download `Lyra-Lyrics-1.1.0-macOS.zip` from the [Releases page](https://github.com/MalikChopa/lyra-lyrics/releases) and unzip it.
 2. Move **Lyra Lyrics.app** to your **Applications** folder.
 3. Open it. The first time, macOS **blocks** it ("Apple could not verify..."). This is expected: the app is **not notarised** by Apple (notarisation needs a paid developer account, and this project is free and spare-time). To allow it:
    - open **System Settings > Privacy & Security**,
@@ -76,7 +93,7 @@ No account, no sign-in, no server of ours: the app talks to your music player an
    The exact wording of these screens may differ on your version of macOS. A right-click > Open is no longer enough on recent versions of macOS.
 4. A music-note icon appears in the menu bar, and a window "Nothing playing" appears. Start a song.
 
-The SHA-256 of each zip is in the release notes: compare it with `shasum -a 256 Lyra-Lyrics-1.0.1-macOS.zip` if you want to check your download.
+The SHA-256 of each zip is in the release notes: compare it with `shasum -a 256 Lyra-Lyrics-1.1.0-macOS.zip` if you want to check your download.
 
 If you would rather not trust a binary, [build it yourself](#build-from-source).
 
@@ -91,11 +108,11 @@ The app reads the title, artist, album, duration and position of the current son
 
 ## Privacy
 
-- **What leaves your Mac.** To find the lyrics, the title, artist, album and duration of the current song are sent to lrclib.net (with your IP address, like any web request). The request also carries the app's name, version and project address in the `User-Agent` header (`LyraLyrics/1.0.0 (+https://github.com/MalikChopa/lyra-lyrics)`). **One more request, only for Spotify and only if "Colours from the album cover" is on:** the cover image of the song is downloaded once from Spotify's image server (`i.scdn.co`), kept in memory only and never written to disk, and cancelled if the song changes first. Apple Music covers are read from the Music app and are not downloaded. Switch the setting off and no cover request is made at all. Nothing else leaves your Mac: no statistics, no telemetry, no crash report, no update check.
+- **What leaves your Mac.** To find the lyrics, the title, artist, album and duration of the current song are sent to lrclib.net (with your IP address, like any web request). The request also carries the app's name, version and project address in the `User-Agent` header (`LyraLyrics/1.0.0 (+https://github.com/MalikChopa/lyra-lyrics)`). **One more request, only for Spotify and only if "Colours from the album cover" is on:** the cover image of the song is downloaded once from Spotify's image server (`i.scdn.co`), kept in memory only and never written to disk, and cancelled if the song changes first. Apple Music covers are read from the Music app and are not downloaded. Switch the setting off and no cover request is made at all. **One more request, once a day at most, at launch, if "Check for updates" is on (default):** one GET to `api.github.com` (this repository's latest release) to tell you when a new version exists. It sends nothing about you (only the app's `User-Agent`), uses an ephemeral session and can be switched off. Nothing else leaves your Mac: no statistics, no telemetry, no crash report.
 - **Lyrics are never stored.** They are kept in memory for the song being shown (and the previous one), and are gone when you quit. There is no HTTP cache and no copy/export function.
-- **What is on disk.** Your settings, and a small lookup index in `~/Library/Application Support/io.github.malikmoussaoui.lyra-lyrics/`: a salted hash of (title, artist, duration) mapped to the LRCLIB identifier, for 24 hours and at most 500 entries. It contains no text. "Clear cache" empties it. This hash is a light obfuscation, not a protection.
+- **What is on disk.** Your settings, and a small lookup index in `~/Library/Application Support/io.github.malikchopa.lyra-lyrics/`: a salted hash of (title, artist, duration) mapped to the LRCLIB identifier, for 24 hours and at most 500 entries. It contains no text. "Clear cache" empties it. This hash is a light obfuscation, not a protection.
 - **Only the current song** is looked up, when it starts playing: no preloading, no history.
-- This describes what the code is designed and tested to do (the release binary contains no URL other than lrclib.net, this repository and Spotify's image host `i.scdn.co`). It is not legal advice.
+- This describes what the code is designed and tested to do (the release binary contains no URL other than lrclib.net, this repository, `api.github.com` and Spotify's image host `i.scdn.co`). It is not legal advice.
 
 ## The Dock icon and full-screen apps
 

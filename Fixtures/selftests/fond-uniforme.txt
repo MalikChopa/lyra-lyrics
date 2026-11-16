@@ -1,0 +1,55 @@
+# Fond uniforme à toutes les largeurs (1.1.0) : pour chaque style, fond animé coupé puis allumé, la fenêtre passe de 460 à 900 puis 300 pt
+# de large ; `winshot` capture la fenêtre RÉELLE (serveur de fenêtres) et mesure l'uniformité du fond sur des bandes sans texte.
+play phares
+wait-for mode=synced 8
+pause
+seek 14
+artwork on
+animated-bg off
+style solid
+resize-to 460 190
+winshot solid-off-460
+resize-to 900 190
+winshot solid-off-900
+resize-to 300 190
+winshot solid-off-300
+animated-bg off
+style glass
+resize-to 460 190
+winshot glass-off-460
+resize-to 900 190
+winshot glass-off-900
+resize-to 300 190
+winshot glass-off-300
+animated-bg off
+style clear
+resize-to 460 190
+winshot clear-off-460
+resize-to 900 190
+winshot clear-off-900
+resize-to 300 190
+winshot clear-off-300
+animated-bg on
+style solid
+resize-to 460 190
+winshot solid-on-460
+resize-to 900 190
+winshot solid-on-900
+resize-to 300 190
+winshot solid-on-300
+animated-bg on
+style glass
+resize-to 460 190
+winshot glass-on-460
+resize-to 900 190
+winshot glass-on-900
+resize-to 300 190
+winshot glass-on-300
+animated-bg on
+style clear
+resize-to 460 190
+winshot clear-on-460
+resize-to 900 190
+winshot clear-on-900
+resize-to 300 190
+winshot clear-on-300

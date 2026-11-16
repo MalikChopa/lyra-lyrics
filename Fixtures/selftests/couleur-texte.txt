@@ -1,0 +1,104 @@
+# Couleur du texte (1.1.0) : chacune des 5 pastilles x couleurs de la pochette coupées/allumées x petite fenêtre / Scène.
+# `winshot` capture la VRAIE fenêtre et compte les pixels de texte à la couleur exacte de chaque pastille ; `shotSwatch` = pastille la plus présente.
+# Règle : la pastille choisie colore toujours le texte ; la pochette ne teinte que le fond et l'accent (remplissage karaoké désactivé ici).
+play phares
+wait-for mode=synced 8
+wait-for artworkDelivered=1 5
+pause
+seek 14
+size 44
+animated-bg off
+karaoke off
+style solid
+resize-to 560 200
+scene effects-off
+artwork on
+color 0
+wait 1
+winshot petite-on-0
+expect shotSwatch=0 artworkColors=true
+color 1
+wait 1
+winshot petite-on-1
+expect shotSwatch=1 artworkColors=true
+color 2
+wait 1
+winshot petite-on-2
+expect shotSwatch=2 artworkColors=true
+color 3
+wait 1
+winshot petite-on-3
+expect shotSwatch=3 artworkColors=true
+color 4
+wait 1
+winshot petite-on-4
+expect shotSwatch=4 artworkColors=true
+artwork off
+color 0
+wait 1
+winshot petite-off-0
+expect shotSwatch=0 artworkColors=false
+color 1
+wait 1
+winshot petite-off-1
+expect shotSwatch=1 artworkColors=false
+color 2
+wait 1
+winshot petite-off-2
+expect shotSwatch=2 artworkColors=false
+color 3
+wait 1
+winshot petite-off-3
+expect shotSwatch=3 artworkColors=false
+color 4
+wait 1
+winshot petite-off-4
+expect shotSwatch=4 artworkColors=false
+artwork off
+scene enter
+wait-for sceneState=shown 3
+wait 6
+artwork on
+color 0
+wait 1.5
+winshot scene-on-0 scene
+expect shotSwatch=0 artworkColors=true
+color 1
+wait 1.5
+winshot scene-on-1 scene
+expect shotSwatch=1 artworkColors=true
+color 2
+wait 1.5
+winshot scene-on-2 scene
+expect shotSwatch=2 artworkColors=true
+color 3
+wait 1.5
+winshot scene-on-3 scene
+expect shotSwatch=3 artworkColors=true
+color 4
+wait 1.5
+winshot scene-on-4 scene
+expect shotSwatch=4 artworkColors=true
+artwork off
+color 0
+wait 1.5
+winshot scene-off-0 scene
+expect shotSwatch=0 artworkColors=false
+color 1
+wait 1.5
+winshot scene-off-1 scene
+expect shotSwatch=1 artworkColors=false
+color 2
+wait 1.5
+winshot scene-off-2 scene
+expect shotSwatch=2 artworkColors=false
+color 3
+wait 1.5
+winshot scene-off-3 scene
+expect shotSwatch=3 artworkColors=false
+color 4
+wait 1.5
+winshot scene-off-4 scene
+expect shotSwatch=4 artworkColors=false
+scene exit
+wait-for sceneState=hidden 3

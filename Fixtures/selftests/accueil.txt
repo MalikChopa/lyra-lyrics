@@ -1,0 +1,38 @@
+# 1.1.0 (A1, A2, A3) : accueil du premier lancement, lancement à l'ouverture de session (LaunchAgent factice sous /tmp), relance de l'app.
+# Lancer avec : --login-home /tmp/lyra-110/home
+# A1 : première fois -> le panneau s'ouvre ; « Commencer » -> ne revient plus tout seul ; rouvrable par le menu
+expect welcomeSeen=false welcomeOpen=false
+welcome first
+wait 0.5
+expect welcomeOpen=true welcomeOpenCount=1
+ax-press welcome Autoriser Spotify
+welcome start
+wait 0.4
+expect welcomeOpen=false welcomeSeen=true
+welcome first
+wait 0.4
+expect welcomeOpen=false welcomeOpenCount=1
+menu Bienvenue
+wait 0.5
+expect welcomeOpen=true welcomeOpenCount=2
+ax-press welcome Commencer
+wait 0.4
+expect welcomeOpen=false
+# A2 : coche -> LaunchAgent écrit dans le dossier factice ; décoche -> supprimé
+expect launchAtLogin=false loginAgentExists=false loginEnabled=false
+login on
+wait 0.5
+expect launchAtLogin=true loginAgentExists=true loginEnabled=true loginPath=launchAgent
+state login-on
+login off
+wait 0.5
+expect launchAtLogin=false loginAgentExists=false loginEnabled=false
+# A3 : relancer l'app (Dock, Spotlight) montre la fenêtre ET ouvre le volet
+settings close
+hide
+wait 0.6
+expect panelShown=false settingsOpen=false
+reopen
+wait 0.8
+expect reopenCount=1 panelShown=true settingsOpen=true
+state reopen

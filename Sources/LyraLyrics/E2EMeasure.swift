@@ -267,7 +267,7 @@ final class E2EMeasure {
         let clipboard = NSPasteboard.general.string(forType: .string).map { clip in fragments.filter { clip.contains($0) }.count } ?? 0
         let witness = "PFJ4-TEMOIN-" + UUID().uuidString
         // Témoin dans le journal unifié (visible : privacy public, chaîne inventée).
-        Logger(subsystem: "io.github.malikmoussaoui.lyra-lyrics", category: "d11-temoin").notice("\(witness, privacy: .public)")
+        Logger(subsystem: "io.github.malikchopa.lyra-lyrics", category: "d11-temoin").notice("\(witness, privacy: .public)")
         let count = fragments.count
         Task.detached(priority: .utility) {
             try? await Task.sleep(for: .seconds(2))
@@ -284,7 +284,7 @@ enum D11Scanner {
     static func run(needles: [Data], witness: String) -> [String: Any] {
         let fm = FileManager.default
         let home = fm.homeDirectoryForCurrentUser
-        let bundle = "io.github.malikmoussaoui.lyra-lyrics"
+        let bundle = "io.github.malikchopa.lyra-lyrics"
         let lib = home.appendingPathComponent("Library")
         let roots: [(String, URL, Bool)] = [      // (nom, dossier, on peut y planter un témoin)
             ("appSupport", lib.appendingPathComponent("Application Support/\(bundle)"), true),

@@ -28,6 +28,20 @@ struct SettingsActions {
     var closeSettings: @MainActor () -> Void
     /// Volet Automatisation des Réglages Système (autorisation refusée).
     var openAutomationSettings: @MainActor () -> Void
+    // 1.1.0
+    var setLaunchAtLogin: @MainActor (Bool) -> Void
+    var setAutoHide: @MainActor (AutoHideMode) -> Void
+    var setCheckUpdates: @MainActor (Bool) -> Void
+    var openManualSearch: @MainActor () -> Void
+    var openWelcome: @MainActor () -> Void
+    var openUpdatePage: @MainActor () -> Void
+    // Scène et petite fenêtre
+    var openScene: @MainActor () -> Void
+    var setSceneScreen: @MainActor (String) -> Void
+    var setSceneEffects: @MainActor (Bool) -> Void
+    var setSceneLayout: @MainActor (SceneLayoutMode) -> Void
+    var setAnimatedBackground: @MainActor (Bool) -> Void
+    var setKaraokeFill: @MainActor (Bool) -> Void
 }
 
 private let accent = Color(red: 10 / 255, green: 132 / 255, blue: 1)
@@ -155,9 +169,27 @@ struct SettingsView: View {
                 }
                 .toggleStyle(.checkbox).controlSize(.small)
                 .accessibilityIdentifier("artwork-colors")
-                Text("Fond et ligne courante prennent les teintes de la pochette. Avec Spotify, la pochette est téléchargée (une image par titre, gardée en mémoire seulement).")
+                Text("Fond, ligne courante et Scène prennent les teintes de la pochette. Avec Spotify, la pochette est téléchargée (une image par titre, gardée en mémoire seulement).")
                     .font(.system(size: 11)).foregroundStyle(txtMid).padding(.leading, 18)
             }.padding(.top, 8)
+            VStack(alignment: .leading, spacing: 2) {
+                Toggle(isOn: Binding(get: { s.animatedBackground }, set: { actions.setAnimatedBackground($0) })) {
+                    Text("Fond animé").font(.system(size: 12.5))
+                }
+                .toggleStyle(.checkbox).controlSize(.small)
+                .accessibilityIdentifier("animated-background")
+                Text("La pochette, très floue, dérive lentement derrière les paroles (si « Couleurs de la pochette » est actif).")
+                    .font(.system(size: 11)).foregroundStyle(txtMid).padding(.leading, 18).fixedSize(horizontal: false, vertical: true)
+            }.padding(.top, 8)
+            VStack(alignment: .leading, spacing: 2) {
+                Toggle(isOn: Binding(get: { s.karaokeFill }, set: { actions.setKaraokeFill($0) })) {
+                    Text("Remplissage karaoké").font(.system(size: 12.5))
+                }
+                .toggleStyle(.checkbox).controlSize(.small)
+                .accessibilityIdentifier("karaoke-fill")
+                Text("La ligne courante se remplit de gauche à droite pendant qu'elle est chantée.")
+                    .font(.system(size: 11)).foregroundStyle(txtMid).padding(.leading, 18).fixedSize(horizontal: false, vertical: true)
+            }.padding(.top, 6)
             HStack(spacing: 10) {
                 Button("Taille par défaut") { actions.resetWindowSize() }.buttonStyle(.bordered).controlSize(.small)
                     .disabled(s.manualSize == nil)
@@ -189,6 +221,14 @@ struct SettingsView: View {
             }.padding(.vertical, 4)
             Text("Le cache ne garde jamais de paroles : seulement l'identifiant LRCLIB de chaque titre déjà cherché, 24 h.")
                 .font(.system(size: 11)).foregroundStyle(txtMid)
+            HStack(spacing: 10) {
+                Button("Mauvaises paroles ?") { actions.openManualSearch() }.buttonStyle(.bordered).controlSize(.small)
+                    .disabled(model.track == nil)
+                    .accessibilityLabel("Mauvaises paroles ? Chercher une autre version")
+                Spacer(minLength: 0)
+            }.padding(.top, 8)
+            Text(model.isManualChoice ? "Une version choisie par toi est utilisée pour ce titre." : "Cherche une autre version sur LRCLIB si celle-ci ne correspond pas au morceau.")
+                .font(.system(size: 11)).foregroundStyle(txtMid)
             if let access = model.spotifyAccess, access != .granted {
                 // 1.0.1 : l'état dit la vérité pour CETTE identité d'app (l'autorisation Automatisation est liée à l'identifiant de bundle).
                 // Spotify marche sans autorisation (notification) ; l'accord ajoute la synchro précise et les boutons de lecture.
@@ -204,6 +244,35 @@ struct SettingsView: View {
                     }
                 }.padding(.top, 10)
             }
+            heading("Scène plein écran")
+            HStack(spacing: 10) {
+                Button("Ouvrir la Scène") { actions.openScene() }.buttonStyle(.bordered).controlSize(.small)
+                    .accessibilityLabel("Ouvrir la Scène plein écran")
+                Spacer(minLength: 0)
+            }
+            Text("Double-clic sur la fenêtre pour y entrer ; Échap, double-clic ou le bouton en haut à droite pour en sortir. Espace : lecture/pause ; ← → : précédent/suivant.")
+                .font(.system(size: 11)).foregroundStyle(txtMid).padding(.top, 4)
+            row("Écran") {
+                Picker("Écran de la Scène", selection: Binding(get: { s.sceneScreen }, set: { actions.setSceneScreen($0) })) {
+                    Text("Écran de la fenêtre").tag(SceneScreenChoice.window)
+                    Text("Écran principal").tag(SceneScreenChoice.main)
+                    ForEach(SceneController.screenNames(), id: \.self) { Text($0).tag(SceneScreenChoice.named($0)) }
+                }
+                .labelsHidden().pickerStyle(.menu).frame(maxWidth: .infinity)
+                .accessibilityLabel("Écran de la Scène")
+            }
+            row("Mise en page") {
+                Picker("Mise en page de la Scène", selection: Binding(get: { s.sceneLayout }, set: { actions.setSceneLayout($0) })) {
+                    ForEach(SceneLayoutMode.allCases, id: \.self) { Text($0.label).tag($0) }
+                }
+                .labelsHidden().pickerStyle(.menu).frame(maxWidth: .infinity)
+                .accessibilityLabel("Mise en page de la Scène")
+            }
+            Toggle(isOn: Binding(get: { s.sceneEffects }, set: { actions.setSceneEffects($0) })) {
+                Text("Grain et vignette").font(.system(size: 12.5))
+            }
+            .toggleStyle(.checkbox).controlSize(.small).padding(.top, 4)
+            .accessibilityIdentifier("scene-effects")
             heading("Comportement")
             HStack(spacing: 10) {
                 VStack(alignment: .leading, spacing: 2) {
@@ -214,6 +283,25 @@ struct SettingsView: View {
                 Spacer(minLength: 0)
                 SwitchToggle(isOn: s.clickThrough, reduceMotion: model.reduceMotion) { actions.setClickThrough(!s.clickThrough) }
             }.padding(.vertical, 8)
+            VStack(alignment: .leading, spacing: 2) {
+                Toggle(isOn: Binding(get: { s.launchAtLogin }, set: { actions.setLaunchAtLogin($0) })) {
+                    Text("Lancer à l'ouverture de session").font(.system(size: 12.5))
+                }
+                .toggleStyle(.checkbox).controlSize(.small)
+                .accessibilityIdentifier("launch-at-login")
+                if let msg = model.loginMessage {
+                    Text(msg).font(.system(size: 11)).foregroundStyle(txtMid).padding(.leading, 18).fixedSize(horizontal: false, vertical: true)
+                }
+            }.padding(.vertical, 8)
+            row("Masquer") {
+                Picker("Masquer la fenêtre", selection: Binding(get: { s.autoHide }, set: { actions.setAutoHide($0) })) {
+                    ForEach(AutoHideMode.allCases, id: \.self) { Text($0.label).tag($0) }
+                }
+                .labelsHidden().pickerStyle(.menu).frame(maxWidth: .infinity)
+                .accessibilityLabel("Masquer la fenêtre")
+            }
+            Text("Se cache en douceur, et revient seule. Un masquage ou un affichage fait par toi n'est jamais annulé.")
+                .font(.system(size: 11)).foregroundStyle(txtMid)
             VStack(alignment: .leading, spacing: 2) {
                 Toggle(isOn: Binding(get: { s.showsDockIcon }, set: { actions.setDockIcon($0) })) {
                     Text("Icône dans le Dock").font(.system(size: 12.5))
@@ -240,6 +328,26 @@ struct SettingsView: View {
                     .buttonStyle(.plain).font(.system(size: 11)).foregroundStyle(link)
                     .frame(maxWidth: .infinity, alignment: .trailing)
             }
+            VStack(alignment: .leading, spacing: 2) {
+                Toggle(isOn: Binding(get: { s.checkUpdates }, set: { actions.setCheckUpdates($0) })) {
+                    Text("Vérifier les mises à jour").font(.system(size: 12.5))
+                }
+                .toggleStyle(.checkbox).controlSize(.small)
+                .accessibilityIdentifier("check-updates")
+                Text("Une requête par jour au plus vers github.com (api.github.com), sans rien envoyer de toi.")
+                    .font(.system(size: 11)).foregroundStyle(txtMid).padding(.leading, 18)
+                if let release = model.updateRelease {
+                    HStack(spacing: 8) {
+                        Text("Nouvelle version disponible : \(release.tag)").font(.system(size: 11.5, weight: .semibold)).foregroundStyle(.white)
+                        Button("Voir") { actions.openUpdatePage() }.buttonStyle(.bordered).controlSize(.small)
+                            .accessibilityLabel("Voir la nouvelle version sur GitHub")
+                    }.padding(.leading, 18).padding(.top, 4)
+                }
+            }.padding(.vertical, 8)
+            HStack {
+                Button { actions.openWelcome() } label: { Text("Bienvenue…").foregroundStyle(link) }.buttonStyle(.plain)
+                Spacer()
+            }.font(.system(size: 11)).padding(.top, 4)
             HStack {
                 Text("Version \(Self.version)")
                 Spacer()

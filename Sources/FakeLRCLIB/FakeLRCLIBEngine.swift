@@ -135,6 +135,10 @@ public final class FakeLRCLIBEngine: @unchecked Sendable {
             return Self.ok(Self.json(Self.dict(record)))
         case "/api/search":
             return Self.ok(Self.json(search(query).map(Self.dict)))
+        case "/fake-github/latest":
+            // Faux point d'accès « dernière version » (E1) : `tag` et `url` viennent de la requête (aucun littéral d'URL ici), `status` simule une panne.
+            if let status = query["status"].flatMap(Int.init), status != 200 { return Self.error(status, "FakeRelease") }
+            return Self.ok(Self.json(["tag_name": query["tag"] ?? "v0.0.0", "html_url": query["url"] ?? ""]))
         case "/_fake/log":
             let data = (try? JSONEncoder().encode(log)) ?? Data("[]".utf8)
             return Self.ok(data)

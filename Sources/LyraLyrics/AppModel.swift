@@ -29,13 +29,59 @@ final class AppModel {
     private(set) var manualOffset: Double = 0
     /// Avancement 0…1 du bloc « non synchronisées » (position / durée ; sans durée : 4 min).
     private(set) var unsyncedProgress: Double = 0
+    /// 1.1.0 (D1) : défilement du bloc « non synchronisées » fait par UNE animation Core Animation linéaire ; publié seulement quand le
+    /// point de départ change vraiment (lecture, pause, saut, nouveau titre), jamais à chaque tick.
+    struct UnsyncedScroll: Equatable {
+        var progress: Double = 0
+        /// Secondes restantes jusqu'à la fin à vitesse normale ; 0 = figé (pause, aucune lecture).
+        var remaining: Double = 0
+        var stamp = 0
+    }
+    private(set) var unsyncedScroll = UnsyncedScroll()
+    @ObservationIgnored private var unsyncedScrollAt = 0.0
+    @ObservationIgnored private(set) var unsyncedPublishCount = 0
     /// Message du volet après « Vider le cache ».
     var cacheMessage: String?
+    /// Phrase sous la case « Lancer à l'ouverture de session » (chemin utilisé, approbation à donner…).
+    var loginMessage: String?
+    /// Version plus récente publiée sur GitHub (E1), nil sinon.
+    var updateRelease: UpdateCheck.Release?
     private(set) var lastIndexCount = -1
     /// Nombre de fois où « Paroles indisponibles » a été atteint depuis le lancement (autotest : une erreur passagère ne doit jamais l'y mener).
     @ObservationIgnored private(set) var unavailableEntries = 0
 
     var mode: DisplayMode { DisplayMode(rawValue: display.screen.name) ?? .nothing }
+    /// Activité de lecture (masquage automatique, C1).
+    var activity: PlaybackActivity { track == nil ? .nothing : (display.paused ? .paused : .playing) }
+    @ObservationIgnored var onActivityMayHaveChanged: (() -> Void)?
+    /// La version des paroles affichée est un choix manuel (B1).
+    var isManualChoice: Bool { lyrics?.provenance.hasPrefix("choix manuel") == true }
+    var syncedLines: [LyricLine] { engine.lines }
+    /// Position dans les paroles (position estimée + avance + décalage manuel), comme pour le choix de la ligne.
+    func lyricPosition() -> Double { engine.effectivePosition(estimator.estimate(at: ProcessClock.seconds())) }
+    var isPlayingNow: Bool { estimator.isPlaying && !display.paused }
+    /// La Scène plein écran est affichée : le minuteur et les publications continuent même si la petite fenêtre est cachée.
+    @ObservationIgnored private(set) var sceneVisible = false
+    @ObservationIgnored var onSceneChange: (() -> Void)?
+    private var needsUpdates: Bool { windowVisible || sceneVisible }
+    func setSceneVisible(_ visible: Bool) {
+        guard visible != sceneVisible else { return }
+        sceneVisible = visible
+        if visible { allowBackwardOnce = true; evaluateLine(now: ProcessClock.seconds()); onDisplayedLinesChanged?() }
+        updateTimer()
+    }
+    /// Pochette (image) du titre en cours, en mémoire seulement : fond de la Scène et fond animé de la petite fenêtre.
+    private(set) var artworkImage: CGImage?
+    private(set) var artworkRevision = 0
+    /// Pochette floutée (une fois par titre) et luminance maximale du flou : fond de la Scène et fond animé de la petite fenêtre.
+    private(set) var artworkBlur: CGImage?
+    private(set) var artworkBlurLuminance = 1.0
+    func applyArtworkImage(identity: String, _ image: CGImage?, blur: BlurResult? = nil) {
+        guard identity == track?.identity else { return }
+        artworkImage = image; artworkBlur = blur?.image; artworkBlurLuminance = blur?.maxLuminance ?? 1; artworkRevision += 1
+        onSceneChange?()
+        onDisplayedLinesChanged?()
+    }
     var title: String? { track?.title }
     var artist: String? { track?.artist }
     var isPaused: Bool { display.paused }
@@ -83,6 +129,7 @@ final class AppModel {
     var onDisplayedLinesChanged: (() -> Void)?
     /// Pile de lignes en cours (autotest et mesures) ; faible : appartient à la vue.
     @ObservationIgnored weak var lineStack: LineStackView?
+    @ObservationIgnored weak var unsyncedView: UnsyncedScrollLayerView?
 
     // MARK: Avis passager (1.0.1)
     /// Courte phrase affichée en haut de la fenêtre de paroles (≈ 3 s) : « Clic-à-travers activé · ⌃⌥⌘L pour revenir », ou l'explication
@@ -184,11 +231,17 @@ final class AppModel {
         onPlayback?(command)
     }
 
-    /// Couleur de la ligne courante : accent de la pochette si le réglage est actif et qu'une palette existe, sinon la pastille choisie.
+    /// Couleur du TEXTE (ligne courante et voisines, avec leur opacité) : toujours la pastille choisie par l'utilisateur ; les couleurs de la
+    /// pochette ne la remplacent jamais (décision de l'utilisateur, 2026-10-28).
     func lineColor(_ s: Settings) -> RGB {
-        if s.artworkColors, let palette { return palette.accent }
         let v = UInt32(s.colorHex.dropFirst(), radix: 16) ?? 0xFFFFFF
         return RGB(Double((v >> 16) & 0xFF) / 255, Double((v >> 8) & 0xFF) / 255, Double(v & 0xFF) / 255)
+    }
+    /// Couleur d'ACCENT (remplissage karaoké, notes de la Scène) : accent de la pochette si le réglage est actif et qu'une palette existe,
+    /// sinon la couleur du texte.
+    func accentColor(_ s: Settings) -> RGB {
+        if s.artworkColors, let palette { return palette.accent }
+        return lineColor(s)
     }
     /// Autorisation Automatisation de Spotify (nil = pas encore lue ; `.unknown(-1)` = l'appel ne rend pas la main, voir J1).
     var spotifyAccess: AutomationStatus?
@@ -300,7 +353,9 @@ final class AppModel {
             }
         }
         updateTimer()
+        refreshUnsyncedScroll()
         onDisplayedLinesChanged?()
+        onActivityMayHaveChanged?()
     }
 
     /// Réponse à l'invite « Autoriser » de Music (clic de l'utilisateur).
@@ -320,6 +375,8 @@ final class AppModel {
         track = info
         trackEpoch += 1
         lyrics = nil; currentIndex = -1; manualOffset = 0; unsyncedProgress = 0; unreadableCount = 0
+        unsyncedScroll = UnsyncedScroll(progress: 0, remaining: 0, stamp: unsyncedScroll.stamp + 1)
+        artworkImage = nil; artworkBlur = nil; artworkRevision += 1
         engine = SyncEngine(); estimator.reset(); lyricsArrivedAt = nil; lastLookup = ""
         display = DisplayState.reduce(display, .trackChanged)
         var record: [String: Any] = ["event": "track", "display": mode.rawValue, "duration": info.duration ?? 0, "player": info.player]
@@ -350,17 +407,20 @@ final class AppModel {
             diag?(["event": "pause", "paused": display.paused])
         }
         evaluateLine(now: ProcessClock.seconds())
+        if wasPaused != display.paused { refreshUnsyncedScroll(force: true) }
     }
 
     private func handleStop() {
         if let service { Task { await service.cancel() } }
         hintTask?.cancel()
         track = nil; lyrics = nil; currentIndex = -1; manualOffset = 0; unsyncedProgress = 0; trackEpoch += 1
+        artworkImage = nil; artworkBlur = nil; artworkRevision += 1
         engine = SyncEngine(); estimator.reset(); lastLookup = ""
         palette = nil
         onTrackStopped?()
         display = DisplayState.reduce(display, .stopped)
         logDisplay()
+        onActivityMayHaveChanged?()
     }
 
     // MARK: Service des paroles
@@ -391,6 +451,7 @@ final class AppModel {
                 evaluateLine(now: ProcessClock.seconds())
             case .plain:
                 display = DisplayState.reduce(display, .lyricsUnsynced)
+                refreshUnsyncedScroll(force: true)
             case .instrumental:
                 display = DisplayState.reduce(display, .instrumental)
             }
@@ -485,6 +546,37 @@ final class AppModel {
         onDisplayedLinesChanged?()
     }
 
+    // MARK: Choix de la version des paroles (B1)
+
+    private func serviceReport(identity: String) -> @Sendable (LyricsServiceEvent) -> Void {
+        { [weak self] event in Task { @MainActor in self?.applyServiceEvent(event, identity: identity) } }
+    }
+
+    /// Recherche libre pour le panneau « Mauvaises paroles ? » (métadonnées seulement).
+    func searchVersions(title: String, artist: String) async -> ManualSearchOutcome {
+        guard let service else { return .failed("Service indisponible") }
+        return await service.search(title: title, artist: artist)
+    }
+
+    /// Utilise la version choisie pour le titre en cours et la mémorise. Faux si la version n'est plus en mémoire.
+    @discardableResult
+    func chooseVersion(id: Int) async -> Bool {
+        guard let service, let info = track else { return false }
+        let ok = await service.choose(id: id, for: info, report: serviceReport(identity: info.identity))
+        diag?(["event": "choix-manuel", "ok": ok, "id": id])
+        return ok
+    }
+
+    /// « Revenir au choix automatique » : oublie le choix mémorisé et relance la recherche normale.
+    func revertToAutomatic() {
+        guard let service, let info = track else { return }
+        display = DisplayState.reduce(display, .trackChanged)
+        lyrics = nil; lastLookup = "retour au choix automatique"
+        diag?(["event": "choix-manuel-retire"])
+        Task { await service.revertToAutomatic(info, report: serviceReport(identity: info.identity)) }
+        scheduleHint(); logDisplay(); updateTimer(); onDisplayedLinesChanged?()
+    }
+
     func clearCache() {
         guard let service else { return }
         Task {
@@ -515,7 +607,7 @@ final class AppModel {
     private func evaluateLine(now: Double) {
         guard case .synced = display.screen, lyrics?.isSynced == true else { return }
         // Fenêtre cachée : rien n'est publié (SwiftUI redessinerait une fenêtre invisible) ; `setWindowVisible(true)` rattrape.
-        guard windowVisible else { return }
+        guard needsUpdates else { return }
         let position = estimator.estimate(at: now)
         let index = engine.index(at: position, previous: currentIndex, allowBackward: allowBackwardOnce)
         allowBackwardOnce = false
@@ -536,11 +628,9 @@ final class AppModel {
     var timerRunning: Bool { timer != nil }
 
     func updateTimer() {
-        var needed = timerEnabled && windowVisible && estimator.isPlaying && !display.paused
-        switch display.screen {
-        case .synced, .unsynced: break
-        default: needed = false
-        }
+        var needed = timerEnabled && needsUpdates && estimator.isPlaying && !display.paused
+        // 1.1.0 (D1) : le bloc « non synchronisées » défile par une animation Core Animation, plus de minuteur pour lui.
+        if case .synced = display.screen {} else { needed = false }
         if needed, timer == nil {
             let t = Timer(timeInterval: 0.1, repeats: true) { [weak self] _ in
                 MainActor.assumeIsolated { self?.tick() }
@@ -560,6 +650,7 @@ final class AppModel {
             allowBackwardOnce = true
             evaluateLine(now: ProcessClock.seconds())
             tick()
+            refreshUnsyncedScroll(force: true)
             onDisplayedLinesChanged?()
         }
         updateTimer()
@@ -567,20 +658,40 @@ final class AppModel {
     }
 
     func tick() {
-        guard windowVisible else { return }
+        guard needsUpdates else { return }
         let now = ProcessClock.seconds()
-        switch display.screen {
-        case .synced:
+        if case .synced = display.screen {
             guard estimator.isPlaying else { return }
             evaluateLine(now: now)
-        case .unsynced:
-            let position = estimator.estimate(at: now)
-            let span = (track?.duration).flatMap { $0 > 0 ? $0 : nil } ?? 240
-            let progress = min(1, max(0, position / span))
-            if abs(progress - unsyncedProgress) >= 0.002 { unsyncedProgress = progress; publishCount += 1 }
-        default:
-            break
         }
+    }
+
+    /// Remplissage karaoké de la ligne courante (S24) ; nil si désactivé, animations réduites ou pas de ligne chantée.
+    func karaokeSpec(enabled: Bool) -> FillSpec? {
+        guard enabled, !reduceMotion, case .synced = display.screen, currentIndex >= 0, currentIndex < engine.lines.count else { return nil }
+        let line = engine.lines[currentIndex]
+        guard line.text != SyncEngine.placeholder else { return nil }
+        let pair = [LyricLineTime(time: line.time, text: line.text)] + (currentIndex + 1 < engine.lines.count ? [LyricLineTime(time: engine.lines[currentIndex + 1].time, text: "")] : [])
+        let d = SceneMath.fillDuration(lines: pair, index: 0)
+        return FillSpec(index: currentIndex, duration: d, fraction: SceneMath.fillFraction(position: lyricPosition(), start: line.time, duration: d), playing: isPlayingNow)
+    }
+
+    /// Point de départ du défilement du bloc « non synchronisées » ; republié seulement s'il s'écarte de la trajectoire en cours.
+    func refreshUnsyncedScroll(force: Bool = false) {
+        guard case .unsynced = display.screen else { return }
+        let now = ProcessClock.seconds()
+        let position = estimator.estimate(at: now)
+        let span = (track?.duration).flatMap { $0 > 0 ? $0 : nil } ?? 240
+        let progress = min(1, max(0, position / span))
+        let playing = estimator.isPlaying && !display.paused
+        let old = unsyncedScroll
+        let projected = old.remaining > 0 ? min(1, old.progress + (now - unsyncedScrollAt) / span) : old.progress
+        if !force, (old.remaining > 0) == playing, abs(projected - progress) < 0.012 { return }
+        unsyncedScroll = UnsyncedScroll(progress: progress, remaining: playing ? max(0.1, span - position) : 0, stamp: old.stamp + 1)
+        unsyncedScrollAt = now
+        unsyncedProgress = progress
+        unsyncedPublishCount += 1
+        publishCount += 1
     }
 
     func resetLineChanges() { lineChanges.removeAll() }

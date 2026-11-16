@@ -15,6 +15,8 @@ final class SelftestRunner {
     private var fail = 0
     private var last: [String: Any] = [:]
     private var marks: [String: Double] = [:]
+    /// Mesures de preuve en pixels (`winshot`), ajoutées à l'état lisible par `expect`.
+    private var extra: [String: Any] = [:]
     /// Autorisation et envoi simulés pour les boutons de lecture (aucun Apple event, aucune invite).
     private let flow = FlowSimulator()
 
@@ -26,6 +28,7 @@ final class SelftestRunner {
 
     func run(scriptPath: String) {
         ResizeHandleView.ignoreRealEvents = true
+        KeyablePanel.selftestActive = true
         guard let text = try? String(contentsOfFile: scriptPath, encoding: .utf8) else {
             DiagLog.shared.write(["selftest": "script-introuvable", "path": scriptPath]); exit(2)
         }
@@ -64,6 +67,86 @@ final class SelftestRunner {
         case "artwork": c.change { $0.artworkColors = on }
         case "playback":
             if let cmd = PlaybackCommand(rawValue: arg) { c.model.sendPlayback(cmd) }
+        // 1.1.0
+        case "welcome":
+            switch arg {
+            case "open": c.openWelcome()
+            case "first": c.showWelcomeIfFirstLaunch()
+            case "start": c.finishWelcome()
+            case "close": c.welcomeController.close()
+            default: fail += 1
+            }
+        case "scene":
+            switch arg {
+            case "enter": c.scene.enter()
+            case "exit": c.scene.exit()
+            case "toggle": c.toggleScene()
+            case "card": c.scene.view?.showCardNow()
+            case "enter-probe": await sceneEnterProbe()
+            case "fill-probe": await sceneFillProbe()
+            case "line-probe": await sceneLineProbe()
+            case "dblclick-small": sendDoubleClick(to: c.panelController.panel, at: point(named: "bg"))
+            case "dblclick": if let v = c.scene.view { sendDoubleClick(to: c.scene.panel, at: NSPoint(x: v.bounds.midX, y: v.bounds.midY)) } else { fail += 1 }
+            case "escape": sendEscape(to: c.scene.panel)
+            case "exit-hide": c.scene.view?.debugHideExitControl()
+            case "mouse-move": if let v = c.scene.view { v.pointerMoved() } else { fail += 1 }
+            case "exit-click":
+                if let v = c.scene.view { sendClick(to: c.scene.panel, at: NSPoint(x: v.exitControlFrame.midX, y: v.exitControlFrame.midY)) } else { fail += 1 }
+            case "occlude": c.scene.debugSetOccluded(true)
+            case "unocclude": c.scene.debugSetOccluded(false)
+            case "screen-main": c.change { $0.sceneScreen = SceneScreenChoice.main }
+            case "screen-window": c.change { $0.sceneScreen = SceneScreenChoice.window }
+            case "screen-missing": c.change { $0.sceneScreen = SceneScreenChoice.named("Écran débranché") }
+            case "screen-first": c.change { $0.sceneScreen = SceneScreenChoice.named(NSScreen.screens[0].localizedName) }
+            case "layout-art": c.change { $0.sceneLayout = .withArtwork }
+            case "layout-lyrics": c.change { $0.sceneLayout = .lyricsOnly }
+            case "key-space": sendKey(49, to: c.scene.panel)
+            case "key-left": sendKey(123, to: c.scene.panel)
+            case "key-right": sendKey(124, to: c.scene.panel)
+            case "bar-previous", "bar-playPause", "bar-next", "bar-exit":
+                // clic synthétique au centre du bouton (la barre doit être visible : `scene mouse-move` d'abord)
+                if let v = c.scene.view { let r = v.bar.frame(of: String(arg.dropFirst(4))); sendClick(to: c.scene.panel, at: NSPoint(x: r.midX, y: r.midY)) } else { fail += 1 }
+            case "effects-on": c.change { $0.sceneEffects = true }
+            case "effects-off": c.change { $0.sceneEffects = false }
+            default: fail += 1
+            }
+        case "animated-bg": c.change { $0.animatedBackground = on }
+        case "karaoke": c.change { $0.karaokeFill = on }
+        case "login": c.setLaunchAtLogin(on)
+        case "memory-cache-clear": await c.model.service?.clearMemoryCache()
+        case "manual":
+            let words = arg.split(separator: " ", maxSplits: 1).map(String.init)
+            let sub = words.first ?? ""
+            let rest = words.count > 1 ? words[1] : ""
+            switch sub {
+            case "open": c.openManualSearch()
+            case "close": c.manualSearch.close()
+            case "fields":
+                let f = rest.split(separator: "|", omittingEmptySubsequences: false).map(String.init)
+                c.manualSearch.search.title = f.first ?? ""; c.manualSearch.search.artist = f.count > 1 ? f[1] : ""
+            case "search": c.manualSearch.runSearch()
+            case "choose":
+                if let id = Int(rest), let cand = c.manualSearch.search.results.first(where: { $0.id == id }) { c.manualSearch.choose(cand) } else { fail += 1 }
+            case "revert": c.model.revertToAutomatic(); c.manualSearch.search.chosenID = nil
+            case "state-button": c.model.mode == .unavailable ? c.openManualSearch() : (fail += 1)
+            default: fail += 1
+            }
+        case "autohide": if let m = AutoHideMode(rawValue: arg) { c.change { $0.autoHide = m } }
+        case "update":
+            guard let base = Diagnostics.value(of: "--lyrics-endpoint") else { fail += 1; break }
+            let url = "https://github.com/MalikChopa/lyra-lyrics/releases/tag/v9.9.9"
+            var comps = URLComponents(string: base + "/fake-github/latest")!
+            switch arg {
+            case "newer": comps.queryItems = [URLQueryItem(name: "tag", value: "v9.9.9"), URLQueryItem(name: "url", value: url)]
+            case "same": comps.queryItems = [URLQueryItem(name: "tag", value: "v\(AppIdentity.version)"), URLQueryItem(name: "url", value: url)]
+            case "error": comps.queryItems = [URLQueryItem(name: "status", value: "500")]
+            case "evil": comps.queryItems = [URLQueryItem(name: "tag", value: "v9.9.9"), URLQueryItem(name: "url", value: "https://example.com/x")]
+            default: break
+            }
+            c.updates.endpoint = comps.url!
+            await c.checkForUpdates(force: true)
+        case "update-auto": await c.checkForUpdates(force: false)
+        case "update-link": c.openUpdatePage()
         case "anim-probe": await animProbe()
         case "anim-list": animList()
         case "hotkey-handler": c.handleHotKey()                                  // même chemin que la frappe, sans passer par Carbon
@@ -110,6 +193,8 @@ final class SelftestRunner {
         case "hit": hit(arg)
         // J3
         case "offset": offset(arg)
+        case "winshot": await winShot(arg)
+        case "multiline": multilineProof()
         case "clearcache": await clearCache()
         case "stats": await c.model.refreshStats()
         case "offline": c.model.setOnline(!on)
@@ -167,7 +252,7 @@ final class SelftestRunner {
     /// `ax-audit main|settings|about` : parcourt l'arbre d'accessibilité de la vue (ce que VoiceOver lit), écrit rôle, présence
     /// d'un libellé, longueur de la valeur (jamais le texte d'une ligne de paroles), et signale les contrôles SANS libellé.
     private func axAudit(_ which: String) {
-        let panel: NSPanel = which == "settings" ? c.settingsController.panel : (which == "about" ? c.aboutController.panel : c.panelController.panel)
+        let panel = panelNamed(which)
         guard let root = panel.contentView else { return }
         // SwiftUI ne construit son arbre d'accessibilité qu'en présence d'un client (VoiceOver) : on se déclare client, dans
         // NOTRE processus seulement (aucun réglage du système).
@@ -224,7 +309,7 @@ final class SelftestRunner {
     private func axPress(_ arg: String) {
         let words = arg.split(separator: " ", maxSplits: 1).map(String.init)
         guard words.count == 2 else { fail += 1; return }
-        let panel: NSPanel = words[0] == "settings" ? c.settingsController.panel : (words[0] == "about" ? c.aboutController.panel : c.panelController.panel)
+        let panel = panelNamed(words[0])
         guard let root = panel.contentView else { fail += 1; return }
         NSApp.accessibilitySetValue(true as NSNumber, forAttribute: .init(rawValue: "AXManualAccessibility"))
         NSApp.accessibilitySetValue(true as NSNumber, forAttribute: .init(rawValue: "AXEnhancedUserInterface"))
@@ -249,6 +334,130 @@ final class SelftestRunner {
         }
         DiagLog.shared.write(["action": "ax-press", "fenetre": words[0], "libelle": words[1], "trouve": found != nil, "appui": pressed, "elements": count])
         if found != nil && pressed { pass += 1 } else { fail += 1 }
+    }
+
+    private func sendClick(to panel: NSPanel, at p: NSPoint) {
+        for type in [NSEvent.EventType.leftMouseDown, .leftMouseUp] {
+            guard let e = NSEvent.mouseEvent(with: type, location: p, modifierFlags: [], timestamp: ProcessInfo.processInfo.systemUptime,
+                                             windowNumber: panel.windowNumber, context: nil, eventNumber: 0, clickCount: 1, pressure: 1) else { continue }
+            panel.sendEvent(e)
+        }
+    }
+
+    private func sendDoubleClick(to panel: NSPanel, at p: NSPoint) {
+        for type in [NSEvent.EventType.leftMouseDown, .leftMouseUp] {
+            guard let e = NSEvent.mouseEvent(with: type, location: p, modifierFlags: [], timestamp: ProcessInfo.processInfo.systemUptime,
+                                             windowNumber: panel.windowNumber, context: nil, eventNumber: 0, clickCount: 2, pressure: 1) else { continue }
+            panel.sendEvent(e)
+        }
+    }
+
+    /// Entre dans la Scène en échantillonnant la couche PRÉSENTÉE (celle que le serveur de rendu interpole) : échelle, de la petite
+    /// fenêtre au plein écran. Prouve un zoom animé (valeurs intermédiaires distinctes, croissantes) et non un saut.
+    private func sceneEnterProbe() async {
+        c.scene.enter()
+        guard let v = c.scene.view else { fail += 1; return }
+        let t0 = ProcessClock.seconds()
+        var xs: [Double] = []
+        while ProcessClock.seconds() - t0 < 1.0 {
+            let p = v.stage.presentation()
+            xs.append(Double((p?.value(forKeyPath: "transform.scale") as? NSNumber)?.doubleValue ?? 1))
+            try? await Task.sleep(for: .milliseconds(20))
+        }
+        // les premiers échantillons peuvent précéder la validation de la transaction (échelle 1) : on part du premier échantillon réduit
+        if let k = xs.firstIndex(where: { $0 < 0.95 }) { xs = Array(xs[k...]) }
+        let distinct = Set(xs.map { ($0 * 1000).rounded() }).count
+        var monotone = true
+        for i in 1..<max(xs.count, 1) where xs[i] < xs[i - 1] - 0.002 { monotone = false }
+        let ok = distinct >= 8 && monotone && (xs.first ?? 1) < 0.6 && abs((xs.last ?? 0) - 1) < 0.02
+        DiagLog.shared.write(["scene-enter-probe": ok, "echantillons": xs.count, "distinctes": distinct, "monotone": monotone,
+                              "debut": ((xs.first ?? 0) * 1000).rounded() / 1000, "fin": ((xs.last ?? 0) * 1000).rounded() / 1000])
+        if ok { pass += 1 } else { fail += 1 }
+    }
+
+    /// Transition de ligne de la Scène : attend le prochain changement de ligne, puis échantillonne (toutes les ~16 ms pendant 900 ms) les couches
+    /// PRÉSENTÉES. Preuve : aucune couche visible (opacité effective > 0,03) du texte de l'ancienne ligne, ni une copie du texte de la nouvelle ligne
+    /// autre que sa couche courante (rôle 0), ne se trouve SOUS la nouvelle ligne courante (de plus de 2 pt). Écrit aussi le nombre d'images
+    /// où l'ancienne ligne est visible et celui où elle est au-dessus de la nouvelle (la sortie douce doit être vue).
+    private func sceneLineProbe() async {
+        guard let v = c.scene.view else { DiagLog.shared.write(["scene-line-probe": "pas de Scène", "etat": c.scene.state.rawValue]); fail += 1; return }
+        let start = c.model.currentIndex
+        var waited = 0.0
+        while c.model.currentIndex == start && waited < 9 { try? await Task.sleep(for: .milliseconds(4)); waited += 0.004 }
+        let all = c.model.syncedLines
+        let now = c.model.currentIndex
+        guard start >= 0, now >= 0, start < all.count, now < all.count, now != start else { DiagLog.shared.write(["scene-line-probe": "pas de changement"]); fail += 1; return }
+        let oldText = all[start].text, newText = all[now].text
+        let t0 = ProcessClock.seconds()
+        var n = 0, strayOld = 0, strayNew = 0, oldVisible = 0, oldAbove = 0, noCurrent = 0
+        var worstPt = 0.0, oldMaxOpacity = 0.0
+        var curMin = Double.infinity, curMax = -Double.infinity
+        while ProcessClock.seconds() - t0 < 0.9 {
+            let ls = v.debugLineLayers()
+            n += 1
+            if let cur = ls.filter({ $0.text == newText && $0.role == 0 }).max(by: { $0.opacity < $1.opacity }) {
+                if cur.opacity > 0.03 { curMin = min(curMin, cur.y); curMax = max(curMax, cur.y) }
+                for l in ls where l.opacity > 0.03 {
+                    if l.text == oldText {
+                        oldVisible += 1; oldMaxOpacity = max(oldMaxOpacity, l.opacity)
+                        if l.y > cur.y + 2 { oldAbove += 1 }
+                        if l.y < cur.y - 2 { strayOld += 1; worstPt = max(worstPt, cur.y - l.y) }
+                    } else if l.text == newText && l.role != 0 && l.y < cur.y - 2 {
+                        strayNew += 1; worstPt = max(worstPt, cur.y - l.y)
+                        if strayNew == 1 || strayNew == 25 { DiagLog.shared.write(["dt": Int((ProcessClock.seconds() - t0) * 1000), "old": String(oldText.prefix(12)), "new": String(newText.prefix(12)), "scene-line-detail": ls.map { "\($0.role)|\($0.text.prefix(12))|y\(Int($0.y))|o\(Int($0.opacity * 100))" }.joined(separator: " ; "), "cur": Int(cur.y)]) }
+                    }
+                }
+            } else { noCurrent += 1 }
+            try? await Task.sleep(for: .milliseconds(16))
+        }
+        // la nouvelle ligne glisse VRAIMENT vers sa place (montée visible d'au moins 40 pt) sauf avec « Réduire les animations » (fondu sur place)
+        let rise = curMax.isFinite ? curMax - curMin : 0
+        let glides = c.model.reduceMotion ? rise < 4 : rise >= 40
+        let ok = n >= 30 && noCurrent <= 2 && oldVisible > 0 && strayOld == 0 && strayNew == 0 && glides
+        DiagLog.shared.write(["scene-line-probe": ok, "echantillons": n, "ancienneSousLaNouvelle": strayOld, "copieDeLaNouvelleEnDessous": strayNew,
+                              "ancienneVisible": oldVisible, "ancienneAuDessus": oldAbove, "ancienneOpaciteMax": (oldMaxOpacity * 100).rounded() / 100,
+                              "sansCourante": noCurrent, "pireEcartPt": worstPt.rounded(), "montéeDeLaNouvellePt": rise.rounded(),
+                              "layout": c.store.settings.sceneLayout.rawValue, "karaoke": c.store.settings.karaokeFill])
+        if ok { pass += 1 } else { fail += 1 }
+    }
+
+    /// Attend le prochain changement de ligne dans la Scène, puis échantillonne la part REMPLIE affichée (couches présentées) :
+    /// doit croître régulièrement et atteindre 1 au bout de la durée estimée (± 0,4 s).
+    private func sceneFillProbe() async {
+        guard let v = c.scene.view else { fail += 1; return }
+        let start = c.model.currentIndex
+        var waited = 0.0
+        while c.model.currentIndex == start && waited < 8 { try? await Task.sleep(for: .milliseconds(20)); waited += 0.02 }
+        try? await Task.sleep(for: .milliseconds(60))
+        guard let mask = v.currentFill else { DiagLog.shared.write(["scene-fill-probe": "pas de masque"]); fail += 1; return }
+        let d = v.lastFillDuration
+        let t0 = ProcessClock.seconds()
+        var samples: [(Double, Double)] = []
+        while ProcessClock.seconds() - t0 < d + 1.2 {
+            samples.append((ProcessClock.seconds() - t0, mask.presentedFraction()))
+            if (samples.last?.1 ?? 0) >= 0.999 { break }
+            try? await Task.sleep(for: .milliseconds(25))
+        }
+        let end = samples.first(where: { $0.1 >= 0.999 })?.0 ?? -1
+        var monotone = true
+        for i in 1..<max(samples.count, 1) where samples[i].1 < samples[i - 1].1 - 0.01 { monotone = false }
+        let mid = samples.first(where: { $0.1 >= 0.5 })?.0 ?? -1
+        let ok = monotone && end > 0 && abs(end - d) < 0.4 && abs(mid - d / 2) < 0.4 && (samples.first?.1 ?? 1) < 0.3
+        DiagLog.shared.write(["scene-fill-probe": ok, "dureeAttendue": (d * 1000).rounded() / 1000, "fin": (end * 1000).rounded() / 1000,
+                              "moitie": (mid * 1000).rounded() / 1000, "echantillons": samples.count, "monotone": monotone,
+                              "debut": ((samples.first?.1 ?? 0) * 1000).rounded() / 1000])
+        if ok { pass += 1 } else { fail += 1 }
+    }
+
+    private func panelNamed(_ which: String) -> NSPanel {
+        switch which {
+        case "settings": return c.settingsController.panel
+        case "about": return c.aboutController.panel
+        case "scene": return c.scene.panel
+        case "welcome": return c.welcomeController.panel
+        case "manual": return c.manualSearch.panel
+        default: return c.panelController.panel
+        }
     }
 
     private func move(_ arg: String) {
@@ -408,12 +617,25 @@ final class SelftestRunner {
                               "visibleApres": c.panelController.isShown, "pressCount": c.hotKey.pressCount])
     }
 
+    private func sendKey(_ code: UInt16, to panel: NSPanel) {
+        panel.makeKey()
+        let chars = code == 49 ? " " : (code == 123 ? "\u{F702}" : "\u{F703}")
+        guard let e = NSEvent.keyEvent(with: .keyDown, location: .zero, modifierFlags: [], timestamp: ProcessInfo.processInfo.systemUptime,
+                                       windowNumber: panel.windowNumber, context: nil, characters: chars, charactersIgnoringModifiers: chars,
+                                       isARepeat: false, keyCode: code) else { return }
+        KeyablePanel.injecting = true
+        panel.sendEvent(e)
+        KeyablePanel.injecting = false
+    }
+
     private func sendEscape(to panel: NSPanel) {
         panel.makeKey()
         guard let e = NSEvent.keyEvent(with: .keyDown, location: .zero, modifierFlags: [], timestamp: ProcessInfo.processInfo.systemUptime,
                                        windowNumber: panel.windowNumber, context: nil, characters: "\u{1b}", charactersIgnoringModifiers: "\u{1b}",
                                        isARepeat: false, keyCode: 53) else { return }
+        KeyablePanel.injecting = true
         panel.sendEvent(e)
+        KeyablePanel.injecting = false
     }
 
     // MARK: Clics et tests de frappe (points en coordonnées de la fenêtre, origine en bas à gauche)
@@ -422,6 +644,7 @@ final class SelftestRunner {
         let h = c.panelController.panel.frame.height, w = c.panelController.panel.frame.width
         switch name {
         case "button-style": return NSPoint(x: HoverBarLayout.centerX(of: "style", windowWidth: w), y: h - HoverBarLayout.centerFromTop)
+        case "button-scene": return NSPoint(x: HoverBarLayout.centerX(of: "scene", windowWidth: w), y: h - HoverBarLayout.centerFromTop)
         case "button-gear": return NSPoint(x: HoverBarLayout.centerX(of: "gear", windowWidth: w), y: h - HoverBarLayout.centerFromTop)
         case "button-previous": return NSPoint(x: HoverBarLayout.centerX(of: "previous", windowWidth: w), y: h - HoverBarLayout.centerFromTop)
         case "button-playpause": return NSPoint(x: HoverBarLayout.centerX(of: "playpause", windowWidth: w), y: h - HoverBarLayout.centerFromTop)
@@ -550,6 +773,53 @@ final class SelftestRunner {
     // MARK: État
 
     func stateDict() -> [String: Any] {
+        var d = stateDictBase()
+        for (k, v) in extra { d[k] = v }
+        return d
+    }
+
+    /// `multiline` : surlignage d'une ligne courante renvoyée à la ligne, mesuré en pixels (`MultilineProof.check`, texte inventé) sur une grille réduite
+    /// de polices, graisses, corps et largeurs ; résultats dans l'état (`multilineChecked`, `multilineFailed`, `multilineWorst`).
+    private func multilineProof() {
+        let r = MultilineProof.check(texts: MultilineProof.texts, fonts: [.system, .newYork, .rounded], weights: [.regular, .bold], sizes: [26, 44], widths: [180, 300, 460], verbose: true)
+        extra["multilineChecked"] = r.checked; extra["multilineFailed"] = r.failed; extra["multilineWorst"] = (r.worst * 10).rounded() / 10
+        DiagLog.shared.write(["multiline": "grille", "cas": r.checked, "echecs": r.failed, "pire": r.worst])
+    }
+
+    /// `winshot <nom>` : image réelle de la petite fenêtre (avec ombre, puis pixels exacts) dans `$PF_SHOTS` (défaut /tmp/lyra-shots), puis uniformité.
+    private func winShot(_ argument: String) async {
+        let words = argument.split(separator: " ").map(String.init)
+        let name = words.first ?? "shot"
+        try? await Task.sleep(for: .milliseconds(700))
+        let p: NSWindow = words.dropFirst().first == "scene" ? c.scene.panel : c.panelController.panel
+        let dir = ProcessInfo.processInfo.environment["PF_SHOTS"] ?? "/tmp/lyra-shots"
+        try? FileManager.default.createDirectory(atPath: dir, withIntermediateDirectories: true)
+        guard let exact = WindowProof.capture(p, framing: false), let frame = WindowProof.capture(p, framing: true) else {
+            fail += 1; DiagLog.shared.write(["winshot": name, "echec": "capture-impossible"]); return
+        }
+        WindowProof.savePNG(exact, to: "\(dir)/\(name)-exact.png"); WindowProof.savePNG(frame, to: "\(dir)/\(name)-cadre.png")
+        let scale = Double(exact.width) / Double(p.frame.width)
+        let counts = WindowProof.swatchCounts(of: exact, swatches: Settings.swatches.map { hex in
+            let v = Int(hex.dropFirst(), radix: 16) ?? 0; return ((v >> 16) & 0xFF, (v >> 8) & 0xFF, v & 0xFF) })
+        let best = counts.enumerated().max { $0.element < $1.element }
+        extra["shotSwatch"] = (best?.element ?? 0) >= 40 ? best!.offset : -1
+        extra["shotSwatchPx"] = best?.element ?? 0
+        extra["shotSwatchCounts"] = counts.map(String.init).joined(separator: "/")
+        let u = WindowProof.uniformity(of: exact, scale: scale)
+        extra["shotW"] = Int((Double(u.width) / scale).rounded()); extra["shotH"] = Int((Double(u.height) / scale).rounded())
+        extra["shotAlphaDev"] = (u.alphaDeviation * 100).rounded() / 100; extra["shotLumaDev"] = (u.lumaDeviation * 100).rounded() / 100
+        extra["shotAlphaStep"] = (u.alphaStep * 100).rounded() / 100; extra["shotLumaStep"] = (u.lumaStep * 100).rounded() / 100
+        extra["shotLeftAlpha"] = (u.leftAlpha * 100).rounded() / 100; extra["shotRightAlpha"] = (u.rightAlpha * 100).rounded() / 100
+        extra["shotLeftLuma"] = (u.leftLuma * 100).rounded() / 100; extra["shotRightLuma"] = (u.rightLuma * 100).rounded() / 100
+        DiagLog.shared.write(["winshot": name, "frame": "\(Int(p.frame.width))x\(Int(p.frame.height))", "px": "\(exact.width)x\(exact.height)",
+                              "alphaDev": u.alphaDeviation, "lumaDev": u.lumaDeviation, "alphaStep": u.alphaStep, "lumaStep": u.lumaStep,
+                              "left": "\(u.leftAlpha)/\(u.leftLuma)", "right": "\(u.rightAlpha)/\(u.rightLuma)", "framingPx": "\(frame.width)x\(frame.height)"])
+        // Un fond qui ne suit pas la fenêtre fait un SAUT (≈ 11 niveaux de luminance, 2 d'alpha, mesuré avant correction) ; un dégradé lisse reste sous 1,5.
+        if words.dropFirst().first == "scene" || (u.lumaStep < 4 && u.alphaStep < 1) { pass += 1 } else { fail += 1 }
+        DiagLog.shared.write(["winshot": name, "swatchCounts": counts.map(String.init).joined(separator: "/"), "topBright": WindowProof.topBright(of: exact)])
+    }
+
+    func stateDictBase() -> [String: Any] {
         let p = c.panelController.panel
         let s = c.store.settings
         let m = c.model
@@ -612,7 +882,7 @@ final class SelftestRunner {
         d["glow"] = s.glow; d["artworkColors"] = s.artworkColors; d["neighbourRatio"] = s.neighbourRatio
         d["paletteAccent"] = m.palette?.accent.hex ?? "none"; d["paletteTint"] = m.palette?.tint.hex ?? "none"
         d["paletteContrast"] = m.palette.map { ($0.accentContrast * 100).rounded() / 100 } ?? 0
-        d["lineColor"] = m.lineColor(s).hex
+        d["lineColor"] = m.lineColor(s).hex; d["accentColor"] = m.accentColor(s).hex
         d["artworkStarted"] = c.artwork.started; d["artworkPlayerReads"] = c.artwork.playerReads; d["artworkHttp"] = c.artwork.httpFetches
         d["artworkCancelled"] = c.artwork.cancelled; d["artworkDelivered"] = c.artwork.delivered; d["artworkSkippedDisabled"] = c.artwork.skippedDisabled
         d["artworkBusy"] = c.artwork.isBusy
@@ -633,6 +903,68 @@ final class SelftestRunner {
         d["maxWinH"] = Int((c.panelController.screen.visibleFrame.height * LyricsMetrics.maxResizeFraction).rounded())
         let gap = SettingsPanelController.gap
         d["settingsAttached"] = !m.settingsOpen || (c.settingsController.side == .right ? abs(sp.frame.minX - (p.frame.maxX + gap)) < 1.5 : abs(sp.frame.maxX - (p.frame.minX - gap)) < 1.5)
+        // 1.1.0
+        d["welcomeOpen"] = c.welcomeController.isOpen; d["welcomeSeen"] = s.welcomeSeen; d["welcomeOpenCount"] = c.welcomeController.openCount
+        d["launchAtLogin"] = s.launchAtLogin; d["loginEnabled"] = c.loginItem.isEnabled(); d["loginPath"] = c.loginItem.lastResult.path.rawValue
+        d["loginAgentExists"] = c.loginItem.agentExists; d["loginAgentPath"] = c.loginItem.agentURL.path; d["loginMessage"] = m.loginMessage ?? ""
+        d["reopenCount"] = c.reopenCount
+        let ms = c.manualSearch.search
+        d["manualOpen"] = c.manualSearch.isOpen; d["manualResults"] = ms.results.count; d["manualBusy"] = ms.busy; d["manualStatus"] = ms.status ?? ""
+        d["manualChosen"] = ms.chosenID ?? 0; d["manualFirstID"] = ms.results.first?.id ?? 0; d["manualSearchCount"] = ms.searchCount
+        d["manualSyncedBadges"] = ms.results.filter(\.synced).count
+        d["isManualChoice"] = m.isManualChoice; d["manualKeyWindow"] = c.manualSearch.panel.isKeyWindow
+        d["autoHide"] = s.autoHide.rawValue; d["autoHideActions"] = c.autoHideActions.count; d["autoHideLast"] = c.autoHideActions.last.map { "\($0)" } ?? "none"
+        d["autoHidden"] = c.autoHide.autoHidden; d["panelShown"] = c.panelController.isShown; d["activity"] = m.activity.rawValue
+        d["checkUpdates"] = s.checkUpdates; d["updateTag"] = m.updateRelease?.tag ?? "none"; d["updateRequests"] = c.updates.requestCount
+        d["updateOutcome"] = c.updates.lastOutcome.map { "\($0)" } ?? "none"; d["lastUpdateCheckSet"] = s.lastUpdateCheck != nil
+        d["updateMenuItem"] = c.statusItem.updateItemVisible
+        d["unsyncedAnimating"] = m.unsyncedView?.isAnimating ?? false; d["unsyncedAnimCount"] = m.unsyncedView?.animationCount ?? 0
+        d["unsyncedPublishCount"] = m.unsyncedPublishCount; d["unsyncedDuration"] = Int((m.unsyncedView?.lastDuration ?? 0).rounded())
+        d["unsyncedTravel"] = Int((m.unsyncedView?.travel ?? 0).rounded()); d["unsyncedStamp"] = m.unsyncedScroll.stamp
+        // Scène (1.1.0)
+        let sc: SceneController = c.scene; let sv = sc.view
+        d["sceneState"] = sc.state.rawValue; d["sceneVisible"] = sc.panel.isVisible; d["sceneLevel"] = sc.panel.level.rawValue
+        d["sceneFrame"] = rect(sc.panel.frame); d["sceneScreenName"] = sc.lastScreenName; d["sceneScreenFrame"] = rect(sc.pickScreen().frame)
+        d["sceneScreenMatches"] = sc.panel.frame == sc.pickScreen().frame
+        d["sceneEnterCount"] = sc.enterCount; d["sceneExitCount"] = sc.exitCount; d["sceneCollection"] = sc.panel.collectionBehavior.rawValue
+        d["sceneNonactivating"] = sc.panel.styleMask.contains(.nonactivatingPanel); d["sceneBorderless"] = sc.panel.styleMask.contains(.borderless)
+        d["sceneCardShown"] = sv?.cardShownCount ?? -1; d["sceneCardActive"] = sv?.cardActive ?? false; d["sceneCardTitle"] = sv?.cardTitle ?? ""
+        d["sceneReflection"] = sv?.reflectionPresent ?? false
+        d["sceneGapActive"] = sv?.gapActive ?? false; d["sceneGapAnimating"] = sv?.gapAnimating ?? false
+        d["sceneGapStarts"] = sv?.gapStarts ?? -1; d["sceneGapStops"] = sv?.gapStops ?? -1; d["sceneParticleBudget"] = Int((sv?.particleBudget ?? -1).rounded()); d["sceneParticlesOK"] = (sv?.particleBudget ?? 99) <= 30
+        d["sceneScrim"] = ((sv?.scrimAlpha ?? 0) * 100).rounded() / 100; d["sceneArtOpacity"] = ((sv?.artTarget ?? 0) * 100).rounded() / 100; d["sceneContrast"] = ((sv?.minContrast ?? 0) * 100).rounded() / 100
+        d["sceneContrastOK"] = (sv?.minContrast ?? 0) >= 4.5 - 1e-9
+        d["sceneDrift"] = sv?.driftActive ?? false; d["sceneArtLayer"] = sv?.artLayerPresent ?? false; d["sceneBgSwaps"] = sv?.backgroundSwaps ?? -1
+        d["sceneFillStarts"] = sv?.fillStarts ?? -1; d["sceneFillDurationMs"] = Int(((sv?.lastFillDuration ?? 0) * 1000).rounded())
+        d["sceneFillAnimating"] = sv?.currentFill?.isAnimating ?? false; d["sceneAccentOpacity"] = sv?.accentOpacity ?? -1
+        d["sceneCurrentIndex"] = sv?.currentLineIndex ?? -9; d["sceneTextSize"] = Int(sv?.currentTextSize ?? 0); d["sceneTextFrac"] = (sv?.currentTextWidthFraction ?? 0)
+        d["sceneLines"] = sv?.lineCount ?? -1; d["sceneShimmer"] = sv?.shimmerPresent ?? false; d["sceneShimmerAnimating"] = sv?.shimmerActive ?? false
+        d["sceneVignette"] = sv?.vignetteVisible ?? false; d["sceneGrain"] = sv?.grainVisible ?? false
+        d["sceneAnimPaused"] = sv?.animationsPaused ?? false; d["sceneContentOpacity"] = ((sv?.contentOpacity ?? -1) * 100).rounded() / 100
+        d["sceneLayout"] = s.sceneLayout.rawValue
+        d["sceneArtVisible"] = sv.map { $0.withArtwork && !$0.artPanel.layer.isHidden } ?? false
+        d["sceneArtImage"] = sv?.artPanel.hasImage ?? false
+        d["sceneArtTitle"] = sv?.artPanel.titleText ?? ""; d["sceneArtArtist"] = sv?.artPanel.artistText ?? ""
+        if let v = sv, v.viewWidth > 0 {
+            d["sceneArtWidthPct"] = Int((v.artSide / v.viewWidth * 100).rounded()); d["sceneColumnLeftPct"] = Int((v.columnLeft / v.viewWidth * 100).rounded())
+            d["sceneTextCenterPct"] = Int((v.textCenterX / v.viewWidth * 100).rounded()); d["sceneTextWidthPct"] = Int((v.textWidth / v.viewWidth * 100).rounded())
+        }
+        d["sceneBarOpacity"] = ((sv?.barOpacityNow ?? -1) * 100).rounded() / 100
+        d["sceneBarElapsed"] = sv?.bar.elapsedText ?? ""; d["sceneBarTotal"] = sv?.bar.totalText ?? ""; d["sceneBarFraction"] = ((sv?.bar.fraction ?? -1) * 1000).rounded() / 1000
+        d["sceneBarPlaying"] = sv?.bar.playing ?? false; d["sceneBarCommands"] = (sv?.barCommands ?? []).joined(separator: ",")
+        d["playbackSentLast"] = m.playbackSent.last?.rawValue ?? ""; d["playbackSentCount"] = m.playbackSent.count
+        d["sceneLeaveCount"] = sv?.leaveCount ?? -1; d["sceneLeaveWords"] = sv?.lastLeave.words ?? -1
+        d["sceneLeaveStepMs"] = Int((sv?.lastLeave.stepMs ?? 0).rounded()); d["sceneLeaveTotalMs"] = Int((sv?.lastLeave.totalMs ?? 0).rounded())
+        d["sceneLeaveKeys"] = (sv?.lastLeave.containerKeys ?? []).joined(separator: ","); d["sceneLeaveWordAnims"] = sv?.lastLeave.wordKeys ?? -1
+        d["sceneBreath"] = sv?.breathActive ?? false; d["sceneBreathRunning"] = sv?.breathRunning ?? false; d["sceneBreathPauses"] = sv?.breathPausedCount ?? -1
+        d["sceneEffects"] = s.sceneEffects; d["sceneScreenSetting"] = s.sceneScreen
+        d["sceneExitShown"] = sv?.exitControlShown ?? false; d["sceneExitShowCount"] = sv?.exitShowCount ?? -1
+        d["sceneExitLabel"] = (sv?.accessibilityChildren()?.first as? NSAccessibilityElement)?.accessibilityLabel() ?? ""
+        d["sceneExitFrame"] = sv.map { "\(Int($0.exitControlFrame.width))x\(Int($0.exitControlFrame.height))" } ?? ""
+        d["animatedBackground"] = s.animatedBackground; d["karaokeFill"] = s.karaokeFill
+        d["smallShimmers"] = ShimmerLayer.created; d["smallShimmersAnimated"] = ShimmerLayer.animated; d["smallDriftStarts"] = ArtworkDriftView.Host.driftStarts
+        d["smallFillAnimating"] = m.lineStack?.fillMask?.isAnimating ?? false; d["smallFillRestarts"] = m.lineStack?.fillRestarts ?? -1
+        d["smallFillPresent"] = m.lineStack?.fillMask != nil
         d["timerRunning"] = m.timerRunning; d["windowVisible"] = m.windowVisible; d["publishCount"] = m.publishCount; d["fadesAdded"] = m.lineStack?.fades ?? 0
         if let pos = s.position { d["position"] = "\(pos.screenUUID ?? "nil"):\(Int(pos.centerX)),\(Int(pos.centerY))" } else { d["position"] = "aucune" }
         return d

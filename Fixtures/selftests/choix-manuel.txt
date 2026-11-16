@@ -1,0 +1,47 @@
+# 1.1.0 (B1) : recherche manuelle, choix d'une version, mémoire (identifiant seulement), retour au choix automatique.
+# Lancer avec : --index-file /tmp/lyra-110/index.json (sinon le vrai index) ; titres et paroles INVENTÉS (faux LRCLIB en processus)
+play sans-paroles
+wait-for mode=unavailable 10
+expect isManualChoice=false manualOpen=false
+# bouton « Chercher une version » de l'état (même chemin)
+ax-press main Chercher une autre version des paroles
+wait 0.5
+expect manualOpen=true
+manual fields Phares sur la mer|Artiste fictif
+manual search
+wait-for manualBusy=false 8
+expect manualResults=1 manualFirstID=101 manualSyncedBadges=1
+ax-audit manual
+manual choose 101
+wait-for mode=synced 8
+expect isManualChoice=true lrclibID=101 manualChosen=101
+state choix-manuel
+# mémoire : autre titre, puis retour sur le même, cache mémoire vidé -> l'index (identifiant seul) redonne le choix
+play phares
+wait-for mode=synced 8
+expect isManualChoice=false lrclibID=101
+play sans-paroles
+wait-for mode=synced 8
+expect isManualChoice=true lrclibID=101
+memory-cache-clear
+play phares
+wait-for mode=synced 8
+play sans-paroles
+wait-for mode=synced 8
+expect isManualChoice=true lrclibID=101
+# revenir au choix automatique
+manual revert
+wait-for mode=unavailable 8
+expect isManualChoice=false
+memory-cache-clear
+play phares
+wait-for mode=synced 8
+play sans-paroles
+wait-for mode=unavailable 8
+expect isManualChoice=false
+# recherche sans résultat
+manual fields zzzz inexistant|nobody
+manual search
+wait-for manualBusy=false 8
+expect manualResults=0
+manual close

@@ -1,0 +1,69 @@
+# 1.1.0 : S5 remplissage progressif, S6 passages sans paroles, Réduire les animations.
+play phares
+wait-for mode=synced 8
+# --- 1.1.0 : le remplissage karaoké est DÉSACTIVÉ par défaut aussi dans la Scène (ligne courante pleine, sans masque, sans animation)
+expect karaokeFill=false
+scene enter
+wait-for sceneState=shown 3
+wait-for sceneCardActive=false 8
+wait 3
+expect sceneFillAnimating=false sceneFillStarts=0 sceneAccentOpacity=1
+scene exit
+wait-for sceneState=hidden 3
+# réglage « Remplissage karaoké » activé : la Scène remplit
+karaoke on
+scene enter
+wait-for sceneState=shown 3
+wait-for sceneCardActive=false 8
+# --- S5 : le remplissage suit la durée estimée (temps jusqu'à la ligne suivante, 2,8 s x 0,92)
+scene fill-probe
+expect sceneFillDurationMs=2576 sceneFillAnimating=true
+# pause : le remplissage se fige
+pause
+wait 1
+expect sceneFillAnimating=false
+resume
+wait 1.2
+expect sceneFillAnimating=true
+# --- Réduire les animations : plus de remplissage animé, ligne mise en valeur d'un coup, pas de dérive
+reducemotion on
+play longues
+wait-for mode=synced 8
+wait-for sceneCardActive=false 8
+wait 4
+expect sceneFillAnimating=false sceneAccentOpacity=1
+reducemotion off
+# --- S6 : « Passage suspendu » : trou de 5 s à 19 s (la ligne 2 finit vers 5 s ; l'animation se retire 1 s avant la ligne à 20 s)
+play passage
+wait-for mode=synced 8
+wait-for sceneCardActive=false 8
+seek 0
+wait-for sceneGapActive=false 4
+wait-for sceneGapActive=true 12
+expect sceneGapAnimating=true sceneGapStarts=1
+state passage-actif
+seek 18.2
+wait-for sceneGapActive=false 4
+wait-for sceneGapAnimating=false 4
+expect sceneGapStops=1
+# les particules : 30 au plus
+expect sceneParticlesOK=true
+# --- introduction longue : l'animation démarre dès le début, s'arrête 1 s avant la première ligne
+play intro
+wait-for mode=synced 8
+wait-for sceneCardActive=false 8
+wait-for sceneGapActive=true 3
+seek 8.3
+wait-for sceneGapActive=false 3
+# --- états sans lignes : animation calme + bloc d'information
+play brume
+wait-for mode=unsynced 8
+wait-for sceneCardActive=false 8
+wait-for sceneGapActive=true 3
+play phares
+wait-for mode=synced 8
+stop
+wait-for mode=nothing 3
+wait-for sceneGapActive=true 3
+scene exit
+wait-for sceneState=hidden 3

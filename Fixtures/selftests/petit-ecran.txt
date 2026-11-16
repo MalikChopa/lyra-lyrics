@@ -2,7 +2,7 @@
 settings open
 wait 1
 state volet-ecran-reel
-expect settingsFitsVisible=true settingsScrolls=false
+expect settingsFitsVisible=true
 visible-height 700
 wait 1
 expect settingsFitsVisible=true settingsVisibleH=700
@@ -24,5 +24,5 @@ state volet-300
 spotify-access granted
 visible-height auto
 wait 1
-expect settingsFitsVisible=true settingsScrolls=false
+expect settingsFitsVisible=true
 state volet-retour

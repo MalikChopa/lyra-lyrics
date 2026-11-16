@@ -1,0 +1,9 @@
+# Mesure du CPU de la Scène pendant un passage sans paroles (note qui respire + particules) : « Passage suspendu » en boucle.
+play passage
+scene enter
+wait 35
+seek 3
+wait 35
+seek 3
+wait 35
+seek 3

@@ -13,6 +13,13 @@ struct MenuActions {
     var state: @MainActor () -> (Bool, Bool, BackgroundStyle)
     /// Raccourci « Cacher / montrer » tel qu'affiché (⌃⌥⌘L) : en clic-à-travers, c'est la sortie.
     var hotKeyDisplay: @MainActor () -> String
+    // 1.1.0
+    var openScene: @MainActor () -> Void
+    var openManualSearch: @MainActor () -> Void
+    var openWelcome: @MainActor () -> Void
+    var openUpdate: @MainActor () -> Void
+    /// Version plus récente disponible (étiquette), nil sinon.
+    var updateTag: @MainActor () -> String?
 }
 
 /// Icône de barre de menus et son menu : Afficher/Cacher, Clic-à-travers, Style, Réglages…, À propos et droits, Quitter.
@@ -23,6 +30,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
     private let visibilityItem = NSMenuItem()
     private let clickThroughItem = NSMenuItem()
     private var styleItems: [BackgroundStyle: NSMenuItem] = [:]
+    private let updateItem = NSMenuItem()
 
     init(actions: MenuActions) {
         self.actions = actions
@@ -61,6 +69,11 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         menu.addItem(styleParent)
         menu.addItem(.separator())
         menu.addItem(item("Réglages…", #selector(openSettings), key: ","))
+        menu.addItem(item("Scène plein écran", #selector(openScene)))
+        menu.addItem(item("Mauvaises paroles ?…", #selector(openManualSearch)))
+        menu.addItem(item("Bienvenue…", #selector(openWelcome)))
+        updateItem.action = #selector(openUpdate); updateItem.target = self; updateItem.isHidden = true
+        menu.addItem(updateItem)
         menu.addItem(item("À propos et droits", #selector(openAbout)))
         menu.addItem(.separator())
         menu.addItem(item(AppIdentity.quitMenuTitle, #selector(quit), key: "q"))
@@ -75,7 +88,12 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         clickThroughItem.title = "Clic-à-travers (sortie : \(actions.hotKeyDisplay()))"
         clickThroughItem.state = clickThrough ? .on : .off
         for (s, i) in styleItems { i.state = s == style ? .on : .off }
+        if let tag = actions.updateTag() { updateItem.title = "Nouvelle version disponible : \(tag)"; updateItem.isHidden = false } else { updateItem.isHidden = true }
     }
+    @objc private func openScene() { actions.openScene() }
+    @objc private func openManualSearch() { actions.openManualSearch() }
+    @objc private func openWelcome() { actions.openWelcome() }
+    @objc private func openUpdate() { actions.openUpdate() }
 
     @objc private func toggleVisibility() { actions.toggleVisibility() }
     @objc private func toggleClickThrough() { actions.toggleClickThrough() }
@@ -87,6 +105,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
     @objc private func quit() { actions.quit() }
 
     /// Titres des entrées (autotest).
+    var updateItemVisible: Bool { !updateItem.isHidden }
     var menuTitles: [String] { statusItem.menu?.items.map { $0.isSeparatorItem ? "—" : $0.title } ?? [] }
 }
 

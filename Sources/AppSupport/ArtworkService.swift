@@ -113,6 +113,8 @@ public final class ArtworkService {
     private let enabled: @MainActor () -> Bool
     private let providers: ArtworkProviders
     private let deliver: @MainActor (String, ArtworkPalette?) -> Void
+    /// 1.1.0 : octets de la pochette (mémoire seulement) pour le fond de la Scène ; appelé juste avant `deliver` si la pochette existe.
+    public var deliverData: (@MainActor (String, Data) -> Void)?
     private var task: Task<Void, Never>?
     private var currentIdentity: String?
 
@@ -143,16 +145,17 @@ public final class ArtworkService {
         let providers = self.providers
         task = Task { [weak self] in
             var palette: ArtworkPalette?
+            var bytes: Data?
             switch source {
             case .appleMusic:
                 self?.playerReads += 1
-                if let data = await providers.musicData(), !Task.isCancelled { palette = await Self.decode(data) }
+                if let data = await providers.musicData(), !Task.isCancelled { bytes = data; palette = await Self.decode(data) }
             case .spotify:
                 self?.playerReads += 1
                 if let text = await providers.spotifyURL(), !Task.isCancelled {
                     if let url = ArtworkPolicy.validated(text, extraHosts: providers.extraHosts, allowInsecureLoopback: !providers.extraHosts.isEmpty) {
                         self?.httpFetches += 1
-                        if let data = try? await providers.transport.data(from: url), !Task.isCancelled { palette = await Self.decode(data) }
+                        if let data = try? await providers.transport.data(from: url), !Task.isCancelled { bytes = data; palette = await Self.decode(data) }
                     } else {
                         self?.rejectedURLs += 1
                     }
@@ -161,6 +164,7 @@ public final class ArtworkService {
             guard !Task.isCancelled, let self, self.currentIdentity == identity else { return }
             self.task = nil
             self.delivered += 1
+            if let bytes { self.deliverData?(identity, bytes) }
             self.deliver(identity, palette)
         }
     }

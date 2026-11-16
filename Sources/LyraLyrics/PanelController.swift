@@ -238,9 +238,49 @@ final class PanelController: NSObject {
         relayout()
     }
 
-    var isShown: Bool { panel.isVisible }
-    func show() { panel.orderFrontRegardless(); model.setWindowVisible(true) }
-    func hide() { panel.orderOut(nil); model.setWindowVisible(false) }
+    /// Vrai pendant le fondu de sortie : la fenêtre compte déjà comme cachée.
+    private var hidingNow = false
+    private var fadeToken = 0
+    static let fadeDuration = 0.4
+    var isShown: Bool { panel.isVisible && !hidingNow }
+
+    /// `animated` : fondu doux (masquage automatique), sans animation si « Réduire les animations ».
+    func show(animated: Bool = false) {
+        fadeToken += 1
+        hidingNow = false
+        if animated && !model.reduceMotion && !panel.isVisible {
+            panel.alphaValue = 0
+            panel.orderFrontRegardless()
+            model.setWindowVisible(true)
+            NSAnimationContext.runAnimationGroup { ctx in
+                ctx.duration = Self.fadeDuration; ctx.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+                panel.animator().alphaValue = 1
+            }
+        } else {
+            panel.alphaValue = 1
+            panel.orderFrontRegardless(); model.setWindowVisible(true)
+        }
+    }
+    func hide(animated: Bool = false) {
+        fadeToken += 1
+        let token = fadeToken
+        guard animated && !model.reduceMotion && panel.isVisible else {
+            hidingNow = false
+            panel.orderOut(nil); panel.alphaValue = 1; model.setWindowVisible(false)
+            return
+        }
+        hidingNow = true
+        model.setWindowVisible(false)
+        NSAnimationContext.runAnimationGroup({ ctx in
+            ctx.duration = Self.fadeDuration; ctx.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+            panel.animator().alphaValue = 0
+        }, completionHandler: { [weak self] in
+            MainActor.assumeIsolated {
+                guard let self, self.fadeToken == token else { return }
+                self.panel.orderOut(nil); self.panel.alphaValue = 1; self.hidingNow = false
+            }
+        })
+    }
 }
 
 

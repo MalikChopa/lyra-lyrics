@@ -98,6 +98,31 @@ public enum FontTheme: String, Codable, CaseIterable, Sendable {
     }
 }
 
+/// Quand masquer la fenêtre toute seule (1.1.0, C1). Jamais par-dessus un masquage ou un affichage manuel.
+public enum AutoHideMode: String, Codable, CaseIterable, Sendable {
+    case never, paused, idle
+
+    public var label: String {
+        switch self {
+        case .never: return "Jamais"
+        case .paused: return "En pause"
+        case .idle: return "Quand rien ne joue"
+        }
+    }
+}
+
+/// Mise en page de la Scène (1.1.0) : paroles seules, ou pochette nette à gauche et paroles à droite (défaut).
+public enum SceneLayoutMode: String, Codable, CaseIterable, Sendable {
+    case lyricsOnly, withArtwork
+
+    public var label: String {
+        switch self {
+        case .lyricsOnly: return "Paroles seules"
+        case .withArtwork: return "Avec la pochette"
+        }
+    }
+}
+
 /// Position mémorisée : centre de la fenêtre relatif au coin bas-gauche de l'écran, avec l'UUID de l'écran (§4).
 public struct WindowPosition: Codable, Equatable, Sendable {
     public var screenUUID: String?
@@ -110,7 +135,9 @@ public struct WindowPosition: Codable, Equatable, Sendable {
 
 /// Réglages versionnés. Valeurs par défaut et pastilles = celles de la maquette de conception.
 public struct Settings: Codable, Equatable, Sendable {
-    public static let currentVersion = 1
+    /// Version 2 (1.1.0, 2026-10-28) : « Remplissage karaoké » ramené à désactivé une seule fois pour les réglages enregistrés en version 1
+    /// (l'utilisateur ne l'aime pas ; la Scène l'imposait jusque-là), puis il redevient un choix libre.
+    public static let currentVersion = 2
     public static let sizeRange = 18...44
     public static let opacityRange = 0...85
     /// Pastilles de couleur de la maquette (`#colors i[data-c]`).
@@ -140,6 +167,25 @@ public struct Settings: Codable, Equatable, Sendable {
     /// Taille de fenêtre imposée par le redimensionnement à la souris (nil = automatique : 460 pt de large, hauteur selon le contenu).
     public var windowWidth: Double? = nil
     public var windowHeight: Double? = nil
+    // 1.1.0
+    /// Accueil du premier lancement déjà montré.
+    public var welcomeSeen: Bool = false
+    /// Case « Lancer à l'ouverture de session » (intention de l'utilisateur ; l'état réel est relu auprès du système).
+    public var launchAtLogin: Bool = false
+    public var autoHide: AutoHideMode = .idle
+    /// « Vérifier les mises à jour » (une requête par jour au plus, vers api.github.com).
+    public var checkUpdates: Bool = true
+    /// Date (secondes depuis 1970) de la dernière vérification.
+    public var lastUpdateCheck: Double? = nil
+    /// Scène : écran choisi. « window » = écran de la fenêtre (défaut), « main » = écran principal, « name:<nom> » = par nom.
+    public var sceneScreen: String = "window"
+    /// Scène : grain et vignette discrets.
+    public var sceneEffects: Bool = true
+    /// Fond animé tiré de la pochette (petite fenêtre, désactivé par défaut) et « Remplissage karaoké » (petite fenêtre ET Scène, désactivé par défaut).
+    public var animatedBackground: Bool = false
+    public var karaokeFill: Bool = false
+    /// Scène : mise en page (défaut « Avec la pochette »).
+    public var sceneLayout: SceneLayoutMode = .withArtwork
 
     public init() {}
 
@@ -181,6 +227,7 @@ public struct Settings: Codable, Equatable, Sendable {
     private enum CodingKeys: String, CodingKey {
         case version, style, size, backgroundOpacity, font, colorIndex, clickThrough, hotKey, position, showsDockIcon
         case lineCount, fontWeight, glow, neighbourRatio, artworkColors, windowWidth, windowHeight
+        case welcomeSeen, launchAtLogin, autoHide, checkUpdates, lastUpdateCheck, sceneScreen, sceneEffects, animatedBackground, karaokeFill, sceneLayout
     }
     public init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
@@ -202,6 +249,16 @@ public struct Settings: Codable, Equatable, Sendable {
         artworkColors = (try? c.decodeIfPresent(Bool.self, forKey: .artworkColors)) ?? d.artworkColors
         windowWidth = try? c.decodeIfPresent(Double.self, forKey: .windowWidth)
         windowHeight = try? c.decodeIfPresent(Double.self, forKey: .windowHeight)
+        welcomeSeen = (try? c.decodeIfPresent(Bool.self, forKey: .welcomeSeen)) ?? d.welcomeSeen
+        launchAtLogin = (try? c.decodeIfPresent(Bool.self, forKey: .launchAtLogin)) ?? d.launchAtLogin
+        autoHide = (try? c.decodeIfPresent(AutoHideMode.self, forKey: .autoHide)) ?? d.autoHide
+        checkUpdates = (try? c.decodeIfPresent(Bool.self, forKey: .checkUpdates)) ?? d.checkUpdates
+        lastUpdateCheck = try? c.decodeIfPresent(Double.self, forKey: .lastUpdateCheck)
+        sceneScreen = (try? c.decodeIfPresent(String.self, forKey: .sceneScreen)) ?? d.sceneScreen
+        sceneEffects = (try? c.decodeIfPresent(Bool.self, forKey: .sceneEffects)) ?? d.sceneEffects
+        animatedBackground = (try? c.decodeIfPresent(Bool.self, forKey: .animatedBackground)) ?? d.animatedBackground
+        karaokeFill = (try? c.decodeIfPresent(Bool.self, forKey: .karaokeFill)) ?? d.karaokeFill
+        sceneLayout = (try? c.decodeIfPresent(SceneLayoutMode.self, forKey: .sceneLayout)) ?? d.sceneLayout
         clamp()
     }
 
@@ -217,6 +274,7 @@ public struct Settings: Codable, Equatable, Sendable {
         guard let probe = try? JSONDecoder().decode(VersionProbe.self, from: data) else { return (Settings(), .corrupt) }
         if let v = probe.version, v > currentVersion { return (Settings(), .newerVersion(v)) }
         guard var s = try? JSONDecoder().decode(Settings.self, from: data) else { return (Settings(), .corrupt) }
+        if (probe.version ?? 1) < 2 { s.karaokeFill = false }
         s.version = currentVersion
         return (s, .ok)
     }

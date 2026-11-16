@@ -8,7 +8,7 @@ struct AboutView: View {
     private let link = Color(red: 0.486, green: 0.753, blue: 1)
 
     /// Transparence réseau (même phrase que dans le README, rubrique Vie privée) ; avis juridique non analysé.
-    static let networkSentence = "Pour trouver les paroles, le titre, l'artiste, l'album et la durée du morceau en cours sont envoyés à lrclib.net (avec ton adresse IP, comme toute requête web). Si « Couleurs de la pochette » est activé, la pochette du morceau Spotify est téléchargée une fois depuis le serveur d'images de Spotify (i.scdn.co) et gardée en mémoire seulement ; celle d'Apple Music est lue dans l'app Musique, sans téléchargement. Rien d'autre ne quitte ton Mac : ni statistiques, ni rapport de plantage."
+    static let networkSentence = "Pour trouver les paroles, le titre, l'artiste, l'album et la durée du morceau en cours sont envoyés à lrclib.net (avec ton adresse IP, comme toute requête web). Si « Couleurs de la pochette » est activé, la pochette du morceau Spotify est téléchargée une fois depuis le serveur d'images de Spotify (i.scdn.co) et gardée en mémoire seulement ; celle d'Apple Music est lue dans l'app Musique, sans téléchargement. Une fois par jour au plus, au lancement, l'app interroge github.com (api.github.com) pour savoir si une nouvelle version existe, sans rien envoyer de toi (réglage « Vérifier les mises à jour »). Rien d'autre ne quitte ton Mac : ni statistiques, ni rapport de plantage."
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {

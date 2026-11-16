@@ -16,6 +16,16 @@ final class AppController {
     private(set) var settingsController: SettingsPanelController!
     private(set) var aboutController: AboutPanelController!
     private(set) var statusItem: StatusItemController!
+    // 1.1.0
+    private(set) var welcomeController: WelcomeController!
+    private(set) var manualSearch: ManualSearchController!
+    let loginItem = LoginItemService()
+    let updates = UpdateService()
+    private(set) var scene: SceneController!
+    private(set) var autoHide = AutoHideState()
+    private var autoHideGraceUntil = 0.0
+    private var autoHideTask: Task<Void, Never>?
+    private(set) var autoHideActions: [AutoHideState.Action] = []
     /// Pochette du titre en cours : politique dans `ArtworkService` (AppSupport).
     private(set) var artwork: ArtworkService!
     private var started = false
@@ -49,7 +59,9 @@ final class AppController {
             toggleSettings: { [unowned self] in self.toggleSettings() },
             openAbout: { [unowned self] in self.openAbout() },
             requestMusicAccess: { [unowned self] in self.requestMusicAccess() },
-            retryLookup: { [unowned self] in self.model.retryLookup() })
+            retryLookup: { [unowned self] in self.model.retryLookup() },
+            openManualSearch: { [unowned self] in self.openManualSearch() },
+            openScene: { [unowned self] in self.toggleScene() })
         panelController = PanelController(model: model, store: store, actions: panelActions)
 
         let settingsActions = SettingsActions(
@@ -73,9 +85,29 @@ final class AppController {
             openAbout: { [unowned self] in self.openAbout() },
             requestSpotifyAccess: { [unowned self] in self.hub?.requestSpotifyAccess() },
             closeSettings: { [unowned self] in self.settingsController.close() },
-            openAutomationSettings: { [unowned self] in self.openAutomationSettings() })
+            openAutomationSettings: { [unowned self] in self.openAutomationSettings() },
+            setLaunchAtLogin: { [unowned self] in self.setLaunchAtLogin($0) },
+            setAutoHide: { [unowned self] v in self.change { $0.autoHide = v } },
+            setCheckUpdates: { [unowned self] v in self.change { $0.checkUpdates = v } },
+            openManualSearch: { [unowned self] in self.openManualSearch() },
+            openWelcome: { [unowned self] in self.openWelcome() },
+            openUpdatePage: { [unowned self] in self.openUpdatePage() },
+            openScene: { [unowned self] in self.toggleScene() },
+            setSceneScreen: { [unowned self] v in self.change { $0.sceneScreen = v } },
+            setSceneEffects: { [unowned self] v in self.change { $0.sceneEffects = v } },
+            setSceneLayout: { [unowned self] v in self.change { $0.sceneLayout = v } },
+            setAnimatedBackground: { [unowned self] v in self.change { $0.animatedBackground = v } },
+            setKaraokeFill: { [unowned self] v in self.change { $0.karaokeFill = v } })
         settingsController = SettingsPanelController(parent: panelController, model: model, store: store, recorder: recorder, actions: settingsActions)
         aboutController = AboutPanelController(parent: panelController)
+        welcomeController = WelcomeController(parent: panelController, model: model, hotKey: { [unowned self] in self.store.settings.hotKey.display },
+                                              actions: WelcomeActions(allowSpotify: { [unowned self] in self.hub?.requestSpotifyAccess() },
+                                                                      start: { [unowned self] in self.finishWelcome() }))
+        manualSearch = ManualSearchController(parent: panelController, model: model)
+        model.onActivityMayHaveChanged = { [unowned self] in self.evaluateAutoHide() }
+        scene = SceneController(model: model, panelController: panelController, settings: { [unowned self] in self.store.settings })
+        scene.onExited = { [unowned self] in self.evaluateAutoHide(); self.statusItem?.refresh() }
+        model.onSceneChange = { [unowned self] in self.scene.view?.refresh() }
 
         recorder.apply = { [unowned self] in self.applyHotKey($0) }
         recorder.suspendGlobal = { [unowned self] suspend in
@@ -89,7 +121,10 @@ final class AppController {
         model.onSettingsOpened = { [unowned self] in if self.model.spotifyAccess != .granted { self.hub?.refreshSpotifyAccess() } }
         model.onPlaybackRefused = { [unowned self] in self.offerAutomationSettings("Autorisation refusée pour \(Self.playerName(PlayerID(rawValue: self.model.track?.player ?? "spotify") ?? .spotify)).") }
         panelController.onMoved = { [unowned self] in self.settingsController.place() }
-        model.onDisplayedLinesChanged = { [unowned self] in if self.model.windowVisible { self.panelController.relayout() } }
+        model.onDisplayedLinesChanged = { [unowned self] in
+            if self.model.windowVisible { self.panelController.relayout() }
+            self.scene.view?.refresh()
+        }
 
         mainMenu.openAbout = { [unowned self] in self.openAbout() }
         mainMenu.openSettings = { [unowned self] in self.openSettings() }
@@ -120,7 +155,12 @@ final class AppController {
             openAbout: { [unowned self] in self.openAbout() },
             quit: { NSApp.terminate(nil) },
             state: { [unowned self] in (self.panelController.isShown, self.store.settings.clickThrough, self.store.settings.style) },
-            hotKeyDisplay: { [unowned self] in self.store.settings.hotKey.display }))
+            hotKeyDisplay: { [unowned self] in self.store.settings.hotKey.display },
+            openScene: { [unowned self] in self.toggleScene() },
+            openManualSearch: { [unowned self] in self.openManualSearch() },
+            openWelcome: { [unowned self] in self.openWelcome() },
+            openUpdate: { [unowned self] in self.openUpdatePage() },
+            updateTag: { [unowned self] in self.model.updateRelease?.tag }))
         panelController.start()
         registerStoredHotKey()
         model.startTimer()
@@ -143,6 +183,17 @@ final class AppController {
             }
             #endif
         }
+        // 1.1.0 : accueil du premier lancement, état réel du lancement à l'ouverture de session, masquage automatique, mises à jour.
+        if Diagnostics.usesRealPlayers {
+            autoHideGraceUntil = ProcessClock.seconds() + 6
+            showWelcomeIfFirstLaunch()
+            syncLoginState()
+            Task { @MainActor [weak self] in
+                try? await Task.sleep(for: .seconds(8))
+                await self?.checkForUpdates(force: false)
+            }
+        }
+        evaluateAutoHide()
         if usesNetwork {
             // Hors connexion → aucune requête ; reprise au retour du réseau (§3.5). Jamais pour le bouclage local.
             network.onChange = { [weak self] online in self?.model.setOnline(online) }
@@ -178,6 +229,7 @@ final class AppController {
         let after = store.settings
         if before.showsDockIcon != after.showsDockIcon { applyActivationPolicy() }
         if before.lineCount != after.lineCount { model.lineCount = after.lineCount }
+        if before.autoHide != after.autoHide { evaluateAutoHide() }
         if before.artworkColors != after.artworkColors { artworkSettingChanged(after.artworkColors) }
         if !before.clickThrough && after.clickThrough {
             // Le clic-à-travers rend la fenêtre de paroles insensible : le ⚙ n'est plus cliquable, donc le volet (et « À propos »)
@@ -208,15 +260,18 @@ final class AppController {
     /// menus peut être cachée par l'encoche), il SORT d'abord du clic-à-travers et montre la fenêtre, sans jamais la cacher.
     /// Clic-à-travers désactivé : il cache / montre comme avant.
     func handleHotKey() {
+        if scene.isVisible { scene.exit(); return }          // le raccourci est aussi la sortie de la Scène
         if store.settings.clickThrough {
             setClickThrough(false)
             if !panelController.isShown { panelController.show() }
+            autoHide.manualChange(windowShown: panelController.isShown)
             statusItem?.refresh()
         } else {
             toggleVisibility()
         }
     }
 
+    /// Cacher / montrer fait par l'UTILISATEUR (raccourci, menu) : le masquage automatique ne l'annule jamais.
     func toggleVisibility() {
         if panelController.isShown {
             settingsController.close()
@@ -225,7 +280,14 @@ final class AppController {
         } else {
             panelController.show()
         }
+        autoHide.manualChange(windowShown: panelController.isShown)
         statusItem?.refresh()
+    }
+    /// Scène plein écran : double-clic sur la fenêtre, menu, réglages. Fermée : le volet et À propos se ferment avant le zoom.
+    func toggleScene() {
+        if scene.isVisible { scene.exit(); return }
+        settingsController.close(); aboutController.close(); manualSearch.close()
+        scene.enter()
     }
     func openSettings() { if !panelController.isShown { panelController.show() }; settingsController.open() }
     func toggleSettings() { settingsController.isOpen ? settingsController.close() : openSettings() }
@@ -283,14 +345,108 @@ final class AppController {
     // MARK: Dock
 
     /// Clic sur l'icône du Dock : montre la fenêtre.
+    /// 1.1.0 (A3) : montre la fenêtre ET ouvre le volet de réglages (relancer l'app = « je cherche les réglages »).
     func handleReopen() {
+        reopenCount += 1
         // Relancer l'app (Spotlight, Finder) est aussi une sortie de secours du clic-à-travers.
         if store.settings.clickThrough { setClickThrough(false) }
         if !panelController.isShown { panelController.show() }
+        autoHide.manualChange(windowShown: panelController.isShown)
+        openSettings()
         statusItem?.refresh()
     }
+    private(set) var reopenCount = 0
 }
 
+
+// MARK: 1.1.0 : accueil, ouverture de session, recherche manuelle, masquage automatique, mises à jour
+extension AppController {
+    func showWelcomeIfFirstLaunch() {
+        guard !store.settings.welcomeSeen else { return }
+        welcomeController.open()
+    }
+    func openWelcome() { welcomeController.open() }
+    /// « Commencer » (ou fermeture) : l'accueil ne reviendra pas tout seul.
+    func finishWelcome() {
+        welcomeController.close()
+        if !store.settings.welcomeSeen { store.update { $0.welcomeSeen = true } }
+        evaluateAutoHide()
+    }
+
+    func openManualSearch() {
+        guard model.track != nil else { return }
+        if !panelController.isShown { panelController.show() }
+        manualSearch.open()
+    }
+
+    /// Case « Lancer à l'ouverture de session ».
+    func setLaunchAtLogin(_ on: Bool) {
+        let r = loginItem.setEnabled(on)
+        change { $0.launchAtLogin = r.enabled }
+        switch (on, r.path) {
+        case (true, .smAppService): model.loginMessage = r.message ?? "Enregistré auprès du système (Réglages > Général > Éléments de connexion)."
+        case (true, .launchAgent): model.loginMessage = "Le système a refusé l'enregistrement direct : un agent de lancement est utilisé (~/Library/LaunchAgents). Il disparaît quand tu décoches."
+        case (true, .none): model.loginMessage = r.message ?? "Le lancement automatique n'a pas pu être activé."
+        default: model.loginMessage = nil
+        }
+        model.diag?(["event": "login-item", "on": on, "path": r.path.rawValue, "enabled": r.enabled])
+    }
+
+    /// Au lancement : l'état réel (l'utilisateur a pu retirer l'élément dans les Réglages Système) fait foi.
+    func syncLoginState() {
+        let actual = loginItem.isEnabled()
+        if actual != store.settings.launchAtLogin { change { $0.launchAtLogin = actual } }
+    }
+
+    // C1 : masquage automatique
+    func evaluateAutoHide() {
+        guard started, !model.sceneVisible, !welcomeController.isOpen else { return }
+        let now = ProcessClock.seconds()
+        if now < autoHideGraceUntil {
+            autoHideTask?.cancel()
+            let wait = autoHideGraceUntil - now + 0.05
+            autoHideTask = Task { @MainActor [weak self] in
+                try? await Task.sleep(for: .seconds(wait))
+                guard !Task.isCancelled else { return }
+                self?.evaluateAutoHide()
+            }
+            return
+        }
+        let action = autoHide.evaluate(mode: store.settings.autoHide, activity: model.activity, windowShown: panelController.isShown)
+        guard let action else { return }
+        autoHideActions.append(action)
+        model.diag?(["event": "auto-hide", "action": "\(action)", "activity": model.activity.rawValue])
+        switch action {
+        case .hide:
+            settingsController.close()
+            panelController.hide(animated: true)
+            model.hovering = false
+        case .show:
+            panelController.show(animated: true)
+        }
+        statusItem?.refresh()
+    }
+
+    // E1 : mises à jour
+    func checkForUpdates(force: Bool) async {
+        let s = store.settings
+        guard force || s.checkUpdates else { return }
+        let now = Date().timeIntervalSince1970
+        guard force || UpdateCheck.isDue(last: s.lastUpdateCheck, now: now) else { return }
+        // La date est notée AVANT la requête : au plus une tentative par jour, même si elle échoue.
+        store.update { $0.lastUpdateCheck = now }
+        let outcome = await updates.check()
+        if case .newer(let release) = outcome { model.updateRelease = release } else { model.updateRelease = nil }
+        model.diag?(["event": "update-check", "outcome": "\(outcome)"])
+        statusItem?.refresh()
+    }
+
+    func openUpdatePage() {
+        guard let url = model.updateRelease?.url, UpdateCheck.isTrusted(url) else { return }
+        openedURLs.append(url)
+        urlOpener(url)
+    }
+}
 
 // MARK: Pochette et boutons de lecture
 extension AppController {
@@ -324,6 +480,14 @@ extension AppController {
             // 1.0.1 : l'état de l'autorisation Spotify est relu quand un titre Spotify démarre s'il n'est pas déjà accordé ou refusé
             // (lu une seule fois au lancement, il restait « Spotify fermé » si Spotify n'était pas ouvert à ce moment-là).
             if info.player == "spotify", self.model.spotifyAccess != .granted, self.model.spotifyAccess != .denied { self.hub?.refreshSpotifyAccess() }
+        }
+        artwork.deliverData = { [unowned self] identity, data in
+            Task.detached(priority: .utility) {
+                let image = ArtworkImage.downscaled(data, maxPixel: 1200)
+                let blur = image.flatMap { SceneArtwork.blurred($0) }
+                let box = ArtworkImageBox(image: image)
+                await MainActor.run { self.model.applyArtworkImage(identity: identity, box.image, blur: blur) }
+            }
         }
         model.onTrackStopped = { [unowned self] in self.artwork.cancel() }
     }

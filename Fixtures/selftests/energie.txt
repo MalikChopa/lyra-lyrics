@@ -27,5 +27,6 @@ expect timerRunning=false mode=nothing
 play brume
 wait-for mode=unsynced 8
 wait 1
-expect timerRunning=true
+# 1.1.0 (D1) : le bloc non synchronisé défile par une animation Core Animation, plus de minuteur 10 Hz
+expect timerRunning=false unsyncedAnimating=true
 state non-synchronise

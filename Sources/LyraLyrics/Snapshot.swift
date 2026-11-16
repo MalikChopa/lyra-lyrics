@@ -26,6 +26,14 @@ final class SnapshotRunner {
         try? FileManager.default.createDirectory(atPath: dir, withIntermediateDirectories: true)
         Task { @MainActor in
             try? await Task.sleep(for: .milliseconds(600))
+            if CommandLine.arguments.contains("--glow-proof") { GlowProof.run(directory: self.dir); exit(0) }
+            if CommandLine.arguments.contains("--multiline-proof") { MultilineProof.run(directory: self.dir); exit(0) }
+            if CommandLine.arguments.contains("--scene-only") {
+                // 1.1.0 : seulement la Scène et les images de la démo (rendu hors écran de la vue, aucune fenêtre plein écran)
+                await self.scenes()
+                DiagLog.shared.write(["snapshot": "fin", "dossier": self.dir])
+                exit(0)
+            }
             await self.all()
             DiagLog.shared.write(["snapshot": "fin", "dossier": self.dir])
             exit(0)
@@ -142,6 +150,138 @@ final class SnapshotRunner {
         await shot("snap-newyork-jaune-uni-70", bright: false, panels: [.main])
         c.change { $0.font = .system; $0.colorIndex = 0; $0.backgroundOpacity = 38; $0.style = .glass }
         await features()
+    }
+
+    // MARK: Scène (1.1.0) : rendu hors écran de `SceneView`, titres, paroles et pochettes INVENTÉS
+
+    private func renderScene(_ name: String, size: NSSize = NSSize(width: 1400, height: 875), prepare: ((SceneView) -> Void)? = nil,
+                             waitMs: Int = 700, withBar: Bool = false) async -> CGImage? {
+        let v = SceneView(frame: NSRect(origin: .zero, size: size), model: c.model, settings: { [unowned self] in self.c.store.settings })
+        v.layout()
+        v.start()
+        await settle(waitMs)
+        prepare?(v)
+        v.layout()
+        let image = Self.render(withBar ? v.layer! : v.stage, size: size)
+        v.stop()
+        if let image, !name.isEmpty { Self.writePNG(image, to: dir + "/" + name + ".png") }
+        return image
+    }
+
+    static func render(_ layer: CALayer, size: NSSize, scale: Double = 1) -> CGImage? {
+        guard let space = CGColorSpace(name: CGColorSpace.sRGB),
+              let ctx = CGContext(data: nil, width: Int(size.width * scale), height: Int(size.height * scale), bitsPerComponent: 8, bytesPerRow: 0, space: space,
+                                  bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else { return nil }
+        ctx.scaleBy(x: scale, y: scale)
+        layer.render(in: ctx)
+        return ctx.makeImage()
+    }
+
+    static func writePNG(_ image: CGImage, to path: String) {
+        let rep = NSBitmapImageRep(cgImage: image)
+        try? rep.representation(using: .png, properties: [:])?.write(to: URL(fileURLWithPath: path))
+    }
+
+    private func scenes() async {
+        guard let fp = c.fakePlayer else { return }
+        c.change { $0.artworkColors = true; $0.sceneEffects = true; $0.style = .glass; $0.size = 26; $0.lineCount = 3; $0.apply(theme: .classic); $0.autoHide = .never }
+        func play(_ track: String, seek: String = "3.0", pause: Bool = true) async {
+            fp.perform("play", track: track); fp.perform("seek", track: seek)
+            var t = 0.0
+            while c.model.mode != .synced && t < 6 { try? await Task.sleep(for: .milliseconds(100)); t += 0.1 }
+            if pause { fp.perform("pause") }
+            await waitPalette()
+        }
+        await play("phares", seek: "3.0")
+        c.change { $0.sceneLayout = .lyricsOnly }          // la carte du titre n'existe qu'en « Paroles seules »
+        _ = await renderScene("scene-01-carte") { $0.showCardNow() }
+        c.change { $0.sceneLayout = .withArtwork }
+        _ = await renderScene("scene-02-lignes", prepare: { $0.currentFill?.set(fraction: 0.55, duration: 2, playing: false, animated: false) }, waitMs: 1200)
+        await play("longues", seek: "7.0")
+        _ = await renderScene("scene-03-jaune", prepare: { $0.currentFill?.set(fraction: 0.4, duration: 2, playing: false, animated: false) }, waitMs: 1200)
+        await play("brume", seek: "1.0", pause: false)
+        _ = await renderScene("scene-04-sans-synchro", waitMs: 1200)
+        await play("passage", seek: "10.0")
+        _ = await renderScene("scene-05-passage", waitMs: 1200)
+        fp.perform("play", track: "lenteur"); await settle(1300)
+        _ = await renderScene("scene-06-attente", waitMs: 800)
+        await play("tres-longues", seek: "3.0")
+        _ = await renderScene("scene-07-sans-pochette-lignes-longues", waitMs: 1200)
+        await play("phares", seek: "3.0")
+        _ = await renderScene("scene-08-barre-commandes", prepare: { $0.pointerMoved(); $0.updateBar() }, waitMs: 1200, withBar: true)
+        c.change { $0.sceneLayout = .lyricsOnly }
+        _ = await renderScene("scene-09-paroles-seules", waitMs: 1200)
+        c.change { $0.sceneLayout = .withArtwork }
+        // petite fenêtre avec les réglages S24 (fond animé + remplissage karaoké)
+        await play("phares", seek: "3.0", pause: false)
+        c.change { $0.animatedBackground = true; $0.karaokeFill = true }
+        await settle(900)
+        await shot("small-s24-fond-anime-karaoke", bright: false, panels: [.main])
+        c.change { $0.animatedBackground = false; $0.karaokeFill = false }
+        await demoFrames()
+    }
+
+    /// Images de la démo animée (`scripts/make-demo-gif.swift`) : petite fenêtre puis Scène. Nom : f-NN-<durée ms>.png.
+    private func demoFrames() async {
+        guard let fp = c.fakePlayer else { return }
+        let gif = "/tmp/lyra-110/gif"
+        try? FileManager.default.removeItem(atPath: gif)
+        try? FileManager.default.createDirectory(atPath: gif, withIntermediateDirectories: true)
+        let size = NSSize(width: 640, height: 400)
+        var n = 0
+        func save(_ img: CGImage?, ms: Int) { if let img { n += 1; Self.writePNG(img, to: String(format: "%@/f-%02d-%d.png", gif, n, ms)) } }
+        func canvas(_ draw: (CGContext) -> Void) -> CGImage? {
+            guard let space = CGColorSpace(name: CGColorSpace.sRGB),
+                  let ctx = CGContext(data: nil, width: Int(size.width), height: Int(size.height), bitsPerComponent: 8, bytesPerRow: 0, space: space,
+                                      bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else { return nil }
+            draw(ctx)
+            return ctx.makeImage()
+        }
+        // A. petite fenêtre (4 lignes successives) sur un faux bureau
+        c.change { $0.style = .glass; $0.artworkColors = true; $0.karaokeFill = false; $0.animatedBackground = false }
+        for (i, seek) in ["1.0", "4.0", "7.0", "10.0"].enumerated() {
+            fp.perform("play", track: "phares"); fp.perform("seek", track: seek)
+            var t = 0.0
+            while c.model.mode != .synced && t < 6 { try? await Task.sleep(for: .milliseconds(100)); t += 0.1 }
+            fp.perform("pause"); await waitPalette(); await settle(500)
+            guard let view = c.panelController.panel.contentView, let rep = view.bitmapImageRepForCachingDisplay(in: view.bounds) else { continue }
+            view.cacheDisplay(in: view.bounds, to: rep)
+            let panelImage = rep.cgImage
+            let frame = canvas { ctx in
+                let colors = [CGColor(red: 0.12, green: 0.16, blue: 0.30, alpha: 1), CGColor(red: 0.30, green: 0.14, blue: 0.34, alpha: 1)] as CFArray
+                if let space = CGColorSpace(name: CGColorSpace.sRGB), let g = CGGradient(colorsSpace: space, colors: colors, locations: [0, 1]) {
+                    ctx.drawLinearGradient(g, start: CGPoint(x: 0, y: 400), end: CGPoint(x: 640, y: 0), options: [])
+                }
+                if let p = panelImage {
+                    let w = 520.0, h = w * Double(p.height) / Double(p.width)
+                    ctx.draw(p, in: CGRect(x: (640 - w) / 2, y: (400 - h) / 2, width: w, height: h))
+                }
+            }
+            save(frame, ms: 400); if i < 3 { save(frame, ms: 300) }
+        }
+        // B. Scène : carte du titre (apparition), puis remplissage de la ligne, puis changement de ligne
+        fp.perform("play", track: "phares"); fp.perform("seek", track: "5.0"); await settle(900); fp.perform("pause"); await waitPalette()
+        c.change { $0.sceneLayout = .lyricsOnly }
+        let v = SceneView(frame: NSRect(origin: .zero, size: NSSize(width: 1280, height: 800)), model: c.model, settings: { [unowned self] in self.c.store.settings })
+        v.layout(); v.start(); await settle(700)
+        v.showCardNow(); await settle(1500)
+        let cardLevels: [Float] = [0.25, 0.6, 1, 1, 0.55, 0.15]
+        for lv in cardLevels {
+            v.card.opacity = lv; v.content.opacity = 1 - lv
+            save(Self.render(v.stage, size: v.bounds.size, scale: 0.5), ms: 220)
+        }
+        v.card.opacity = 0; v.content.opacity = 1
+        await settle(300)
+        // remplissage karaoké désactivé par défaut : la ligne courante est pleine, une seule image
+        save(Self.render(v.stage, size: v.bounds.size, scale: 0.5), ms: 900)
+        v.stop()
+        fp.perform("seek", track: "8.0"); fp.perform("resume"); await settle(600); fp.perform("pause"); await settle(700)
+        c.change { $0.sceneLayout = .withArtwork }
+        let v2 = SceneView(frame: NSRect(origin: .zero, size: NSSize(width: 1280, height: 800)), model: c.model, settings: { [unowned self] in self.c.store.settings })
+        v2.layout(); v2.start(); await settle(900)
+        save(Self.render(v2.stage, size: v2.bounds.size, scale: 0.5), ms: 700)
+        v2.stop()
+        DiagLog.shared.write(["demo-frames": n])
     }
 
     /// Attend (3 s au plus) la palette de la pochette du titre en cours.

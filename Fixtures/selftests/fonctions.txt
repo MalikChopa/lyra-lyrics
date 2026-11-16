@@ -9,7 +9,8 @@ expect lineCount=3 visibleSlots=3 fontTheme=classic artworkColors=true
 wait-for artworkDelivered=1 5
 expect artworkStarted=1 artworkPlayerReads=1 artworkHttp=0 artworkSkippedDisabled=0
 # valeurs de la pochette inventée « rouge » (déterministes), contraste WCAG >= 4,5
-expect paletteAccent=#f76f8e paletteTint=#4d1613 paletteContrast=5.32 lineColor=#f76f8e
+# 1.1.0 : la pastille choisie colore le texte ; l'accent de la pochette ne sert qu'au remplissage karaoké
+expect paletteAccent=#f76f8e paletteTint=#4d1613 paletteContrast=5.32 lineColor=#ffffff accentColor=#f76f8e
 state pochette-rouge
 lines 1
 state une-ligne
@@ -43,7 +44,7 @@ glow off
 expect fontTheme=classic
 # couleurs de la pochette : désactivées = plus aucune requête, palette effacée ; réactivées = une demande pour le titre en cours
 artwork off
-expect artworkColors=false paletteAccent=none paletteTint=none lineColor=#ffffff
+expect artworkColors=false paletteAccent=none paletteTint=none lineColor=#ffffff accentColor=#ffffff
 play brume
 wait-for mode=unsynced 8
 expect artworkStarted=1 artworkSkippedDisabled=1 artworkPlayerReads=1

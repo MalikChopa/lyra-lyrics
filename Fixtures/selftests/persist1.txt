@@ -1,0 +1,9 @@
+# 1.1.0 : persistance des réglages (1re exécution, suite de préférences conservée) ; --autohide-default pour lire le défaut.
+expect autoHide=idle checkUpdates=true sceneScreenSetting=window sceneEffects=true animatedBackground=false karaokeFill=false launchAtLogin=false welcomeSeen=false
+autohide paused
+scene screen-main
+scene effects-off
+animated-bg on
+karaoke on
+welcome first
+welcome start

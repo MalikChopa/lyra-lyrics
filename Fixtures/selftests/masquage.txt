@@ -1,0 +1,48 @@
+# 1.1.0 (C1) : masquage automatique ; à lancer AVEC --autohide-default (défaut « quand rien ne joue »).
+wait-for panelShown=true 5
+expect autoHide=idle activity=playing
+# rien ne joue -> fondu de sortie
+stop
+wait-for panelShown=false 4
+expect autoHidden=true autoHideLast=hide
+# la lecture reprend -> la fenêtre revient seule
+play phares
+wait-for panelShown=true 4
+expect autoHidden=false autoHideLast=show
+# affichage MANUEL pendant la condition : jamais annulé
+stop
+wait-for panelShown=false 4
+show
+wait 1.5
+expect panelShown=true autoHidden=false
+# la condition disparaît puis revient : le masquage automatique reprend
+play phares
+wait 1
+stop
+wait-for panelShown=false 4
+# masquage MANUEL : jamais remontré par la reprise de lecture
+play phares
+wait-for panelShown=true 4
+hide
+wait 1
+expect panelShown=false autoHidden=false
+stop
+wait 0.8
+play phares
+wait 1.5
+expect panelShown=false
+show
+wait 0.8
+expect panelShown=true
+# mode « en pause »
+autohide paused
+wait 0.5
+pause
+wait-for panelShown=false 4
+resume
+wait-for panelShown=true 4
+# mode « jamais » : rien ne se cache
+autohide never
+stop
+wait 1.5
+expect panelShown=true autoHide=never

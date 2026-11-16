@@ -1,0 +1,12 @@
+# Mesure du CPU de la petite fenêtre avec les réglages S24 activés (fond animé + remplissage karaoké).
+animated-bg on
+karaoke on
+play phares
+wait 50
+seek 0
+wait 50
+seek 0
+wait 50
+seek 0
+wait 50
+seek 0

@@ -69,6 +69,8 @@ struct BackgroundView: View {
     var opacityPercent: Int
     /// Teinte tirée de la pochette (nil : couleurs d'origine).
     var tint: RGB? = nil
+    /// Fond animé (S24) : pochette floutée, luminance du flou, mouvement permis.
+    var drift: (image: CGImage, luminance: Double, animated: Bool)? = nil
 
     private func base(default fallback: Color) -> Color {
         guard let tint else { return fallback }
@@ -88,6 +90,12 @@ struct BackgroundView: View {
                 GlassCard(tint: base(default: Color(red: 26 / 255, green: 26 / 255, blue: 34 / 255)), tintOpacity: tint == nil ? alpha : min(1, alpha + 0.18), radius: LyricsMetrics.cornerRadius)
             case .clear:
                 Color.clear
+            }
+        }
+        .overlay {
+            if let drift, style != .clear {
+                ArtworkDriftView(image: drift.image, luminance: drift.luminance, radius: LyricsMetrics.cornerRadius, animated: drift.animated)
+                    .clipShape(shape)
             }
         }
         .allowsHitTesting(false)

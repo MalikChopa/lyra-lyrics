@@ -18,6 +18,22 @@ enum LyricsServiceEvent: Sendable {
     case stalled(reason: String)
 }
 
+/// Résultat de recherche manuelle (1.1.0, B1) : métadonnées seulement, JAMAIS de paroles.
+struct ManualCandidate: Sendable, Equatable, Identifiable {
+    var id: Int
+    var title: String
+    var artist: String
+    var album: String?
+    var duration: Double?
+    var synced: Bool
+    var instrumental: Bool
+}
+
+enum ManualSearchOutcome: Sendable, Equatable {
+    case results([ManualCandidate])
+    case failed(String)
+}
+
 /// Transport réel : `URLSession` ÉPHÉMÈRE, `urlCache = nil` (D3), aucun cookie, `User-Agent` de l'app (D8).
 final class URLSessionTransport: LRCLIBTransport, @unchecked Sendable {
     private let session: URLSession
@@ -60,7 +76,7 @@ final class URLSessionTransport: LRCLIBTransport, @unchecked Sendable {
 /// Service des paroles (§3.3) : `LookupRunner` (déroulé d'un titre, LyricsCore) + `LyricsCache` (mémoire) + `LookupIndex` (disque, sans
 /// texte). Requêtes séquentielles ; un changement de titre annule la recherche en cours (`Task.cancel`).
 actor LyricsService {
-    static let bundleID = Bundle.main.bundleIdentifier ?? "io.github.malikmoussaoui.lyra-lyrics"
+    static let bundleID = Bundle.main.bundleIdentifier ?? "io.github.malikchopa.lyra-lyrics"
     /// ASCII seulement (décision du 2026-10-22) : CFNetwork encode un en-tête non ASCII en ISO-8859-1 (mesuré à J3). Pas de contact pour l'instant.
     static let userAgent = AppIdentity.userAgent
     /// Révision des règles de recherche : fait partie de la clé de l'index disque, pour que les « non trouvé » de la 1.0.0 (dus au
@@ -91,6 +107,9 @@ actor LyricsService {
     }
 
     private let runner: LookupRunner
+    private let client: LRCLIBClient
+    /// Dernière recherche manuelle, EN MÉMOIRE seulement (les paroles du choix en sont tirées sans nouvelle requête).
+    private var lastSearch: [Int: LRCLIBRecord] = [:]
     private var cache = LyricsCache()
     private var index: LookupIndex
     private let indexURL: URL?
@@ -104,6 +123,7 @@ actor LyricsService {
         self.runner = LookupRunner(client: client, gate: RequestGate(titlesBeforeBreaker: titlesBeforeBreaker, minSpacing: minSpacing),
                                    config: config, clock: { ProcessClock.seconds() },
                                    sleep: { seconds in try? await Task.sleep(for: .seconds(max(0, seconds))) }, log: log)
+        self.client = client
         self.indexURL = indexURL
         self.index = indexURL.map(LookupIndex.load(from:)) ?? LookupIndex()
         self.hasher = hasher
@@ -129,6 +149,9 @@ actor LyricsService {
         log(["lookup": "cache-vide", "index": "0"])
     }
 
+    /// Autotest : vide le cache MÉMOIRE seulement (l'index disque, donc le choix manuel mémorisé, reste).
+    func clearMemoryCache() { cache.clear() }
+
     func cancel() {
         currentTask?.cancel()
         currentTask = nil
@@ -149,6 +172,51 @@ actor LyricsService {
         currentTask = Task { await self.run(track, forced: true, report: report) }
     }
 
+    // MARK: - Recherche manuelle et choix de la version (1.1.0, B1)
+
+    /// Recherche libre (titre, artiste) auprès de LRCLIB : une requête, métadonnées seulement dans le résultat.
+    func search(title: String, artist: String) async -> ManualSearchOutcome {
+        let t = title.trimmingCharacters(in: .whitespacesAndNewlines), a = artist.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !t.isEmpty || !a.isEmpty else { return .results([]) }
+        let query: LRCLIBClient.SearchQuery = (t.isEmpty || a.isEmpty) ? .combined(t + a) : .fields(title: t, artist: a)
+        do {
+            let records = try await client.search(query, timeout: 8)
+            lastSearch = Dictionary(records.prefix(30).map { ($0.id, $0) }, uniquingKeysWith: { a, _ in a })
+            log(["lookup": "recherche-manuelle", "resultats": String(records.count)])
+            return .results(records.prefix(30).map {
+                ManualCandidate(id: $0.id, title: $0.trackName, artist: $0.artistName, album: $0.albumName, duration: $0.duration,
+                                synced: $0.candidate.hasSynced, instrumental: $0.instrumental)
+            })
+        } catch let e as LRCLIBError {
+            return .failed(e == .offline ? "Hors connexion" : (e == .timeout ? "Le service met trop de temps à répondre" : "Le service ne répond pas pour l'instant"))
+        } catch {
+            return .failed("Recherche impossible")
+        }
+    }
+
+    /// Choisit une version : utilisée tout de suite et mémorisée pour ce titre (identifiant seulement, sans limite de 24 h).
+    func choose(id: Int, for track: TrackInfo, report: @escaping @Sendable (LyricsServiceEvent) -> Void) -> Bool {
+        guard let record = lastSearch[id],
+              let lyrics = LRCLIBClient.lyrics(from: record, for: track, provenance: "choix manuel, id \(id)", trustDuration: true) else { return false }
+        currentTask?.cancel()
+        index.recordManual(key: indexKey(for: track), id: id, now: Date())
+        saveIndex()
+        cache.store(lyrics, for: track.identity)
+        log(["lookup": "choix-manuel", "id": String(id)])
+        report(.found(lyrics, cached: false))
+        return true
+    }
+
+    /// « Revenir au choix automatique » : oublie le choix et refait la recherche normale.
+    func revertToAutomatic(_ track: TrackInfo, report: @escaping @Sendable (LyricsServiceEvent) -> Void) {
+        index.removeManual(key: indexKey(for: track))
+        saveIndex()
+        log(["lookup": "choix-manuel-retire"])
+        retry(track, report: report)
+    }
+
+    func hasManualChoice(_ track: TrackInfo) -> Bool { index.manualChoice(key: indexKey(for: track)) != nil }
+
     // MARK: - Déroulé d'un titre
 
     private func indexKey(for track: TrackInfo) -> String {
@@ -163,6 +231,19 @@ actor LyricsService {
             return
         }
         let indexKey = indexKey(for: track)
+        if !forced, let pinned = index.manualChoice(key: indexKey) {
+            // Choix manuel mémorisé : une requête `get/{id}` ; en cas d'échec, la recherche normale prend le relais.
+            report(.searching)
+            if let record = try? await client.get(id: pinned, timeout: 8),
+               let lyrics = LRCLIBClient.lyrics(from: record, for: track, provenance: "choix manuel, id \(pinned)", trustDuration: true) {
+                if Task.isCancelled { return }
+                log(["lookup": "livre", "resultat": "choix manuel", "id": String(pinned)])
+                cache.store(lyrics, for: key)
+                report(.found(lyrics, cached: false))
+                return
+            }
+            if Task.isCancelled { return }
+        }
         var knownID: Int?
         switch forced ? nil : index.lookup(key: indexKey, now: Date()) {
         case .notFound?:

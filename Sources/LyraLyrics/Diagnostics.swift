@@ -52,7 +52,11 @@ enum Diagnostics {
     @MainActor
     static func makeLyricsService(defaults: UserDefaults) -> (service: LyricsService, usesNetwork: Bool) {
         let hasher = LyricsService.saltedHasher(defaults: defaults)
-        let indexURL = LyricsService.defaultIndexURL()
+        var indexURL = LyricsService.defaultIndexURL()
+        #if DEBUG
+        // Autotests : index disque dans un fichier jetable (jamais le vrai dossier de l'utilisateur).
+        if let file = value(of: "--index-file") { indexURL = URL(fileURLWithPath: file) }
+        #endif
         let agent = LyricsService.userAgent
         #if DEBUG
         let log: @Sendable ([String: String]) -> Void = { record in
@@ -102,6 +106,19 @@ enum Diagnostics {
         // Faux lecteur, autotest, aperçus : l'app n'ouvre JAMAIS les Réglages Système (l'ouverture demandée est seulement notée).
         if args.contains("--fake-player") || args.contains("--selftest") || args.contains("--snapshot") {
             controller.urlOpener = { url in DiagLog.shared.write(["event": "open-url", "url": url.absoluteString, "ouverte": false]) }
+        }
+        // Les autotests partent « Masquer : jamais » (le défaut 1.1.0 est « quand rien ne joue » : il cacherait la fenêtre testée) ;
+        // `--autohide-default` garde le défaut (tests de C1).
+        if (args.contains("--selftest") || args.contains("--snapshot")) && !args.contains("--autohide-default") {
+            controller.change { $0.autoHide = .never }
+        }
+        // 1.1.0 : lancement à l'ouverture de session dans un dossier « maison » factice, faux point d'accès des mises à jour (bouclage seulement).
+        if let home = value(of: "--login-home") {
+            controller.loginItem.skipSMAppService = true
+            controller.loginItem.homeOverride = URL(fileURLWithPath: home)
+        }
+        if let raw = value(of: "--update-endpoint"), let url = URL(string: raw), url.host == "127.0.0.1" || url.host == "localhost" {
+            controller.updates.endpoint = url
         }
         if let name = value(of: "--fake-player") {
             if let scenario = FakeScenario.load(name) {

@@ -1,0 +1,21 @@
+# 1.1.0 (D1) : bloc non synchronisé = UNE animation Core Animation ; aucune publication par image.
+play brume
+wait-for mode=unsynced 8
+wait 1
+expect unsyncedAnimating=true timerRunning=false
+mark unsyncedPublishCount
+mark unsyncedAnimCount
+wait 6
+expect-eq unsyncedPublishCount
+expect-eq unsyncedAnimCount
+pause
+wait 0.6
+expect unsyncedAnimating=false
+mark unsyncedStamp
+resume
+wait 0.6
+expect unsyncedAnimating=true
+seek 100
+wait 0.8
+expect-gt unsyncedStamp
+state non-sync

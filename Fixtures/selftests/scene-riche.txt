@@ -1,0 +1,85 @@
+# 1.1.0 : Scène enrichie (mise en page, barre de commandes, clavier, sortie de ligne mot à mot, fond plus vivant).
+# Faux lecteur « demo » (titres, paroles et pochettes INVENTÉS). Réglages de test seulement (suite de préférences jetable).
+play phares
+wait-for mode=synced 8
+wait-for artworkDelivered=1 5
+# --- a. mise en page par défaut « Avec la pochette » : pochette ~ 31-36 % de la largeur à gauche, paroles à droite, pas de carte de titre
+expect sceneLayout=withArtwork
+scene enter
+wait-for sceneState=shown 3
+wait 2
+expect sceneArtVisible=true sceneArtImage=true sceneArtTitle=Phares_sur_la_mer sceneCardShown=0 sceneCardActive=false
+state scene-avec-pochette
+expect sceneTextCenterPct=69 sceneColumnLeftPct=43
+# --- bascule en direct vers « Paroles seules » : paroles centrées sur 70 %, pochette cachée, carte de titre de retour au titre suivant
+scene layout-lyrics
+wait 1
+expect sceneLayout=lyricsOnly sceneArtVisible=false sceneTextCenterPct=50 sceneTextWidthPct=70
+state scene-paroles-seules
+scene layout-art
+wait 1
+expect sceneLayout=withArtwork sceneArtVisible=true
+# --- b. barre de commandes : cachée, montrée par un mouvement de souris, masquée après 3 s
+scene exit-hide
+wait 1
+expect sceneExitShown=false
+scene mouse-move
+wait 1
+expect sceneExitShown=true sceneBarOpacity=1
+state scene-barre
+wait 3.6
+expect sceneExitShown=false sceneBarOpacity=0
+scene mouse-move
+wait 1
+# boutons : mêmes commandes que la barre au survol (modèle : playbackSent)
+mark playbackSentCount
+scene bar-playPause
+expect playbackSentLast=playPause
+scene mouse-move
+scene bar-next
+expect playbackSentLast=next
+scene mouse-move
+scene bar-previous
+expect playbackSentLast=previous
+expect sceneBarCommands=playPause,next,previous
+# clavier : Espace, flèches
+scene key-space
+expect playbackSentLast=playPause
+scene key-right
+expect playbackSentLast=next
+scene key-left
+expect playbackSentLast=previous
+expect sceneBarCommands=playPause,next,previous,key-space,key-right,key-left
+# progression : temps écoulé et total, fraction
+play phares
+wait-for mode=synced 8
+seek 20
+scene mouse-move
+wait 1
+expect sceneBarTotal=2:00 sceneBarPlaying=true
+state scene-progression
+# --- c. sortie de ligne : la ligne qui part monte, rétrécit (0,92) et s'efface mot à mot (40 ms de décalage, 600 ms) ; liste des clés d'animation
+expect sceneBreath=true
+mark sceneLeaveCount
+mark sceneBreathPauses
+wait 3.4
+expect-gt sceneLeaveCount
+expect-gt sceneBreathPauses
+expect sceneLeaveStepMs=40 sceneLeaveTotalMs=600 sceneLeaveKeys=pf.exit.fade,pf.exit.rise,pf.exit.scale
+state scene-sortie-ligne
+# « Réduire les animations » : simple fondu enchaîné (aucune sortie mot à mot) et plus de respiration du fond
+reducemotion on
+wait 1
+mark sceneLeaveCount
+wait 3.4
+expect-eq sceneLeaveCount
+expect sceneBreath=false
+reducemotion auto
+wait 1
+expect sceneBreath=true
+# bouton de sortie de la barre
+scene mouse-move
+wait 0.5
+scene bar-exit
+wait-for sceneState=hidden 3
+expect sceneVisible=false sceneExitCount=1

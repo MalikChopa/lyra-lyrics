@@ -22,10 +22,23 @@ struct LineStackStyle: Equatable {
     var size: Double
     var ratio: Double
     var color: RGB
+    /// Couleur de la partie REMPLIE du karaoké (accent de la pochette) ; nil : la couleur du texte.
+    var fillColor: RGB? = nil
     var glow: Bool
     var clearShadow: Bool
     /// Largeur de retour à la ligne (fenêtre moins marges).
     var width: Double = LyricsMetrics.textWidth
+    /// Même style sans lueur ni ombre : pour la couche MASQUÉE du remplissage karaoké (un masque rectangulaire coupe net une ombre ou une lueur
+    /// et dessine alors un rectangle de lumière) ; la couche du dessous, non masquée, les garde.
+    var withoutEffects: LineStackStyle { var s = self; s.glow = false; s.clearShadow = false; return s }
+}
+
+/// Remplissage karaoké demandé pour la ligne courante (S24).
+struct FillSpec: Equatable {
+    var index: Int
+    var duration: Double
+    var fraction: Double
+    var playing: Bool
 }
 
 enum LineMotion: String {
@@ -43,6 +56,8 @@ enum LineMotion: String {
 /// Core Image (donc visible aussi dans les captures `--snapshot` et sans coût de filtre à chaque image).
 final class TextBitmapLayer: CALayer {
     static let padding = 22.0
+    /// Flous (points) des deux ombres de la lueur du thème Néon ; 3 sigma reste en dessous de `padding`.
+    nonisolated(unsafe) static var glowBlurs: [Double] = [3, 1.5]
     var text = ""
     var look: LineStackStyle?
     var soft = false
@@ -95,12 +110,13 @@ final class TextBitmapLayer: CALayer {
             ctx.restoreGState()
         }
         if style.glow {
-            // Thème Néon : halo de la couleur du texte.
+            // Thème Néon : lueur serrée de la couleur du texte, ombre de la silhouette des lettres (zone transparente, aucun fond).
+            // Elle s'éteint avant le bord du bitmap (`padding`) : l'ancienne lueur (flou 16) y était coupée net et dessinait un RECTANGLE de lumière.
             ctx.saveGState()
-            ctx.setShadow(offset: .zero, blur: 16 * scale, color: tint.withAlphaComponent(0.85).cgColor)
-            paint()
-            ctx.setShadow(offset: .zero, blur: 5 * scale, color: tint.withAlphaComponent(0.9).cgColor)
-            paint()
+            for (i, blur) in Self.glowBlurs.enumerated() {
+                ctx.setShadow(offset: .zero, blur: blur * scale, color: tint.withAlphaComponent(i == 0 ? 0.85 : 0.9).cgColor)
+                paint()
+            }
             ctx.restoreGState()
         }
         paint()
@@ -235,6 +251,12 @@ final class LineStackView: NSView {
         return LineLayerTarget(y: 0, scale: scale, opacity: base, sharpWeight: 1 - 0.6 * blur, softWeight: 0.75 * blur)
     }
 
+    /// Teinte de la partie remplie du karaoké : accent de la pochette si le style en donne un, sinon la couleur du texte.
+    private func fillTint(_ style: LineStackStyle) -> NSColor {
+        let c = style.fillColor ?? style.color
+        return NSColor(srgbRed: c.r, green: c.g, blue: c.b, alpha: 1)
+    }
+
     private func redraw(_ l: LineLayer) {
         guard let style else { return }
         bitmapDraws += 1
@@ -247,8 +269,8 @@ final class LineStackView: NSView {
             bitmap.bounds = bounds
             bitmap.position = CGPoint(x: bounds.midX, y: bounds.midY)
             bitmap.text = l.item.text
-            bitmap.look = style
-            bitmap.tint = color
+            bitmap.look = (!soft && bitmap.mask != nil) ? style.withoutEffects : style
+            bitmap.tint = (!soft && bitmap.mask != nil && !l.item.dim) ? fillTint(style) : color
             bitmap.softRadius = max(LineLook.blur(offset: 2), 1.2) * (style.size / 26)
             bitmap.soft = soft
             bitmap.setNeedsDisplay()
@@ -268,8 +290,10 @@ final class LineStackView: NSView {
     // MARK: Application
 
     /// Applique une nouvelle liste de lignes. `epoch` change à chaque nouveau titre (la pile est alors remplacée par un fondu).
-    func apply(items newItems: [LineItem], style newStyle: LineStackStyle, epoch newEpoch: Int, motion requested: LineMotion) {
+    func apply(items newItems: [LineItem], style newStyle: LineStackStyle, epoch newEpoch: Int, motion requested: LineMotion, fill: FillSpec? = nil) {
         let styleChanged = style != newStyle
+        if styleChanged { clearFill() }
+        defer { updateFill(fill) }
         if !styleChanged && items == newItems && epoch == newEpoch { return }
         let newTrack = newEpoch != epoch && epoch != -1
         style = newStyle
@@ -421,6 +445,54 @@ final class LineStackView: NSView {
         add(l, "pf.opacity", basic("opacity", from.opacity, to.opacity))
         add(l.sharp, "pf.sharp", basic("opacity", from.sharpWeight, to.sharpWeight))
         add(l.softLayer, "pf.soft", basic("opacity", from.softWeight, to.softWeight))
+    }
+
+    // MARK: Remplissage karaoké (S24)
+
+    private var fillKey = ""
+    private weak var fillLine: LineLayer?
+    private var fillDim: TextBitmapLayer?
+    private(set) var fillMask: FillMask?
+    private(set) var fillRestarts = 0
+
+    private func clearFill() {
+        if let l = fillLine, let style, l.sharp.mask != nil {
+            // la couche reprend la couleur du texte (elle portait la teinte de la partie remplie) : sinon une ligne qui cesse d'être courante reste à l'accent
+            l.sharp.look = style
+            l.sharp.tint = l.item.dim ? NSColor.white : NSColor(srgbRed: style.color.r, green: style.color.g, blue: style.color.b, alpha: 1)
+            l.sharp.setNeedsDisplay()
+        }
+        fillLine?.sharp.mask = nil
+        fillDim?.removeFromSuperlayer()
+        fillLine = nil; fillDim = nil; fillMask = nil; fillKey = ""
+    }
+
+    private func updateFill(_ spec: FillSpec?) {
+        guard let spec, window?.isVisible == true, let item = items.first(where: { $0.offset == 0 }), !item.text.isEmpty, !item.dim,
+              let l = layers[item.key], let style else { clearFill(); return }
+        let key = item.key + "|" + item.text
+        var fresh = false
+        if fillKey != key || fillLine !== l {
+            clearFill()
+            let dim = TextBitmapLayer()
+            dim.contentsScale = l.sharp.contentsScale
+            dim.bounds = l.sharp.bounds; dim.position = l.sharp.position
+            dim.text = l.sharp.text; dim.look = l.sharp.look; dim.tint = NSColor(srgbRed: style.color.r, green: style.color.g, blue: style.color.b, alpha: 1); dim.soft = false
+            dim.opacity = 0.55
+            dim.setNeedsDisplay()
+            l.insertSublayer(dim, below: l.sharp)
+            l.sharp.look = style.withoutEffects; l.sharp.tint = fillTint(style); l.sharp.setNeedsDisplay()
+            let mask = FillMask(rects: TextFragments.lineRects(text: item.text, style: style, bitmapHeight: l.sharp.bounds.height))
+            mask.layer.frame = l.sharp.bounds
+            l.sharp.mask = mask.layer
+            fillKey = key; fillLine = l; fillDim = dim; fillMask = mask
+            fresh = true
+        }
+        guard let mask = fillMask else { return }
+        if fresh || mask.playing != spec.playing || abs(mask.expectedFraction() - spec.fraction) > 0.18 {
+            mask.set(fraction: spec.fraction, duration: spec.duration, playing: spec.playing, animated: true)
+            fillRestarts += 1
+        }
     }
 
     // MARK: Autotest

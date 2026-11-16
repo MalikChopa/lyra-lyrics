@@ -110,11 +110,42 @@
    "instrumental": false,
    "plainLyrics": null,
    "syncedLyrics": "[00:00.00] La rivière retrouve son lit\n[00:03.00] Après des années de silence\n[00:06.00] Les cailloux se souviennent\n[00:09.00] Du chemin qu'elle prenait"
+  },
+  {
+   "id": 107,
+   "trackName": "Passage suspendu",
+   "artistName": "Ensemble fictif",
+   "albumName": "Album fictif",
+   "duration": 40,
+   "instrumental": false,
+   "plainLyrics": null,
+   "syncedLyrics": "[00:00.00] Premier couplet d'essai\n[00:02.50] Deuxième ligne d'essai\n[00:20.00] Après le long passage\n[00:23.00] Dernière ligne d'essai"
+  },
+  {
+   "id": 108,
+   "trackName": "Longue introduction",
+   "artistName": "Ensemble fictif",
+   "albumName": "Album fictif",
+   "duration": 40,
+   "instrumental": false,
+   "plainLyrics": null,
+   "syncedLyrics": "[00:09.00] Enfin la voix arrive\n[00:12.00] Et la scène s'éclaire"
   }
  ],
  "behaviours": [
-  {"trackName": "Occupé trois secondes", "status": 429, "retryAfter": "3", "times": 1},
-  {"trackName": "Panne en série", "status": 503},
-  {"trackName": "Lenteur de plomb", "delaySeconds": 7.8}
+  {
+   "trackName": "Occupé trois secondes",
+   "status": 429,
+   "retryAfter": "3",
+   "times": 1
+  },
+  {
+   "trackName": "Panne en série",
+   "status": 503
+  },
+  {
+   "trackName": "Lenteur de plomb",
+   "delaySeconds": 7.8
+  }
  ]
 }

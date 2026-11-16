@@ -62,6 +62,9 @@ enum FontResolver {
         let ps = NSMutableParagraphStyle()
         ps.alignment = .center
         ps.lineBreakMode = .byWordWrapping
+        // Coupure de ligne explicite, la même pour la mesure, le dessin et le calcul des masques (`TextFragments`) : le dessin évite une dernière ligne
+        // trop courte (.pushOut) ; sans ce réglage le gestionnaire de mise en page ne le faisait pas et les masques du karaoké ne tombaient pas sur les lettres.
+        ps.lineBreakStrategy = .pushOut
         ps.lineSpacing = max(0, LyricsMetrics.lineHeightFactor * size - natural)
         let attr = NSAttributedString(string: text, attributes: [.font: f, .paragraphStyle: ps, .kern: -0.01 * size])
         let r = attr.boundingRect(with: NSSize(width: width, height: 100_000), options: [.usesLineFragmentOrigin, .usesFontLeading])
@@ -79,6 +82,9 @@ enum FontResolver {
         let ps = NSMutableParagraphStyle()
         ps.alignment = .center
         ps.lineBreakMode = .byWordWrapping
+        // Coupure de ligne explicite, la même pour la mesure, le dessin et le calcul des masques (`TextFragments`) : le dessin évite une dernière ligne
+        // trop courte (.pushOut) ; sans ce réglage le gestionnaire de mise en page ne le faisait pas et les masques du karaoké ne tombaient pas sur les lettres.
+        ps.lineBreakStrategy = .pushOut
         ps.lineSpacing = max(0, LyricsMetrics.lineHeightFactor * size - natural)
         return [.font: f, .paragraphStyle: ps, .kern: -0.01 * size, .foregroundColor: color]
     }

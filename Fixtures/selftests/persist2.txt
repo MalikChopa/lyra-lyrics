@@ -1,0 +1,2 @@
+# 2e exécution : mêmes préférences, valeurs relues.
+expect autoHide=paused sceneScreenSetting=main sceneEffects=false animatedBackground=true karaokeFill=true welcomeSeen=true checkUpdates=true

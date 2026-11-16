@@ -1,0 +1,11 @@
+# Mesure du CPU de la Scène (scripts/measure-cpu.sh scene) : Scène plein écran (fond animé, remplissage, carte), lecture en boucle de « phares ».
+play phares
+scene enter
+wait 50
+seek 0
+wait 50
+seek 0
+wait 50
+seek 0
+wait 50
+seek 0

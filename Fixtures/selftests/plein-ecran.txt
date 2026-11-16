@@ -1,0 +1,41 @@
+# 1.1.0 : bouton « Plein écran (Scène) » de la barre au survol, contrôle de sortie de la Scène, défauts (aucune lueur, pas de karaoké).
+# Faux lecteur « demo » (titres et paroles INVENTÉS), aucun lecteur réel.
+play phares
+wait-for mode=synced 8
+expect karaokeFill=false glow=false smallFillPresent=false
+hover on
+# --- le bouton de la barre (même point que dans la fenêtre : HoverBarLayout) ouvre la Scène
+click button-scene
+wait-for sceneState=shown 3
+expect sceneVisible=true sceneEnterCount=1 panelShown=false
+wait-for sceneCardActive=false 8
+# le contrôle de sortie est caché tant que la souris ne bouge pas ; un clic à son emplacement ne fait rien
+# (`exit-hide` : le vrai pointeur de la machine a pu le montrer)
+scene exit-hide
+expect sceneExitShown=false sceneExitLabel=Quitter_le_plein_écran sceneExitFrame=44x44
+scene exit-click
+wait 0.5
+expect sceneState=shown sceneExitCount=0
+scene exit-hide
+# la souris bouge : il apparaît, puis disparaît après 3 s
+scene mouse-move
+expect sceneExitShown=true
+wait 0.8
+expect sceneExitShown=true
+wait-for sceneExitShown=false 4
+# la souris bouge, on clique sur le contrôle : retour à la petite fenêtre
+scene mouse-move
+expect sceneExitShown=true
+scene exit-click
+wait-for sceneState=hidden 3
+expect sceneVisible=false panelShown=true sceneExitCount=1
+# Échap et double-clic sortent toujours
+scene enter
+wait-for sceneState=shown 3
+scene escape
+wait-for sceneState=hidden 3
+scene enter
+wait-for sceneState=shown 3
+scene dblclick
+wait-for sceneState=hidden 3
+expect sceneExitCount=3 panelShown=true

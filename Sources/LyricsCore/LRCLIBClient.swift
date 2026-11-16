@@ -167,9 +167,10 @@ public struct LRCLIBClient: Sendable {
     /// Paroles à afficher pour une entrée : instrumental ; LRC parsé si la durée colle (≤ 5 s) ou est inconnue, ou si l'écart est de
     /// 5 à 15 s avec un artiste concordant (1.0.1, consigné dans la provenance) ; sinon texte seul (bloc « non synchronisées ») ;
     /// `nil` s'il n'y a aucun texte.
-    public static func lyrics(from record: LRCLIBRecord, for track: TrackInfo, provenance: String) -> Lyrics? {
+    /// `trustDuration` : choix manuel de l'utilisateur (1.1.0), l'écart de durée n'écarte plus la synchro.
+    public static func lyrics(from record: LRCLIBRecord, for track: TrackInfo, provenance: String, trustDuration: Bool = false) -> Lyrics? {
         if record.instrumental { return Lyrics(kind: .instrumental, lrclibID: record.id, provenance: provenance) }
-        let verdict = TrackMatcher.durationVerdict(track: track.duration, candidate: record.duration)
+        let verdict = trustDuration ? TrackMatcher.DurationVerdict.unknown : TrackMatcher.durationVerdict(track: track.duration, candidate: record.duration)
         let lines = record.syncedLyrics.map(LRCParser.parse) ?? []
         var why = provenance
         var toleratedGap = false

@@ -11,6 +11,10 @@ struct PanelActions {
     var requestMusicAccess: @MainActor () -> Void
     /// « Réessayer » (états « Paroles indisponibles » et « Service occupé »).
     var retryLookup: @MainActor () -> Void
+    /// « Chercher une version » (B1) : états « Paroles indisponibles » et « Service occupé ».
+    var openManualSearch: @MainActor () -> Void
+    /// Double-clic sur la fenêtre : Scène plein écran (S25).
+    var openScene: @MainActor () -> Void
 }
 
 private let accent = Color(red: 10 / 255, green: 132 / 255, blue: 1)
@@ -19,13 +23,18 @@ private let txtMid = Color.white.opacity(0.62)
 /// Fond « glisser la fenêtre » : vue AppKit sous le texte. `isMovableByWindowBackground` fait le glisser natif ;
 /// `performDrag(with:)` en repli si le `mouseDown` arrive quand même jusqu'ici (§7).
 struct DragHandle: NSViewRepresentable {
+    var onDoubleClick: (@MainActor () -> Void)?
     final class DragView: NSView {
+        var onDoubleClick: (@MainActor () -> Void)?
         override var mouseDownCanMoveWindow: Bool { true }
         override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
-        override func mouseDown(with event: NSEvent) { window?.performDrag(with: event) }
+        override func mouseDown(with event: NSEvent) {
+            if event.clickCount >= 2, let onDoubleClick { MainActor.assumeIsolated { onDoubleClick() }; return }
+            window?.performDrag(with: event)
+        }
     }
-    func makeNSView(context: Context) -> DragView { DragView() }
-    func updateNSView(_ nsView: DragView, context: Context) {}
+    func makeNSView(context: Context) -> DragView { let v = DragView(); v.onDoubleClick = onDoubleClick; return v }
+    func updateNSView(_ nsView: DragView, context: Context) { nsView.onDoubleClick = onDoubleClick }
 }
 
 /// Fenêtre de paroles : trois lignes centrées (courante en avant, voisines 0,66 × à 42 %), états du §3.6, bloc
@@ -40,8 +49,9 @@ struct LyricsView: View {
         let style = model.effectiveStyle(s.style)
         let showBar = model.hovering || model.settingsOpen
         ZStack {
-            BackgroundView(style: style, opacityPercent: s.backgroundOpacity, tint: s.artworkColors ? model.palette?.tint : nil)
-            DragHandle()
+            BackgroundView(style: style, opacityPercent: s.backgroundOpacity, tint: s.artworkColors ? model.palette?.tint : nil,
+                           drift: (s.animatedBackground && s.artworkColors && !model.reduceTransparency) ? model.artworkBlur.map { ($0, model.artworkBlurLuminance, !model.reduceMotion) } : nil)
+            DragHandle(onDoubleClick: actions.openScene)
             Group {
                 switch model.mode {
                 case .searching, .synced:
@@ -55,17 +65,36 @@ struct LyricsView: View {
             }
             .padding(.top, LyricsMetrics.paddingTop).padding(.bottom, LyricsMetrics.paddingBottom + (model.stateActionLabel != nil ? 44 : 0)).padding(.horizontal, LyricsMetrics.paddingSide)
             .allowsHitTesting(false)
+            if model.mode == .searching {
+                // S22 : attente élégante (barres fantômes qui scintillent), visible seulement si la recherche dure plus de 0,45 s
+                ShimmerHost(width: model.textWidth * 0.9, height: 70, animated: !model.reduceMotion)
+                    .offset(y: model.searchHint ? 46 : 0)
+                    .allowsHitTesting(false)
+                    .accessibilityHidden(true)
+            }
             if let label = model.stateActionLabel {
                 // §3.6/§3.7 : « Autoriser » déclenche l'invite du système ; après un refus, « Ouvrir les Réglages ». 1.0.1 : « Réessayer »
-                // dans « Paroles indisponibles » et « Service occupé ».
-                Button(action: { model.mode == .permission ? actions.requestMusicAccess() : actions.retryLookup() }) {
-                    Text(label)
-                        .font(.system(size: 13, weight: .semibold)).foregroundStyle(.white)
-                        .padding(.horizontal, 16).padding(.vertical, 6)
-                        .background(Capsule().fill(Color(red: 10 / 255, green: 132 / 255, blue: 1)))
+                // dans « Paroles indisponibles » et « Service occupé ». 1.1.0 : « Chercher une version » à côté (B1).
+                HStack(spacing: 10) {
+                    Button(action: { model.mode == .permission ? actions.requestMusicAccess() : actions.retryLookup() }) {
+                        Text(label)
+                            .font(.system(size: 13, weight: .semibold)).foregroundStyle(.white)
+                            .padding(.horizontal, 16).padding(.vertical, 6)
+                            .background(Capsule().fill(Color(red: 10 / 255, green: 132 / 255, blue: 1)))
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(model.stateActionAccessibilityLabel ?? label)
+                    if model.mode == .unavailable || model.mode == .busy {
+                        Button(action: { actions.openManualSearch() }) {
+                            Text("Chercher une version")
+                                .font(.system(size: 13, weight: .semibold)).foregroundStyle(.white)
+                                .padding(.horizontal, 14).padding(.vertical, 6)
+                                .background(Capsule().fill(.white.opacity(0.16)))
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel("Chercher une autre version des paroles")
+                    }
                 }
-                .buttonStyle(.plain)
-                .accessibilityLabel(model.stateActionAccessibilityLabel ?? label)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
                 .padding(.bottom, 26)
             }
@@ -94,7 +123,7 @@ struct LyricsView: View {
                 .accessibilityLabel(notice)
             }
             VStack {
-                HoverBar(model: model, onStyle: actions.cycleStyle, onGear: actions.toggleSettings)
+                HoverBar(model: model, onStyle: actions.cycleStyle, onGear: actions.toggleSettings, onScene: actions.openScene)
                     .opacity(showBar ? 1 : 0)
                     .offset(y: showBar ? 0 : -4)
                     .allowsHitTesting(showBar)
@@ -132,10 +161,15 @@ private struct LinesStack: View {
 
     var body: some View {
         let fit = model.fit
+        let fill = model.karaokeSpec(enabled: settings.karaokeFill)
+        // Le texte garde la couleur choisie ; l'accent de la pochette ne teinte que la partie remplie du karaoké.
         let style = LineStackStyle(font: settings.font, weight: settings.fontWeight, size: fit.currentSize, ratio: settings.neighbourRatio,
-                                   color: model.searchHint ? RGB(1, 1, 1) : model.lineColor(settings), glow: settings.glow, clearShadow: clearShadow, width: model.textWidth)
+                                   color: model.searchHint ? RGB(1, 1, 1) : model.lineColor(settings),
+                                   fillColor: fill != nil && !model.searchHint ? model.accentColor(settings) : nil,
+                                   glow: settings.glow, clearShadow: clearShadow, width: model.textWidth)
         LinesHost(items: model.lineItems(count: settings.lineCount), style: style, epoch: model.trackEpoch,
                   motion: model.reduceMotion ? .fade : .glide, height: fit.contentHeight, width: model.textWidth,
+                  fill: fill,
                   onLayout: { h in DispatchQueue.main.async { model.renderedLinesHeight = h } },
                   register: { model.lineStack = $0 })
             .frame(width: model.textWidth, height: fit.contentHeight)
@@ -149,6 +183,7 @@ struct LinesHost: NSViewRepresentable {
     var motion: LineMotion
     var height: Double
     var width: Double = LyricsMetrics.textWidth
+    var fill: FillSpec? = nil
     var onLayout: (Double) -> Void
     var register: (LineStackView) -> Void
 
@@ -161,7 +196,7 @@ struct LinesHost: NSViewRepresentable {
 
     func updateNSView(_ v: LineStackView, context: Context) {
         v.onLayout = onLayout
-        v.apply(items: items, style: style, epoch: epoch, motion: motion)
+        v.apply(items: items, style: style, epoch: epoch, motion: motion, fill: fill)
     }
 
     func sizeThatFits(_ proposal: ProposedViewSize, nsView: LineStackView, context: Context) -> CGSize? {
@@ -175,29 +210,20 @@ private struct UnsyncedBlock: View {
     var model: AppModel
     var settings: Settings
     var clearShadow: Bool
-    static let viewport = 100.0
+    static let viewport = UnsyncedScrollLayerView.viewport
 
     var body: some View {
-        let color = Color(hex: settings.colorHex)
         let size = max(12, Double(settings.size) * 0.7)
+        let c = Color(hex: settings.colorHex)
+        let rgb = NSColor(c).usingColorSpace(.sRGB)
+        let color = RGB(Double(rgb?.redComponent ?? 1), Double(rgb?.greenComponent ?? 1), Double(rgb?.blueComponent ?? 1))
+        let style = LineStackStyle(font: settings.font, weight: settings.fontWeight, size: size, ratio: 1, color: color, glow: false,
+                                   clearShadow: clearShadow, width: model.textWidth)
         VStack(spacing: 6) {
             Text("Paroles non synchronisées").font(.system(size: 10.5, weight: .semibold)).tracking(0.6).foregroundStyle(txtMid)
-            Text(model.plainText)
-                .font(FontResolver.swiftUIFont(settings.font, size: size))
-                .lineSpacing(FontResolver.extraLineSpacing(settings.font, size: size))
-                .multilineTextAlignment(.center)
-                .foregroundStyle(color)
-                .frame(width: model.textWidth)
-                .fixedSize(horizontal: false, vertical: true)
-                .modifier(ClearTextShadow(enabled: clearShadow))
-                .onGeometryChange(for: Double.self) { Double($0.size.height) } action: { model.unsyncedContentHeight = $0 }
-                .offset(y: -max(0, model.unsyncedContentHeight - Self.viewport) * model.unsyncedProgress)
-                .animation(model.animation(.linear(duration: 0.12)), value: model.unsyncedProgress)
-                .frame(width: model.textWidth, height: Self.viewport, alignment: .top)
-                .clipped()
-                .mask(LinearGradient(stops: [.init(color: .clear, location: 0), .init(color: .black, location: 0.12),
-                                             .init(color: .black, location: 0.88), .init(color: .clear, location: 1)],
-                                     startPoint: .top, endPoint: .bottom))
+            UnsyncedScrollHost(text: model.plainText, style: style, scroll: model.unsyncedScroll, animated: !model.reduceMotion,
+                               width: model.textWidth, register: { model.unsyncedView = $0 })
+                .frame(width: model.textWidth, height: Self.viewport)
         }
         .frame(width: model.textWidth)
         .accessibilityElement(children: .ignore)
@@ -245,22 +271,23 @@ enum HoverBarLayout {
     static let sidePadding = 14.0
     static let groupGap = 10.0
     static let centerFromTop = 25.0
-    /// Ordre de droite à gauche : ⚙, ◐, puis suivant, lecture/pause, précédent.
-    static let order = ["gear", "style", "next", "playpause", "previous"]
+    /// Ordre de droite à gauche : ⚙, ◐, plein écran (Scène), puis suivant, lecture/pause, précédent.
+    static let order = ["gear", "style", "scene", "next", "playpause", "previous"]
     /// Abscisse du centre d'un bouton dans la fenêtre (origine à gauche).
     static func centerX(of name: String, windowWidth: Double = LyricsMetrics.windowWidth) -> Double {
         let i = Double(order.firstIndex(of: name) ?? 0)
         // un petit écart supplémentaire sépare le groupe de lecture du groupe style / réglages
-        let extra = i >= 2 ? groupGap - spacing : 0
+        let extra = i >= 3 ? groupGap - spacing : 0
         return windowWidth - sidePadding - buttonSize / 2 - i * (buttonSize + spacing) - extra
     }
 }
 
-/// Barre au survol : titre · artiste, ⏮ ⏯ ⏭ (lecteur actif), ◐ (style suivant), ⚙ (réglages).
+/// Barre au survol : titre · artiste, ⏮ ⏯ ⏭ (lecteur actif), plein écran (Scène), ◐ (style suivant), ⚙ (réglages).
 struct HoverBar: View {
     var model: AppModel
     var onStyle: @MainActor () -> Void
     var onGear: @MainActor () -> Void
+    var onScene: @MainActor () -> Void = {}
 
     var body: some View {
         let bar = model.barText
@@ -276,6 +303,8 @@ struct HoverBar: View {
                 transportButton(.next, name: "next", playback: playback)
             }
             HStack(spacing: HoverBarLayout.spacing) {
+                BarButton(glyph: nil, symbol: "arrow.up.left.and.arrow.down.right", label: "Plein écran (Scène)", disabled: false, help: "Plein écran (Scène)", hovered: model.hoveredButton == "scene",
+                          onHover: { model.hoveredButton = $0 ? "scene" : nil }, action: onScene)
                 BarButton(glyph: "◐", symbol: nil, label: "Changer de style de fond", disabled: false, help: "Changer de style de fond", hovered: model.hoveredButton == "style",
                           onHover: { model.hoveredButton = $0 ? "style" : nil }, action: onStyle)
                 BarButton(glyph: "⚙", symbol: nil, label: "Réglages", disabled: false, help: "Réglages", hovered: model.hoveredButton == "gear",

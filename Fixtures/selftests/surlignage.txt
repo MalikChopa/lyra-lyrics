@@ -1,0 +1,6 @@
+# 1.1.0 : surlignage d'une ligne courante renvoyée à la ligne, mesuré en pixels (rendu par le vrai code, texte inventé).
+# Grille : 3 textes x 3 polices x 2 graisses x 2 corps x 3 largeurs. Karaoké à 100 % : tout pixel plein de chaque ligne visuelle est surligné
+# (seuil 99,5 %) ; à 50 % : lignes dans l'ordre, une seule partielle.
+multiline
+expect multilineFailed=0
+expect multilineChecked=108

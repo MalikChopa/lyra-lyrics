@@ -33,11 +33,13 @@ struct PrivacyTypeTests {
         #expect(!(record is any Decodable.Type))
     }
 
-    @Test("LookupEntry n'a que trois champs : clé hachée, identifiant, date (aucun champ texte)")
+    @Test("LookupEntry : clé hachée, identifiant, date et (1.1.0) un indicateur booléen de choix manuel ; aucun champ texte")
     func lookupEntryShape() {
         let entry = LookupEntry(key: "abc", lrclibID: 7, storedAt: Date(timeIntervalSince1970: 0))
         let labels = Mirror(reflecting: entry).children.compactMap(\.label)
-        #expect(labels == ["key", "lrclibID", "storedAt"])
+        #expect(labels == ["key", "lrclibID", "storedAt", "manual"])
+        // le seul champ ajouté en 1.1.0 est un Bool? : aucun type texte ne peut s'y glisser
+        #expect(Mirror(reflecting: entry).children.filter { $0.value is String }.map(\.label) == ["key"])
         #expect(LookupEntry.self is any Codable.Type)
     }
 }

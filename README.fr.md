@@ -17,12 +17,29 @@ Pas de compte, pas de connexion, pas de serveur à nous : l'app parle à ton lec
 
 ## Fonctions
 
+### Nouveautés de la 1.1.0
+
+![Démo (paroles et pochettes inventées)](docs/images/demo.gif)
+
+- **Scène (mode plein écran).** Clic sur le bouton plein écran de la barre au survol de la fenêtre flottante (ou double-clic) : elle grandit en douceur jusqu'au plein écran, sur l'écran de ton choix (Échap, double-clic, le bouton de sortie qui apparaît quand la souris bouge, ou ton raccourci pour en sortir). La pochette, très floue, dérive lentement derrière de grandes paroles (la ligne courante est mise en valeur dans la couleur d'accent, les suivantes attendent dessous ; le réglage en option « Remplissage karaoké » la remplit de gauche à droite pendant qu'elle est chantée) ; une carte avec la pochette et son reflet discret s'affiche environ 3 secondes à chaque nouveau morceau ; pendant les introductions, les trous et les instrumentaux, une note qui respire et quelques particules lentes prennent le relais ; un grain et une vignette légers (un seul réglage). Règles de sobriété : une seule couleur d'accent tirée de la pochette, au plus deux effets en mouvement à la fois, courbes douces, contraste du texte d'au moins 4,5 : 1, « Réduire les animations » et « Réduire la transparence » respectés. Mesuré : environ 1,7 à 2,1 % de CPU en moyenne dans la Scène et environ 0,2 % dans la petite fenêtre (build release avec drapeaux de diagnostic, faux lecteur, 2026-10-28 ; voir le journal des versions).
+  ![Scène : carte du titre](docs/images/scene-01-carte.jpg)
+  ![Scène : paroles, ligne courante mise en valeur](docs/images/scene-02-lignes.jpg)
+  ![Scène : passage instrumental](docs/images/scene-05-passage.jpg)
+  ![Scène : pochette à gauche, paroles à droite, barre de commandes](docs/images/scene-03-barre-commandes.jpg)
+  ![Scène : paroles seules](docs/images/scene-04-paroles-seules.jpg)
+- **Mises en page et commandes de la Scène.** Réglage « Mise en page » : « Avec la pochette » (défaut : pochette nette avec titre et artiste à gauche, paroles à droite) ou « Paroles seules » (paroles centrées et carte du titre). Bouge la souris pour montrer une barre en bas (précédent, lecture/pause, suivant, progression avec temps écoulé et total, sortie) ; elle se masque après 3 secondes. Clavier : Espace = lecture/pause, flèches gauche/droite = précédent/suivant, Échap = sortie. La ligne qui part monte, rétrécit un peu et s'efface mot à mot.
+- **Mauvaises paroles ?** Un panneau de recherche (réglages, barre de menus, ou bouton de l'état « indisponibles ») liste les versions de LRCLIB (titre, artiste, album, durée, pastille « synchro ») ; celle que tu choisis sert tout de suite et est retenue pour ce morceau (son identifiant LRCLIB seulement, jamais de texte), avec un retour au choix automatique.
+- **Écran d'accueil** au premier lancement (3 cartes, un bouton « Autoriser Spotify » qui ne demande l'autorisation qu'à ton clic) ; rouvrable depuis le menu.
+- **Lancement à l'ouverture de session** (réglages), **masquage automatique** (jamais / en pause / quand rien ne joue, en fondu, sans jamais défaire ton propre masquage ou affichage), **relancer l'app** montre la fenêtre et les réglages, **avis de nouvelle version** (une requête par jour au plus vers GitHub, désactivable).
+- **Attente élégante** (lignes fantômes qui scintillent) pendant la recherche des paroles, **fond animé** de pochette et **remplissage façon karaoké** en option (petite fenêtre et Scène) (désactivés par défaut), et un bloc de texte non synchronisé qui défile par une seule animation Core Animation (environ 0 % de CPU au lieu de 2 %).
+  ![Petite fenêtre avec fond animé et remplissage](docs/images/small-s24.jpg)
+
 - **Toujours au-dessus**, déplaçable n'importe où, y compris au-dessus des fenêtres d'autres apps (voir [l'icône du Dock et le plein écran](#licône-du-dock-et-le-plein-écran)). **Redimensionnable à la souris** : tire un bord ou un coin (zone de prise de 6 pt, 280 × 110 pt au minimum, 90 % de l'écran visible au maximum) ; le texte **s'adapte automatiquement** : la taille de police est la plus grande pour laquelle les lignes visibles tiennent dans la fenêtre en largeur et en hauteur (le réglage « Taille max » est la limite haute) : fenêtre plus grande, texte plus grand. Une ligne ne passe à la ligne que si elle ne tient pas, même à 14 pt. La taille est retenue ; « Taille par défaut » dans les réglages la réinitialise. Désactivé en mode clic-à-travers.
 - **Défilement doux** façon Apple Music : à chaque changement de ligne, les lignes glissent vers le haut, la nouvelle ligne courante grossit un peu et s'éclaircit, les voisines s'estompent et prennent un léger flou. Fait avec des animations de couches Core Animation (aucun redessin à chaque image), fluide à 60 et 120 Hz ; avec « Réduire les animations », un simple fondu remplace le glissement.
 - **Couleurs de la pochette** (activé par défaut, désactivable) : la teinte du fond et la couleur de la ligne courante viennent de la pochette du morceau en cours, avec un contraste d'au moins 4,5 : 1 pour la ligne courante contre la teinte. Apple Music : la pochette est lue dans l'app Musique. Spotify : la pochette est téléchargée une fois par morceau (voir [Vie privée](#vie-privée)). Désactivé, ou sans pochette : les styles unis.
 - **Boutons de lecture** dans la barre qui apparaît au survol : précédent, lecture/pause, suivant, pour le lecteur en cours. Si macOS n'a pas encore été interrogé, le premier clic demande l'autorisation Automatisation (une phrase d'explication apparaît dans la fenêtre, puis l'invite du système) et envoie ensuite la commande ; si tu l'as refusée, les boutons restent grisés et un clic propose « Ouvrir les Réglages » (rien n'est jamais demandé deux fois).
 - **Une, trois ou cinq lignes** (réglage « Lignes ») ; la hauteur de la fenêtre s'adapte, les lignes longues passent toujours à la ligne et réduisent la police au besoin.
-- **Thèmes de police** : Classique, Élégant (serif New York), Néon (arrondie grasse avec halo), Minimal (fine), chacun règle police, graisse, couleur, halo et taille des voisines d'un clic. Modifier ensuite un seul réglage affiche « Personnalisé ».
+- **Thèmes de police** : Classique, Élégant (serif New York), Néon (arrondie grasse avec une lueur serrée qui suit les lettres), Minimal (fine), chacun règle police, graisse, couleur, halo et taille des voisines d'un clic. Modifier ensuite un seul réglage affiche « Personnalisé ».
 - **Paroles synchronisées** : ligne courante mise en avant, voisines atténuées. Quand LRCLIB n'a que du texte brut, il s'affiche en bloc qui défile lentement, avec la mention « non synchronisées ».
 - **Trois fonds** : uni, verre dépoli, transparent (texte avec une ombre douce).
 - **Réglages** : police, graisse, taille max, couleur du texte, halo, opacité du fond.
@@ -66,7 +83,7 @@ Pas de compte, pas de connexion, pas de serveur à nous : l'app parle à ton lec
 
 ## Installation
 
-1. Télécharge `Lyra-Lyrics-1.0.1-macOS.zip` sur la [page des Releases](https://github.com/MalikChopa/lyra-lyrics/releases) et décompresse-le.
+1. Télécharge `Lyra-Lyrics-1.1.0-macOS.zip` sur la [page des Releases](https://github.com/MalikChopa/lyra-lyrics/releases) et décompresse-le.
 2. Glisse **Lyra Lyrics.app** dans ton dossier **Applications**.
 3. Ouvre-la. La première fois, macOS la **bloque** (« Apple n'a pas pu vérifier... »). C'est normal : l'app n'est **pas notariée** par Apple (la notarisation demande un compte développeur payant, et ce projet est gratuit et fait sur le temps libre). Pour l'autoriser :
    - ouvre **Réglages Système > Confidentialité et sécurité**,
@@ -76,7 +93,7 @@ Pas de compte, pas de connexion, pas de serveur à nous : l'app parle à ton lec
    Le texte exact de ces écrans peut différer selon ta version de macOS. Le clic droit > Ouvrir ne suffit plus sur les versions récentes de macOS.
 4. Une icône en forme de note de musique apparaît dans la barre de menus, et une fenêtre « Rien en lecture » s'affiche. Lance un morceau.
 
-Le SHA-256 de chaque zip est dans les notes de version : compare-le avec `shasum -a 256 Lyra-Lyrics-1.0.1-macOS.zip` si tu veux vérifier ton téléchargement.
+Le SHA-256 de chaque zip est dans les notes de version : compare-le avec `shasum -a 256 Lyra-Lyrics-1.1.0-macOS.zip` si tu veux vérifier ton téléchargement.
 
 Si tu préfères ne pas faire confiance à un binaire, [compile-la toi-même](#compiler-depuis-les-sources).
 
@@ -91,9 +108,9 @@ L'app lit le titre, l'artiste, l'album, la durée et la position du morceau en c
 
 ## Vie privée
 
-- **Ce qui sort de ton Mac.** Pour trouver les paroles, le titre, l'artiste, l'album et la durée du morceau en cours sont envoyés à lrclib.net (avec ton adresse IP, comme toute requête web). La requête porte aussi le nom de l'app, sa version et l'adresse du projet dans l'en-tête `User-Agent` (`LyraLyrics/1.0.0 (+https://github.com/MalikChopa/lyra-lyrics)`). **Une requête de plus, seulement pour Spotify et seulement si « Couleurs de la pochette » est activé :** la pochette du morceau est téléchargée une fois depuis le serveur d'images de Spotify (`i.scdn.co`), gardée en mémoire seulement, jamais écrite sur le disque, et annulée si le morceau change avant la fin. Les pochettes d'Apple Music sont lues dans l'app Musique, sans téléchargement. Désactive le réglage et plus aucune requête de pochette n'est faite. Rien d'autre ne quitte ton Mac : ni statistiques, ni télémétrie, ni rapport de plantage, ni vérification de mises à jour.
+- **Ce qui sort de ton Mac.** Pour trouver les paroles, le titre, l'artiste, l'album et la durée du morceau en cours sont envoyés à lrclib.net (avec ton adresse IP, comme toute requête web). La requête porte aussi le nom de l'app, sa version et l'adresse du projet dans l'en-tête `User-Agent` (`LyraLyrics/1.0.0 (+https://github.com/MalikChopa/lyra-lyrics)`). **Une requête de plus, seulement pour Spotify et seulement si « Couleurs de la pochette » est activé :** la pochette du morceau est téléchargée une fois depuis le serveur d'images de Spotify (`i.scdn.co`), gardée en mémoire seulement, jamais écrite sur le disque, et annulée si le morceau change avant la fin. Les pochettes d'Apple Music sont lues dans l'app Musique, sans téléchargement. Désactive le réglage et plus aucune requête de pochette n'est faite. **Une requête de plus, une fois par jour au plus, au lancement, si « Vérifier les mises à jour » est activé (défaut) :** un GET vers `api.github.com` (dernière version de ce dépôt) pour te dire quand une nouvelle version existe. Rien de toi n'est envoyé (seulement le `User-Agent` de l'app), la session est éphémère et le réglage se désactive. Rien d'autre ne quitte ton Mac : ni statistiques, ni télémétrie, ni rapport de plantage.
 - **Les paroles ne sont jamais stockées.** Elles restent en mémoire pour le morceau affiché (et le précédent) et disparaissent quand tu quittes. Pas de cache HTTP, pas de fonction copier ou exporter.
-- **Ce qui est sur le disque.** Tes réglages, et un petit index de recherche dans `~/Library/Application Support/io.github.malikmoussaoui.lyra-lyrics/` : une empreinte salée de (titre, artiste, durée) associée à l'identifiant LRCLIB, pendant 24 h et 500 entrées au plus. Il ne contient aucun texte. « Vider le cache » le vide. Cette empreinte est un simple brouillage, pas une protection.
+- **Ce qui est sur le disque.** Tes réglages, et un petit index de recherche dans `~/Library/Application Support/io.github.malikchopa.lyra-lyrics/` : une empreinte salée de (titre, artiste, durée) associée à l'identifiant LRCLIB, pendant 24 h et 500 entrées au plus. Il ne contient aucun texte. « Vider le cache » le vide. Cette empreinte est un simple brouillage, pas une protection.
 - **Seul le morceau en cours** est cherché, quand il démarre : pas de préchargement, pas d'historique.
 - Cela décrit ce que le code est conçu et testé pour faire (le binaire publié ne contient aucune adresse autre que lrclib.net, ce dépôt et l'hôte d'images de Spotify `i.scdn.co`). Ce n'est pas un avis juridique.
 

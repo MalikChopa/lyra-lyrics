@@ -1,0 +1,32 @@
+# 1.1.0 : S22 attente élégante (barres qui scintillent), S24 fond animé et remplissage karaoké de la petite fenêtre (désactivés par défaut).
+expect animatedBackground=false karaokeFill=false
+mark smallShimmersAnimated
+play lenteur
+wait 1.5
+expect-gt smallShimmersAnimated
+state attente
+play phares
+wait-for mode=synced 8
+wait 2
+expect smallFillPresent=false smallDriftStarts=0
+karaoke on
+wait 3
+expect karaokeFill=true smallFillPresent=true smallFillAnimating=true
+pause
+wait 1
+expect smallFillAnimating=false
+resume
+wait 1
+expect smallFillAnimating=true
+reducemotion on
+wait 3.5
+expect smallFillPresent=false
+reducemotion off
+karaoke off
+wait 1
+expect smallFillPresent=false
+animated-bg on
+wait 1.5
+expect animatedBackground=true smallDriftStarts=1
+state fond-anime
+animated-bg off

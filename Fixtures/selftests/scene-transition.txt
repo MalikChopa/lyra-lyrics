@@ -1,0 +1,67 @@
+# 1.1.0 : transition de ligne de la Scène. Sonde « scene line-probe » : ~50 échantillons des couches PRÉSENTÉES pendant 900 ms après un changement
+# de ligne ; aucune couche du texte de l'ancienne ligne (ni copie de la nouvelle autre que la courante) ne doit être visible SOUS la nouvelle ligne courante.
+# Quatre combinaisons : « Avec la pochette » / « Paroles seules » x karaoké éteint / allumé. Faux lecteur « demo » (titres et paroles INVENTÉS).
+play phares
+wait-for mode=synced 8
+scene enter
+wait-for sceneState=shown 3
+wait 2
+karaoke off
+scene layout-art
+wait 1.5
+scene enter
+wait-for sceneState=shown 3
+wait 1.2
+scene line-probe
+scene enter
+wait-for sceneState=shown 3
+wait 1.2
+scene line-probe
+karaoke on
+wait 1.5
+scene enter
+wait-for sceneState=shown 3
+wait 1.2
+scene line-probe
+scene enter
+wait-for sceneState=shown 3
+wait 1.2
+scene line-probe
+play phares
+wait-for mode=synced 8
+scene layout-lyrics
+karaoke off
+wait 1.5
+wait-for sceneCardActive=false 14
+scene enter
+wait-for sceneState=shown 3
+wait 1.2
+scene line-probe
+scene enter
+wait-for sceneState=shown 3
+wait 1.2
+scene line-probe
+karaoke on
+wait 1.5
+scene enter
+wait-for sceneState=shown 3
+wait 1.2
+scene line-probe
+scene enter
+wait-for sceneState=shown 3
+wait 1.2
+scene line-probe
+play phares
+wait-for mode=synced 8
+scene layout-art
+karaoke off
+wait-for sceneCardActive=false 14
+# « Réduire les animations » : simple fondu enchaîné, pas de sortie mot à mot, et toujours rien sous la ligne courante
+reducemotion on
+scene enter
+wait-for sceneState=shown 3
+wait 1.2
+scene line-probe
+reducemotion auto
+scene exit
+wait-for sceneState=hidden 3
