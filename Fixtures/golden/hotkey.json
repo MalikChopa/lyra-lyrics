@@ -1,0 +1,9 @@
+{
+ "description": "Décision du 2026-11-17 : raccourci global = BASCULE du clic-à-travers dans les deux sens ; si la fenêtre est cachée, il la montre (l'appui ne semble jamais ne rien faire). Cacher / montrer la fenêtre passe par le menu (barre de menus / zone de notification). Lue par Swift (Tests/AppSupportTests/HotKeyRuleTests.swift) et C# (HotKeyRuleTests). Entrées : windowShown, clickThrough (état avant l'appui). Sorties : clickThrough (état après), showWindow (montrer la fenêtre). Le raccourci ne cache jamais la fenêtre. Hors règle : la sortie de la Scène passe avant, dans chaque app.",
+ "cases": [
+  { "windowShown": true,  "clickThrough": false, "expect": { "clickThrough": true,  "showWindow": false } },
+  { "windowShown": true,  "clickThrough": true,  "expect": { "clickThrough": false, "showWindow": false } },
+  { "windowShown": false, "clickThrough": false, "expect": { "clickThrough": true,  "showWindow": true } },
+  { "windowShown": false, "clickThrough": true,  "expect": { "clickThrough": false, "showWindow": true } }
+ ]
+}

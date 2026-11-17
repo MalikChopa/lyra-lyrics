@@ -19,7 +19,7 @@ internal sealed class WelcomeWindow : Window
     {
         ("Lance un titre dans Spotify", "Les paroles apparaissent en quelques secondes."),
         ("Survole la fenêtre", "Les boutons de lecture, le style ◐ et les réglages ⚙ apparaissent."),
-        ($"{hotKey} : cacher ou montrer", "Aussi pour sortir du clic-à-travers, même si l'icône de la zone de notification est cachée."),
+        ($"{hotKey} : clic-à-travers", "Active ou coupe le clic-à-travers (et montre la fenêtre si elle est cachée), même si l'icône de la zone de notification est cachée. Pour cacher la fenêtre : menu de l'icône de notification."),
     };
 
     public Action? Start { get; set; }

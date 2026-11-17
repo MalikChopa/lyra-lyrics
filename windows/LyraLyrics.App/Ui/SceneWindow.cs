@@ -301,6 +301,13 @@ internal sealed partial class SceneWindow : Window
         return new SnapshotStats(shownCard, CardLayer.Children.Count, lines.Count, lines.Count(l => l.Role == 0));
     }
 
+    /// <summary>Contrôle du karaoké : par ligne rendue de la ligne courante, bords de l'encre et de la zone remplie en pixels rendus. Vide si pas de remplissage.</summary>
+    public List<KaraokeProbe.LineResult> InspectKaraoke()
+    {
+        if (!_lines.TryGetValue(_model.CurrentIndex, out var cur) || cur.Fill is not { } fill) return new();
+        return KaraokeProbe.Measure(cur.Block, fill.LineRects);
+    }
+
     public void Shutdown()
     {
         if (_closed) return;
@@ -364,6 +371,7 @@ internal sealed partial class SceneWindow : Window
         var layoutChanged = layoutKey != _layoutKey;
         if (layoutChanged)
         {
+            Crumb($"mise en page : nouvelle taille {_w:0}x{_h:0}");
             _layoutKey = layoutKey;
             _frame = SceneFrame.Compute(_w, _h, withArt);
             ClearLines(); _linesKey = ""; _backgroundKey = ""; _infoKey = ""; _panelKey = "";
@@ -639,6 +647,7 @@ internal sealed partial class SceneWindow : Window
         var key = $"{_model.TrackEpoch}|{idx}|{lines.Count}|{_layoutKey}|{_styleKey}|{reduce}|{_gapActive}";
         if (key == _linesKey) return;
         _linesKey = key;
+        Crumb("changement de ligne : début");
         var wanted = Enumerable.Range(idx - 1, 4).Where(i => i >= 0 && i < lines.Count).ToHashSet();
 
         // lignes qui sortent de la fenêtre de 4 lignes : elles s'effacent (la ligne qui vient de partir a déjà quitté la scène mot à mot, voir Leave)
@@ -701,11 +710,13 @@ internal sealed partial class SceneWindow : Window
         }
         foreach (var l in leavers) Leave(l);
         PrepareFill();
+        Crumb("changement de ligne : fin");
     }
 
     private void RetireLine(SceneLine l, bool animated)
     {
         if (!animated) { l.Block.BeginAnimation(OpacityProperty, null); _linesLayer.Children.Remove(l.Block); return; }
+        Crumb("ligne retirée (fondu)");
         var fade = SceneAnim.To(0, 0.6);
         fade.Completed += (_, _) => _linesLayer.Children.Remove(l.Block);
         l.Block.BeginAnimation(OpacityProperty, fade);

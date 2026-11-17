@@ -99,11 +99,11 @@ internal sealed partial class LyricsWindow
         _fillSlot = null; _fillKey = "";
     }
 
-    private void UpdateKaraoke()
+    private void UpdateKaraoke(bool snapshot = false)
     {
         var s = _store.Current;
-        var animate = SystemPrefs.Current.AnimationsEnabled;
-        if (!s.KaraokeFill || !animate || !IsVisible || _linesHost.Visibility != Visibility.Visible || _model.Display.Current is not DisplayState.Screen.SyncedScreen || _model.Lyrics is not { } lyrics)
+        var animate = SystemPrefs.Current.AnimationsEnabled || snapshot;          // captures : dessiné même si le système réduit les animations
+        if (!s.KaraokeFill || !animate || (!IsVisible && !snapshot) || _linesHost.Visibility != Visibility.Visible || _model.Display.Current is not DisplayState.Screen.SyncedScreen || _model.Lyrics is not { } lyrics)
         { ClearFill(); return; }
         var items = _model.LineItems(s.LineCountValue);
         var at = items.ToList().FindIndex(i => i.Offset == 0);
@@ -124,7 +124,8 @@ internal sealed partial class LyricsWindow
             _fill = new KaraokeBrush(new Size(slot.ActualWidth, slot.ActualHeight), rects, Color.FromArgb(140, c.R, c.G, c.B), accent);       // 0,55 : texte non rempli, comme le Mac
             slot.Foreground = _fill.Brush; _fillSlot = slot; _fillKey = key; rebuilt = true;
         }
-        if (rebuilt || KaraokeFill.NeedsResync(_fill.Playing, _fill.Expected(), sp.Playing, sp.Fraction)) _fill.Set(sp.Fraction, sp.Duration, sp.Playing, animated: true);
+        if (rebuilt || KaraokeFill.NeedsResync(_fill.Playing, _fill.Expected(), sp.Playing, sp.Fraction)) _fill.Set(sp.Fraction, sp.Duration, sp.Playing, animated: !snapshot);
+        if (snapshot) return;                                                      // pas de minuterie en mode captures
         if (_fillTimer is null) { _fillTimer = new DispatcherTimer(DispatcherPriority.Background, Dispatcher) { Interval = TimeSpan.FromMilliseconds(250) }; _fillTimer.Tick += (_, _) => RefreshEffects(); }
         if (!_fillTimer.IsEnabled) _fillTimer.Start();
     }
@@ -137,6 +138,9 @@ internal sealed partial class LyricsWindow
 
     // ---- Captures (--snapshot) : état forcé, sans minuterie
 
+    /// <summary>Contrôle du karaoké : bords de l'encre et de la zone remplie par ligne rendue de la ligne courante (vide si pas de remplissage). À appeler après <see cref="RenderForSnapshot"/>.</summary>
+    public List<KaraokeProbe.LineResult> InspectKaraoke() => _fill is { } f && _fillSlot is { } slot ? KaraokeProbe.Measure(slot, f.LineRects) : new();
+
     /// <summary>Mode captures : rend la fenêtre telle qu'elle est (sans l'afficher) sur un faux bureau de <paramref name="pixelWidth"/> × <paramref name="pixelHeight"/> pixels, à l'échelle <paramref name="scale"/> (1 = 96 ppp).</summary>
     public System.Windows.Media.Imaging.BitmapSource RenderForSnapshot(int pixelWidth, int pixelHeight, double scale, Color desktopTop, Color desktopBottom)
     {
@@ -146,6 +150,12 @@ internal sealed partial class LyricsWindow
         for (var pass = 0; pass < 2; pass++)                        // deuxième passe : les lignes connaissent alors leur largeur
         {
             Refresh(force: true);
+            root.Measure(new Size(w, h)); root.Arrange(new Rect(0, 0, w, h)); root.UpdateLayout();
+        }
+        if (_store.Current.KaraokeFill)                              // karaoké demandé : zone remplie figée à la part chantée, une fois les lignes mises en page
+        {
+            ClearFill();
+            UpdateKaraoke(snapshot: true);
             root.Measure(new Size(w, h)); root.Arrange(new Rect(0, 0, w, h)); root.UpdateLayout();
         }
         var dipW = pixelWidth / scale; var dipH = pixelHeight / scale;

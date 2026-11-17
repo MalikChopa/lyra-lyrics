@@ -236,7 +236,7 @@ final class AppController {
             // se ferment tout seuls, et un avis de 3 s dit comment revenir.
             settingsController.close()
             aboutController.close()
-            model.showNotice("Clic-à-travers activé · \(after.hotKey.display) pour revenir")
+            model.showNotice("Clic-à-travers activé · \(after.hotKey.display) pour le couper")
         } else if before.clickThrough && !after.clickThrough {
             model.clearNotice()
         }
@@ -256,19 +256,15 @@ final class AppController {
 
     // MARK: Fenêtres
 
-    /// Raccourci global « Cacher / montrer ». En clic-à-travers (la fenêtre ne reçoit plus aucun clic et l'icône de la barre de
-    /// menus peut être cachée par l'encoche), il SORT d'abord du clic-à-travers et montre la fenêtre, sans jamais la cacher.
-    /// Clic-à-travers désactivé : il cache / montre comme avant.
+    /// Raccourci global (décision du 2026-11-17) : il BASCULE le clic-à-travers dans les deux sens ; si la fenêtre est cachée il la montre
+    /// (règle pure `HotKeyRule`, même fixture que Windows), il ne la cache jamais. Cacher / montrer la fenêtre se fait par le menu de la barre de menus.
     func handleHotKey() {
         if scene.isVisible { scene.exit(); return }          // le raccourci est aussi la sortie de la Scène
-        if store.settings.clickThrough {
-            setClickThrough(false)
-            if !panelController.isShown { panelController.show() }
-            autoHide.manualChange(windowShown: panelController.isShown)
-            statusItem?.refresh()
-        } else {
-            toggleVisibility()
-        }
+        let outcome = HotKeyRule.decide(windowShown: panelController.isShown, clickThrough: store.settings.clickThrough)
+        if outcome.showWindow { panelController.show() }
+        setClickThrough(outcome.clickThrough)
+        if outcome.showWindow { autoHide.manualChange(windowShown: panelController.isShown) }
+        statusItem?.refresh()
     }
 
     /// Cacher / montrer fait par l'UTILISATEUR (raccourci, menu) : le masquage automatique ne l'annule jamais.

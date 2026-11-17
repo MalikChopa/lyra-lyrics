@@ -59,7 +59,9 @@ internal sealed partial class SceneWindow
     private Point _lastMouse = new(double.NaN, double.NaN);
     private string _shimmerKey = "";
 
-    private bool FillEnabled => _store.Current.KaraokeFill && SystemPrefs.Current.AnimationsEnabled;
+    private bool _forceFill;       // captures seulement : le karaoké se dessine même si le système réduit les animations
+    private bool FillEnabled => _store.Current.KaraokeFill && (SystemPrefs.Current.AnimationsEnabled || _forceFill);
+    private bool ReduceFill => !SystemPrefs.Current.AnimationsEnabled && !_forceFill;
 
     // ================================================================ Construction
 
@@ -233,6 +235,7 @@ internal sealed partial class SceneWindow
 
     private void DetachFill(SceneLine l)
     {
+        Crumb("karaoké : retrait");
         l.Fill?.Dispose(); l.Fill = null;
         // une ligne qui vient d'être chantée garde la couleur d'accent en partant ; les autres redeviennent unies
         l.Block.Foreground = new SolidColorBrush(l.Index < _model.CurrentIndex ? AccentColor() : _textColor);
@@ -247,7 +250,7 @@ internal sealed partial class SceneWindow
             foreach (var l in _lines.Values) if (l.Index != idx && l.Fill is not null) DetachFill(l);
             if (!HasLines || idx < 0 || !_lines.TryGetValue(idx, out var cur)) return;
             var spec = FillEnabled
-                ? KaraokeFill.Compute(LineTimes(), idx, _model.LyricPosition, _model.IsPlaying && !_gapActive, true, !SystemPrefs.Current.AnimationsEnabled, SyncEngine.Placeholder)
+                ? KaraokeFill.Compute(LineTimes(), idx, _model.LyricPosition, _model.IsPlaying && !_gapActive, true, ReduceFill, SyncEngine.Placeholder)
                 : null;
             if (spec is not { } sp) { if (cur.Fill is not null) DetachFill(cur); return; }
             if (cur.Fill is null)
@@ -257,6 +260,7 @@ internal sealed partial class SceneWindow
                 cur.Fill = new KaraokeBrush(new Size(cur.Block.Width, cur.Block.Height), rects, Color.FromArgb(199, c.R, c.G, c.B), AccentColor());   // 0,78 : ligne nette sous le remplissage (SceneFrame.Target)
                 cur.Block.Foreground = cur.Fill.Brush;
             }
+            Crumb("karaoké : pose");
             cur.Fill.Set(sp.Fraction, sp.Duration, sp.Playing, animated: true);
             if (Paused) cur.Fill.PauseClocks();
         }
@@ -268,7 +272,7 @@ internal sealed partial class SceneWindow
         var idx = _model.CurrentIndex;
         if (!HasLines || idx < 0 || !_lines.TryGetValue(idx, out var cur)) return;
         if (cur.Fill is null) { if (FillEnabled) PrepareFill(); return; }
-        var spec = KaraokeFill.Compute(LineTimes(), idx, _model.LyricPosition, _model.IsPlaying && !_gapActive, FillEnabled, !SystemPrefs.Current.AnimationsEnabled, SyncEngine.Placeholder);
+        var spec = KaraokeFill.Compute(LineTimes(), idx, _model.LyricPosition, _model.IsPlaying && !_gapActive, FillEnabled, ReduceFill, SyncEngine.Placeholder);
         if (spec is not { } sp || KaraokeFill.NeedsResync(cur.Fill.Playing, cur.Fill.Expected(), sp.Playing, sp.Fraction)) PrepareFill();
     }
 
@@ -316,6 +320,7 @@ internal sealed partial class SceneWindow
     private void SetGap(bool on, bool immediate)
     {
         if (on == _gapActive && !immediate) return;
+        Crumb(on ? "passage sans paroles : début" : "passage sans paroles : fin");
         _gapActive = on;
         var reduce = !SystemPrefs.Current.AnimationsEnabled;
         var d = immediate || reduce ? SceneGapRule.FadeQuickSeconds : SceneGapRule.FadeSeconds;
@@ -489,6 +494,7 @@ internal sealed partial class SceneWindow
     {
         if (_closed || _model.Track is not { } track || !SceneCard.Allowed(_frame.WithArtwork)) return;
         Log.Write("scene", "carte du titre (" + why + ")");              // jamais le titre ni l'artiste
+        Crumb("carte : début");
         _cardPending = false; _cardTimer.Stop();
         _cardActive = true;
         BuildCard(track);
@@ -639,47 +645,59 @@ internal sealed partial class SceneWindow
 
     // ================================================================ Sortie de ligne mot à mot (W6d)
 
-    /// <summary>La ligne qui vient d'être chantée monte doucement, rétrécit un peu (0,92) et s'efface mot à mot (~40 ms de décalage, ~0,6 s) ; un léger flou l'accompagne.</summary>
+    /// <summary>
+    /// La ligne qui vient d'être chantée monte doucement, rétrécit un peu (0,92) et s'efface de gauche à droite en ~0,6 s.
+    /// SANS aucun effet (ni flou ni ombre) et SANS pinceau visuel : le plantage de la 1.3.0 venait d'une pile d'effets sur le même texte (flou animé +
+    /// masque en <c>VisualBrush</c> sur un arbre hors écran + horloges du karaoké). Ici seulement : une translation, une échelle, l'opacité et un masque
+    /// d'opacité en dégradé linéaire FIXE (deux arrêts) dont on anime la <b>transformation</b> (un seul <c>TranslateTransform</c>) : le front du dégradé balaie
+    /// le texte de gauche à droite. Pinceau dégradé = objet de base de WPF, aucun élément hors arbre, aucune mesure de mots.
+    /// </summary>
     private void Leave(SceneLine l)
     {
+        Crumb("sortie de ligne : début");
         l.Leaving = true;
         var c = l.Block;
         try
         {
+            // 1. d'abord tout ce qui ressemble à un pinceau animé ou à un effet : le karaoké est figé et détaché, la lueur retirée
+            Crumb("sortie de ligne : karaoké détaché");
+            if (l.Fill is not null) DetachFill(l);
+            c.Effect = null;
+            // 2. puis les animations simples
             l.Move.BeginAnimation(TranslateTransform.YProperty, SceneAnim.To(l.Move.Y - _h * LineExit.RiseFraction, LineExit.Duration));
             l.Scale.BeginAnimation(ScaleTransform.ScaleXProperty, SceneAnim.To(LineExit.Scale, LineExit.Duration));
             l.Scale.BeginAnimation(ScaleTransform.ScaleYProperty, SceneAnim.To(LineExit.Scale, LineExit.Duration));
             c.BeginAnimation(OpacityProperty, SceneAnim.To(0, LineExit.Duration * 0.5, LineExit.Duration * 0.5));
-            var blur = new BlurEffect { Radius = 0, KernelType = KernelType.Gaussian, RenderingBias = RenderingBias.Performance };
-            c.Effect = blur;
-            blur.BeginAnimation(BlurEffect.RadiusProperty, SceneAnim.To(Math.Clamp(c.FontSize * 0.05, 3, 8), LineExit.Duration));
-            // mot à mot : un masque dont chaque rectangle de mot s'éteint à son tour
-            var words = TextRects.Words(c);
-            if (words.Count == 0) words.Add(new Rect(0, 0, c.Width, c.Height));
-            var plan = LineExit.For(words.Count);
-            var canvas = new Canvas { Width = c.Width, Height = c.Height };
-            for (var k = 0; k < words.Count; k++)
+            // 3. masque : bord doux de 30 % de la largeur ; il part de « tout opaque » (bord à gauche de la ligne) et finit « tout transparent » (bord à droite)
+            var width = Math.Max(1, c.Width); var soft = Math.Max(8, width * 0.3);
+            var shift = new TranslateTransform(-soft, 0);
+            var mask = new LinearGradientBrush(Color.FromArgb(0, 0, 0, 0), Colors.Black, new Point(0, 0), new Point(1, 0))
             {
-                var r = words[k];
-                var rect = new Rectangle { Width = r.Width + 10, Height = r.Height + 8, Fill = Brushes.Black };
-                Canvas.SetLeft(rect, r.X - 5); Canvas.SetTop(rect, r.Y - 4);
-                rect.BeginAnimation(OpacityProperty, new DoubleAnimation(1, 0, TimeSpan.FromSeconds(plan.WordDuration))
-                { BeginTime = TimeSpan.FromSeconds(k * plan.Step), EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseInOut }, FillBehavior = FillBehavior.HoldEnd });
-                canvas.Children.Add(rect);
-            }
-            canvas.Measure(new Size(c.Width, c.Height)); canvas.Arrange(new Rect(0, 0, c.Width, c.Height));
-            c.OpacityMask = new VisualBrush(canvas) { Stretch = Stretch.None, AlignmentX = AlignmentX.Left, AlignmentY = AlignmentY.Top, ViewboxUnits = BrushMappingMode.Absolute, Viewbox = new Rect(0, 0, c.Width, c.Height), ViewportUnits = BrushMappingMode.Absolute, Viewport = new Rect(0, 0, c.Width, c.Height) };
+                MappingMode = BrushMappingMode.Absolute, StartPoint = new Point(0, 0), EndPoint = new Point(soft, 0), SpreadMethod = GradientSpreadMethod.Pad, Transform = shift,
+            };                                                             // à gauche du départ : transparent ; à droite de l'arrivée : opaque
+            c.OpacityMask = mask;
+            Crumb("sortie de ligne : masque posé");
+            shift.BeginAnimation(TranslateTransform.XProperty, new DoubleAnimation(-soft, width, TimeSpan.FromSeconds(LineExit.Duration))
+            { EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseInOut }, FillBehavior = FillBehavior.HoldEnd });
         }
         catch (Exception e) { Log.WriteException("erreur", "scène : sortie de ligne", e); c.OpacityMask = null; c.BeginAnimation(OpacityProperty, SceneAnim.To(0, 0.6)); }
     }
 
-    /// <summary>Une ligne qui partait redevient courante (retour en arrière dans le titre) : elle reprend l'état d'une ligne normale.</summary>
+    /// <summary>Une ligne qui partait redevient courante (retour en arrière dans le titre) : elle reprend l'état d'une ligne normale (masque, effet et animations retirés).</summary>
     private void Restore(SceneLine l, Settings s)
     {
         l.Leaving = false;
+        if (l.Block.OpacityMask is LinearGradientBrush { Transform: TranslateTransform t }) t.BeginAnimation(TranslateTransform.XProperty, null);
         l.Block.OpacityMask = null;
-        l.Block.Effect = s.Glow && l.Role == 0 ? Glow(l.Block.FontSize) : null;
+        l.Block.Effect = s.Glow && l.Role == 0 && !FillEnabled ? Glow(l.Block.FontSize) : null;
         l.Block.BeginAnimation(OpacityProperty, null);
+    }
+
+    /// <summary>Point de repère du journal avant une étape risquée : une ligne courte, sans titre, artiste, paroles ni identifiant. Écrite et vidée tout de suite (<see cref="RollingLog"/>).</summary>
+    internal static Action<string>? CrumbHook;
+    private static void Crumb(string step)
+    {
+        try { CrumbHook?.Invoke(step); Log.Write("scene", "étape: " + step); } catch { }
     }
 
     private DropShadowEffect Glow(double size) => new() { Color = _textColor, BlurRadius = Math.Max(8, size / 4), ShadowDepth = 0, Opacity = 0.65 };
@@ -719,7 +737,7 @@ internal sealed partial class SceneWindow
 
     // ================================================================ Captures (--snapshot) : états forcés, sans minuterie ni animation
 
-    public enum DemoKind { Normal, Card, Gap, Controls, Lines }
+    public enum DemoKind { Normal, Card, Gap, Controls, Lines, Karaoke }
 
     /// <summary>Mode captures : met la Scène dans l'état voulu, immédiatement (aucune animation, aucune minuterie).</summary>
     public void ApplyDemo(DemoKind kind)
@@ -746,6 +764,13 @@ internal sealed partial class SceneWindow
                 break;
             case DemoKind.Lines:                                  // lignes seules : ni carte, ni passage (la minuterie de carte n'est jamais lancée sans boucle de messages)
                 CancelCard(); _content.Opacity = 1; _linesKey = ""; Refresh(false);
+                break;
+            case DemoKind.Karaoke:                                // lignes seules avec le remplissage karaoké figé à la part chantée
+                _forceFill = true; CancelCard(); _content.Opacity = 1; _linesKey = "";
+                Refresh(false);
+                _root.Measure(new Size(_w, _h)); _root.Arrange(new Rect(0, 0, _w, _h)); _root.UpdateLayout();     // les blocs doivent être mis en page pour mesurer leurs lignes
+                if (_lines.TryGetValue(_model.CurrentIndex, out var cur) && cur.Fill is not null) DetachFill(cur);
+                PrepareFill();
                 break;
             case DemoKind.Controls:
                 _controlsVisible = true; _barHost.Opacity = 1; _exitButton.Opacity = 1; UpdateBar();

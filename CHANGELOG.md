@@ -3,6 +3,16 @@
 All notable changes to this project are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.3.1] - 2026-11-17
+
+### Fixed
+- **Windows: the app could close without warning a few seconds after opening the Scene in the middle of a song** (first line change). The leaving line no longer uses an animated blur and an off-screen mask: it still rises, shrinks a little and fades from left to right. The Scene now writes a short trace of each step to `lyra.log` (never titles or lyrics).
+- **Windows: karaoke-style fill** now starts at the first letter of the line (it started late on centred lines).
+- **Windows: the white colour swatch** in the settings has a thin outline and stays visible on a light background.
+
+### Changed
+- **Global shortcut** (⌃⌥⌘L on the Mac, Ctrl+Alt+Shift+L on Windows): it now **turns click-through on and off**; if the window is hidden, it also shows it. Showing or hiding the window is done from the menu bar menu (Mac) or the notification-area menu (Windows), which both have "Montrer / Cacher la fenêtre" and a "Clic-à-travers" item with a check mark.
+
 ## [1.3.0] - 2026-11-16
 
 ### Added

@@ -6,12 +6,12 @@ namespace LyraLyrics.App.Services;
 
 /// <summary>
 /// Icône de la zone de notification (WPF n'en fournit pas : <c>System.Windows.Forms.NotifyIcon</c>, déjà dans le runtime de bureau livré).
-/// L'icône est celle de l'app (AppIcon.ico embarqué) ; une icône dessinée au lancement sert de secours. Menu : afficher/cacher, clic-à-travers, réglages, à propos, quitter.
+/// L'icône est celle de l'app (AppIcon.ico embarqué) ; une icône dessinée au lancement sert de secours. Menu : « Montrer / Cacher la fenêtre », « Clic-à-travers » (coche), réglages, à propos, quitter.
 /// </summary>
 internal sealed class TrayService : IDisposable
 {
     private readonly WinForms.NotifyIcon _icon;
-    private readonly WinForms.ToolStripMenuItem _toggle = new("Cacher les paroles");
+    private readonly WinForms.ToolStripMenuItem _toggle = new("Montrer / Cacher la fenêtre");
     private readonly WinForms.ToolStripMenuItem _clickThrough = new("Clic-à-travers") { CheckOnClick = false };
     private readonly WinForms.ToolStripMenuItem _scene = new("Scène plein écran");
     private readonly Drawing.Icon _drawn;
@@ -74,7 +74,7 @@ internal sealed class TrayService : IDisposable
         {
             if (UpdateTag?.Invoke() is { } tag) { _update.Text = "Nouvelle version disponible : " + tag; _update.Visible = true; } else _update.Visible = false;
             _scene.Text = SceneActive?.Invoke() == true ? "Quitter la Scène" : "Scène plein écran";
-            if (State?.Invoke() is { } st) { _toggle.Text = st.Visible ? "Cacher les paroles" : "Montrer les paroles"; _clickThrough.Checked = st.ClickThrough; }
+            if (State?.Invoke() is { } st) { _clickThrough.Checked = st.ClickThrough; }          // libellé fixe, le même que sur le Mac (le raccourci ne cache plus, décision du 2026-11-17)
         };
         _icon = new WinForms.NotifyIcon { Text = name, Icon = _drawn, Visible = true, ContextMenuStrip = menu };
         _icon.MouseClick += (_, e) => { if (e.Button == WinForms.MouseButtons.Left) ToggleVisibility?.Invoke(); };

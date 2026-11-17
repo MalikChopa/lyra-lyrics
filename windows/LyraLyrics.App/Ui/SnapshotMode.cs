@@ -58,6 +58,11 @@ internal static class SnapshotMode
                 }
                 foreach (var style in new[] { BackgroundStyle.Solid, BackgroundStyle.Glass, BackgroundStyle.Clear })
                     Shot("fenetre-" + style.ToString().ToLowerInvariant(), () => SmallWindow(dir, style, size, art));
+                // karaoké ACTIVÉ : zone remplie figée à mi-ligne ; le rapport vérifie que son bord gauche est la première lettre de chaque ligne rendue (1 DIP)
+                Shot("fenetre-karaoke", () => SmallWindowKaraoke(dir, size, art, 26, 26, "fenetre-karaoke-" + size.Name, report));
+                Shot("fenetre-karaoke-longue", () => SmallWindowKaraoke(dir, size, art, 32, 40, "fenetre-karaoke-longue-" + size.Name, report));
+                Shot("scene-karaoke", () => SceneKaraoke(dir, size, art, 26, "scene-karaoke-" + size.Name, report));
+                Shot("scene-karaoke-longue", () => SceneKaraoke(dir, size, art, 33, "scene-karaoke-longue-" + size.Name, report));
                 // positions : 26 s tombe dans la ligne de 24 s (ligne chantée, pas de passage) ; 45 s dans le passage sans paroles de 30 à 60 s
                 const double Sung = 26;
                 Shot("scene-avec-pochette", () => Scene(dir, size, art, SceneLayoutMode.WithArtwork, Sung, playing: false, SceneWindow.DemoKind.Normal, "scene-avec-pochette-" + size.Name, Expect.Lines, report));
@@ -75,10 +80,10 @@ internal static class SnapshotMode
 
     // ---- Éléments de démonstration
 
-    private sealed record Art(byte[] Png, byte[] Rgba, int Side);
+    internal sealed record Art(byte[] Png, byte[] Rgba, int Side);
 
     /// <summary>Pochette GÉNÉRÉE : dégradé diagonal et deux cercles, aucune image existante.</summary>
-    private static Art MakeArtwork()
+    internal static Art MakeArtwork()
     {
         const int side = 400;
         var rgba = new byte[side * side * 4];
@@ -114,16 +119,51 @@ internal static class SnapshotMode
         return (model, store);
     }
 
-    private sealed class RefusingTransport : ILrclibTransport
+    internal sealed class RefusingTransport : ILrclibTransport
     {
         public Task<HttpReply> SendAsync(LrclibRequest request, double timeoutSeconds, CancellationToken ct) => throw new InvalidOperationException("réseau interdit en mode captures");
     }
 
     private static BitmapSource SmallWindow(string dir, BackgroundStyle style, (int W, int H, double Scale, string Name) size, Art art)
     {
-        var (model, store) = Setup(dir, art, 40.5, false, s => { s.Style = style; s.KaraokeFill = false; s.AnimatedBackground = false; });
+        var (model, store) = Setup(dir, art, 40.5, false, s => { s.Style = style; s.KaraokeFill = false; s.AnimatedBackground = false; s.Size = 26; });
         var w = new LyricsWindow(model, store, systemBackdrop: false);
         return w.RenderForSnapshot(size.W, size.H, size.Scale, Color.FromRgb(36, 52, 92), Color.FromRgb(20, 120, 140));
+    }
+
+    /// <summary>Rapport du contrôle karaoké : INFO avec les compteurs, WARNING si pas de zone remplie ou si un bord gauche/droit s'écarte de plus de 1 DIP (nombres seulement, aucun texte).</summary>
+    private static void ReportKaraoke(List<string> report, string shot, List<KaraokeProbe.LineResult> lines)
+    {
+        string F(double v) => v.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture);
+        report.Add($"INFO {shot} karaoké lignes={lines.Count}" + string.Concat(lines.Select((l, i) => $" l{i}=[encre {F(l.Ink.Left)}..{F(l.Ink.Right)} rempli {F(l.Filled.Left)}..{F(l.Filled.Right)}]")));
+        if (lines.Count == 0) { report.Add($"WARNING {shot} : karaoké attendu mais aucune ligne mesurée (pas de remplissage, ou rendu impossible)"); return; }
+        var bad = KaraokeProbe.FirstMismatch(lines);
+        if (bad >= 0) report.Add($"WARNING {shot} : karaoké décalé, ligne {bad} : bord gauche écart {F(lines[bad].Filled.Left - lines[bad].Ink.Left)} DIP, bord droit écart {F(lines[bad].Filled.Right - lines[bad].Ink.Right)} DIP (tolérance 1)");
+    }
+
+    private static BitmapSource SmallWindowKaraoke(string dir, (int W, int H, double Scale, string Name) size, Art art, double position, int fontSize, string shot, List<string> report)
+    {
+        var (model, store) = Setup(dir, art, position, false, s => { s.Style = BackgroundStyle.Glass; s.KaraokeFill = true; s.AnimatedBackground = false; s.Size = fontSize; });
+        var w = new LyricsWindow(model, store, systemBackdrop: false);
+        var image = w.RenderForSnapshot(size.W, size.H, size.Scale, Color.FromRgb(36, 52, 92), Color.FromRgb(20, 120, 140));
+        ReportKaraoke(report, shot, w.InspectKaraoke());
+        return image;
+    }
+
+    private static BitmapSource SceneKaraoke(string dir, (int W, int H, double Scale, string Name) size, Art art, double position, string shot, List<string> report)
+    {
+        var (model, store) = Setup(dir, art, position, false, s => { s.SceneLayout = SceneLayoutMode.LyricsOnly; s.KaraokeFill = true; s.SceneEffects = true; });
+        var screen = new ScreenInfo("Écran de démonstration", 0, 0, size.W, size.H, size.Scale, true);
+        var scene = new SceneWindow(model, store, screen);
+        try
+        {
+            scene.Prepare();
+            scene.ApplyDemo(SceneWindow.DemoKind.Karaoke);
+            var image = scene.Snapshot();
+            ReportKaraoke(report, shot, scene.InspectKaraoke());
+            return image;
+        }
+        finally { try { scene.Shutdown(); } catch { } }
     }
 
     /// <summary>Ce qu'un cliché doit montrer : des lignes dont la courante (chantée), la carte du titre, ou rien de particulier (passage).</summary>

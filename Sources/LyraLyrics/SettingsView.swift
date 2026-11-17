@@ -277,7 +277,7 @@ struct SettingsView: View {
             HStack(spacing: 10) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Clic-à-travers").font(.system(size: 12.5))
-                    Text("Les clics passent à travers la fenêtre. Pour en sortir : \(s.hotKey.display) (ton raccourci), même si l'icône de la barre de menus est cachée (encoche).")
+                    Text("Les clics passent à travers la fenêtre. \(s.hotKey.display) (ton raccourci) l'active ou le coupe, même si l'icône de la barre de menus est cachée (encoche).")
                         .font(.system(size: 11)).foregroundStyle(txtMid).fixedSize(horizontal: false, vertical: true)
                 }
                 Spacer(minLength: 0)
@@ -313,8 +313,8 @@ struct SettingsView: View {
             }.padding(.vertical, 8)
             HStack(spacing: 10) {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Cacher / montrer").font(.system(size: 12.5))
-                    Text("Raccourci global (en clic-à-travers : il rend la main)").font(.system(size: 11)).foregroundStyle(txtMid)
+                    Text("Raccourci clic-à-travers").font(.system(size: 12.5))
+                    Text("Raccourci global : active ou coupe le clic-à-travers, et montre la fenêtre si elle est cachée").font(.system(size: 11)).foregroundStyle(txtMid)
                 }
                 Spacer(minLength: 0)
                 ShortcutField(recorder: recorder, combo: s.hotKey)
@@ -541,7 +541,7 @@ private struct ShortcutField: View {
                 .overlay(RoundedRectangle(cornerRadius: 6, style: .continuous).strokeBorder(recorder.isRecording ? accent : .white.opacity(0.18), lineWidth: 1))
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("Raccourci cacher ou montrer")
+        .accessibilityLabel("Raccourci du clic-à-travers")
     }
     private func spaced(_ s: String) -> String { s.map(String.init).joined(separator: " ") }
 }

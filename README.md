@@ -21,6 +21,11 @@ No account, no sign-in, no server of ours: the app talks to your music player an
 
 ## Features
 
+### New in 1.3.1
+
+- **Windows fixes** after the first test on a real PC: the Scene no longer closes by itself at the first line change, the karaoke-style fill starts at the beginning of the line, the white swatch is visible in the settings.
+- **Shortcut** ⌃⌥⌘L / Ctrl+Alt+Shift+L: it turns click-through on and off (and shows the window if hidden); show / hide the window from the icon menu.
+
 ### New in 1.3.0
 
 - **The full-screen Scene comes to Windows (beta)**: same settings and rules as on the Mac (screen of your choice, "Avec la pochette" or "Paroles seules" layout, title card, animated passages without lyrics, grain and vignette, control bar with Space, arrows and Esc, lines leaving word by word); double-click the small window, use the full-screen button of the hover bar or the icon menu. Also on Windows: optional animated cover background and karaoke-style fill (off by default). The rendering had never been seen on a real PC before publication.
@@ -56,8 +61,8 @@ No account, no sign-in, no server of ours: the app talks to your music player an
 - **Three backgrounds**: solid, frosted glass, transparent (text with a soft shadow).
 - **Settings**: font, weight, max size, text colour, glow, background opacity.
 - **Manual offset** from -5 s to +5 s, for the current song only, when a lyrics file is slightly early or late.
-- **Click-through mode**: clicks go through the window to the app below. Turning it on closes the settings panel and a 3-second notice in the window reminds you how to come back. To leave it, press the shortcut (see [Keyboard shortcut](#keyboard-shortcut)): it turns click-through off and shows the window. The menu bar icon also works, but on a MacBook with a notch it can be hidden behind the notch when the menu bar is full; the shortcut is the way back.
-- **Global shortcut**: Control-Option-Command-L by default, can be changed in the settings.
+- **Click-through mode**: clicks go through the window to the app below. Turning it on closes the settings panel and a 3-second notice in the window reminds you how to come back. To turn it on or off, press the shortcut (see [Keyboard shortcut](#keyboard-shortcut)): it toggles click-through both ways and shows the window if it is hidden. The menu bar icon ("Click-through", with a check mark) also works, but on a MacBook with a notch it can be hidden behind the notch when the menu bar is full; the shortcut is the way back.
+- **Global shortcut**: Control-Option-Command-L by default (toggles click-through), can be changed in the settings.
 - **Menu bar icon**, optional Dock icon (off by default).
 - **"Clear cache"** button, and a clear message for every situation: nothing playing, searching, no lyrics, instrumental, service busy, offline, permission needed, unreadable title.
 - **Accessibility**: VoiceOver labels (also on the playback buttons); "Reduce motion" and "Reduce transparency" from macOS are respected.
@@ -173,7 +178,7 @@ macOS lets a window float above a full-screen app only if the app has **no Dock 
 
 ## Keyboard shortcut
 
-On Windows the default shortcut is **Ctrl+Alt+Shift+L** (changeable in the settings); it hides or shows the window and also leaves click-through. On the Mac, **Control-Option-Command-L** hides or shows the window. **In click-through mode it works differently:** it turns click-through **off** and shows the window (it never hides it), because in that mode the window no longer receives any click, so you could not open the settings; and on a MacBook with a notch the menu bar icon can be hidden behind the notch when the menu bar is full. With click-through off, it hides or shows as usual. Launching the app a second time (Spotlight, Finder) also leaves click-through. The shortcut can be changed in the settings panel (gear button on the window, visible when the pointer is over it). If the system cannot register the combination, the panel shows "raccourci indisponible" and the previous one stays active.
+On Windows the default shortcut is **Ctrl+Alt+Shift+L** (changeable in the settings), on the Mac **Control-Option-Command-L**. It **toggles click-through, both ways**: pressed once it turns click-through on, pressed again it turns it off. If the window is hidden, it also shows it (with click-through in its new state), so a press never seems to do nothing; it never hides the window. To hide or show the window, use the menu: "Montrer / Cacher la fenêtre" in the menu bar icon menu (Mac) or the notification-area icon menu (Windows); the "Clic-à-travers" item there has a check mark. Why: in click-through mode the window no longer receives any click, so you could not open the settings; and on a MacBook with a notch the menu bar icon can be hidden behind the notch when the menu bar is full. Launching the app a second time (Spotlight, Finder) also leaves click-through. The shortcut can be changed in the settings panel (gear button on the window, visible when the pointer is over it). If the system cannot register the combination, the panel shows "raccourci indisponible" and the previous one stays active.
 
 ## Build from source
 

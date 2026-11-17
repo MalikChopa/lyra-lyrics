@@ -12,7 +12,9 @@ The full-screen **Scene** comes to the **Windows version (beta)**.
 
 **SHA-256:** `e32d230d79b85c5b6a267ae3b9d16e4e9f818f19bb402662b4c1da6ff91266e2`
 
-**Download:** `Lyra-Lyrics-1.3.0-windows-x64-setup.exe` (built by GitHub Actions from the `v1.3.0` tag; its size and SHA-256 are on the release page and in the attached `.sha256` file)
+**Download:** `Lyra-Lyrics-1.3.0-windows-x64-setup.exe` (71,881,434 bytes, built by GitHub Actions from the `v1.3.0` tag)
+
+**SHA-256:** `ee02e81d7466207e39df05ddf0126c40508bda00d4b99229b33ec54c77a2d6b9`
 
 **First launch on the Mac (important).** The app is **not notarised**: move **Lyra Lyrics.app** to Applications, open it, then **System Settings > Privacy & Security > Open Anyway**. The exact wording may differ on your version of macOS.
 
@@ -32,7 +34,9 @@ La **Scène** plein écran arrive sur la **version Windows (bêta)**.
 
 **SHA-256 :** `e32d230d79b85c5b6a267ae3b9d16e4e9f818f19bb402662b4c1da6ff91266e2`
 
-**Téléchargement :** `Lyra-Lyrics-1.3.0-windows-x64-setup.exe` (construit par GitHub Actions à partir de l'étiquette `v1.3.0` ; sa taille et son SHA-256 sont sur la page de la release et dans le fichier `.sha256` joint)
+**Téléchargement :** `Lyra-Lyrics-1.3.0-windows-x64-setup.exe` (71 881 434 octets, construit par GitHub Actions à partir de l'étiquette `v1.3.0`)
+
+**SHA-256 :** `ee02e81d7466207e39df05ddf0126c40508bda00d4b99229b33ec54c77a2d6b9`
 
 **Premier lancement sur Mac (important).** L'app n'est **pas notariée** : glisse **Lyra Lyrics.app** dans Applications, ouvre-la, puis **Réglages Système > Confidentialité et sécurité > Ouvrir quand même**. Le texte exact peut différer selon ta version de macOS.
 

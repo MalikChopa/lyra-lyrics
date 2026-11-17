@@ -553,7 +553,7 @@ internal sealed partial class LyricsWindow : Window
             tb.FontFamily = _typeface.FontFamily; tb.FontWeight = _typeface.Weight; tb.FontSize = _fit.CurrentSize;
             tb.Foreground = item.Offset == 0 ? brushCurrent : neutral;
             tb.Tag = targetScale;
-            tb.Effect = item.Offset == 0 && s.Glow ? new DropShadowEffect { Color = color, BlurRadius = 16, ShadowDepth = 0, Opacity = 0.85 } : null;
+            tb.Effect = item.Offset == 0 && s.Glow && !(s.KaraokeFill && SystemPrefs.Current.AnimationsEnabled) ? new DropShadowEffect { Color = color, BlurRadius = 16, ShadowDepth = 0, Opacity = 0.85 } : null;
             var scale = (ScaleTransform)tb.RenderTransform;
             if (animate && advance && IsVisible)
             {

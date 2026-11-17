@@ -23,7 +23,7 @@ struct WelcomeView: View {
             Text("Les paroles de ton morceau, dans une petite fenêtre toujours au-dessus.").font(.system(size: 12.5)).foregroundStyle(.white.opacity(0.7))
             card("1", "Lance un titre dans Spotify", "Les paroles apparaissent en quelques secondes.")
             card("2", "Survole la fenêtre", "Les boutons de lecture, le style ◐ et les réglages ⚙ apparaissent.")
-            card("3", "\(hotKey) : cacher ou montrer", "Aussi pour sortir du clic-à-travers, même si l'icône de la barre de menus est cachée.")
+            card("3", "\(hotKey) : clic-à-travers", "Active ou coupe le clic-à-travers (et montre la fenêtre si elle est cachée), même si l'icône de la barre de menus est cachée. Pour cacher la fenêtre : menu de la barre de menus.")
             HStack(spacing: 10) {
                 Button { actions.allowSpotify() } label: {
                     Text(model.spotifyAccess == .granted ? "Spotify autorisé" : "Autoriser Spotify")

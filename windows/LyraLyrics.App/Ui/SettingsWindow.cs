@@ -36,6 +36,9 @@ internal sealed class SettingsWindow : Window
     private readonly CheckBox _startup = new() { Content = "Lancer au démarrage de Windows" };
     private readonly CheckBox _backdrop = new() { Content = "Flou du système (Windows 11, expérimental)" };
     private readonly ClickableBorder[] _swatches = new ClickableBorder[Settings.Swatches.Length];
+    /// <summary>Contour fin et neutre des pastilles non choisies : la pastille blanche reste visible sur un fond clair comme sur un fond sombre.</summary>
+    private static readonly Brush SwatchOutline = Freeze(new SolidColorBrush(Color.FromArgb(0x99, 0x80, 0x80, 0x80)));
+    private static Brush Freeze(Brush b) { b.Freeze(); return b; }
     private static readonly string[] SwatchNames = { "blanc", "jaune", "bleu clair", "rose", "vert clair" };
     private readonly Button _recordButton = new() { Content = "Modifier…", Padding = new Thickness(12, 3, 12, 3), Margin = new Thickness(10, 0, 0, 0) };
     private bool _recording;
@@ -110,7 +113,7 @@ internal sealed class SettingsWindow : Window
             var sw = new ClickableBorder
             {
                 Width = 24, Height = 24, CornerRadius = new CornerRadius(12), Margin = new Thickness(0, 0, 8, 0), Cursor = Cursors.Hand,
-                Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString(Settings.Swatches[i])), BorderThickness = new Thickness(2), BorderBrush = Brushes.Transparent,
+                Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString(Settings.Swatches[i])), BorderThickness = new Thickness(2), BorderBrush = SwatchOutline,
             };
             sw.Activated = () => _store.Update(s => s.ColorIndex = index);
             sw.MouseLeftButtonUp += (_, _) => sw.Activated();
@@ -167,7 +170,8 @@ internal sealed class SettingsWindow : Window
         var hot = new StackPanel { Orientation = Orientation.Horizontal };
         hot.Children.Add(_hotKeyLabel); hot.Children.Add(_recordButton);
         _recordButton.Click += (_, _) => StartRecording();
-        panel.Children.Add(Row("Raccourci cacher / montrer", hot));
+        panel.Children.Add(Row("Raccourci clic-à-travers", hot));
+        panel.Children.Add(new TextBlock { Text = "Raccourci global : active ou coupe le clic-à-travers, et montre la fenêtre si elle est cachée. Pour la cacher : menu de l'icône de notification.", FontSize = 11, Opacity = 0.7, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 2, 0, 4) });
         panel.Children.Add(_hotKeyMessage);
         var resetSize = new Button { Content = "Taille par défaut (460 × 190)", Padding = new Thickness(12, 3, 12, 3), HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(0, 6, 0, 0) };
         resetSize.Click += (_, _) => ResetSize?.Invoke();
@@ -231,7 +235,7 @@ internal sealed class SettingsWindow : Window
         A11y.Name(_theme, "Thème de police"); A11y.Name(_font, "Police"); A11y.Name(_weight, "Graisse de la police");
         A11y.Name(_artwork, "Couleurs de la pochette"); A11y.Name(_clickThrough, "Clic-à-travers : la souris traverse la fenêtre");
         A11y.Name(_startup, "Lancer au démarrage de Windows"); A11y.Name(_backdrop, "Flou du système, Windows 11, expérimental");
-        A11y.Name(_recordButton, "Modifier le raccourci cacher ou montrer", "Puis appuie sur la nouvelle combinaison de touches");
+        A11y.Name(_recordButton, "Modifier le raccourci du clic-à-travers", "Puis appuie sur la nouvelle combinaison de touches");
         A11y.Name(_hotKeyLabel, "Raccourci actuel"); A11y.Name(_hotKeyMessage, "Message sur le raccourci"); A11y.Name(_offsetLabel, "Décalage actuel");
         A11y.Name(resetSize, "Remettre la taille par défaut de la fenêtre"); A11y.Name(minus, "Avancer les paroles : moins 0,1 seconde");
         A11y.Name(plus, "Retarder les paroles : plus 0,1 seconde"); A11y.Name(zero, "Remettre le décalage à zéro");
@@ -285,7 +289,7 @@ internal sealed class SettingsWindow : Window
             _size.Value = s.Size; _sizeLabel.Text = s.Size + " pt";
             _font.SelectedIndex = (int)s.Font; _weight.SelectedIndex = (int)s.FontWeight;
             _theme.SelectedIndex = s.Theme == FontTheme.Custom ? _theme.Items.Count - 1 : Array.IndexOf(FontThemeExt.Ready, s.Theme);
-            for (var i = 0; i < _swatches.Length; i++) _swatches[i].BorderBrush = i == s.ColorIndex ? Brushes.DodgerBlue : Brushes.Transparent;
+            for (var i = 0; i < _swatches.Length; i++) _swatches[i].BorderBrush = i == s.ColorIndex ? Brushes.DodgerBlue : SwatchOutline;
             _artwork.IsChecked = s.ArtworkColors;
             for (var i = 0; i < 3; i++) _lineRadios[i].IsChecked = LineCount.Allowed[i] == s.LineCountValue;
             _clickThrough.IsChecked = s.ClickThrough;
@@ -348,7 +352,7 @@ internal sealed class SettingsWindow : Window
         if (_loading) return;
         var on = _clickThrough.IsChecked == true;
         _store.Update(s => s.ClickThrough = on);
-        if (on) _model.ShowNotice($"Clic-à-travers activé · {_store.Current.HotKey.Display} pour revenir", 4);
+        if (on) _model.ShowNotice($"Clic-à-travers activé · {_store.Current.HotKey.Display} pour le couper", 4);
     }
     private void StartupChanged()
     {

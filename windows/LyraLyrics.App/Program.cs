@@ -15,6 +15,9 @@ internal static class Program
         // Mode caché pour le contrôle de la version à la sortie : `LyraLyrics.exe --snapshot <dossier>` ; ni instance unique, ni journal, ni réseau.
         var at = Array.IndexOf(args, "--snapshot");
         if (at >= 0 && at + 1 < args.Length) { Environment.Exit(SnapshotMode.Run(args[at + 1])); return; }
+        // Mode caché de la CI : `LyraLyrics.exe --scene-stress <dossier>` ouvre la vraie Scène à l'écran avec des paroles inventées et fait défiler les lignes (voir SceneStress).
+        var stress = Array.IndexOf(args, "--scene-stress");
+        if (stress >= 0 && stress + 1 < args.Length) { Environment.Exit(SceneStress.Run(args[stress + 1])); return; }
         try { Run(); }
         catch (Exception ex) { Fail("avant l'ouverture de la fenêtre", ex); }
     }

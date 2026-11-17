@@ -113,7 +113,7 @@ internal sealed class AppController : IDisposable
         Log.Write("app", $"fenêtre affichée {(DateTime.Now - System.Diagnostics.Process.GetCurrentProcess().StartTime).TotalSeconds:0.0} s après le lancement du processus");
         _diagnostics.LogStartup();
         _diagnostics.StartPerfLog();
-        if (_store.Current.ClickThrough) _model.ShowNotice($"Clic-à-travers activé · {_store.Current.HotKey.Display} pour revenir", 5);
+        if (_store.Current.ClickThrough) _model.ShowNotice($"Clic-à-travers activé · {_store.Current.HotKey.Display} pour le couper", 5);
         if (!_store.Current.WelcomeSeen) ShowWelcome();
         await _smtc.StartAsync();
         EvaluateAutoHide();
@@ -262,21 +262,25 @@ internal sealed class AppController : IDisposable
     private void SetClickThrough(bool on)
     {
         _store.Update(s => s.ClickThrough = on);
-        if (on) { if (!_window.IsVisible) { _window.ShowFloating(); _autoHide.ManualChange(true); } _model.ShowNotice($"Clic-à-travers activé · {_store.Current.HotKey.Display} pour revenir", 4.5); }
+        if (on) { if (!_window.IsVisible) { _window.ShowFloating(); _autoHide.ManualChange(true); } _model.ShowNotice($"Clic-à-travers activé · {_store.Current.HotKey.Display} pour le couper", 4.5); }
     }
 
-    /// <summary>Raccourci global : coupe le clic-à-travers et montre la fenêtre (comme sur le Mac) ; sinon cache / montre.</summary>
+    /// <summary>
+    /// Raccourci global (décision du 2026-11-17, comme le Mac) : BASCULE le clic-à-travers dans les deux sens ; si la fenêtre est cachée, il la montre ; il ne la cache jamais
+    /// (cacher / montrer = menu de l'icône). Règle pure <see cref="HotKeyRule"/>, fixture <c>golden/hotkey.json</c> partagée avec Swift.
+    /// </summary>
     private void OnHotKey()
     {
         if (_scene.IsActive) { _scene.Exit(); return; }          // le raccourci global est aussi une sortie de la Scène (comme le Mac)
-        if (_store.Current.ClickThrough)
+        var outcome = HotKeyRule.Decide(_window.IsVisible, _store.Current.ClickThrough);
+        if (outcome.ShowWindow)
         {
-            _store.Update(s => s.ClickThrough = false);
+            if (!_window.IsLoaded) _window.Show();
             _window.ShowFloating();
-            _autoHide.ManualChange(_window.IsVisible);
-            _model.ShowNotice("Clic-à-travers désactivé", 2.5);
+            _autoHide.ManualChange(_window.IsVisible);       // jamais défait par le masquage automatique
         }
-        else ToggleVisibility();
+        _store.Update(s => s.ClickThrough = outcome.ClickThrough);
+        _model.ShowNotice(outcome.ClickThrough ? $"Clic-à-travers activé · {_store.Current.HotKey.Display} pour le couper" : "Clic-à-travers désactivé", outcome.ClickThrough ? 4.5 : 2.5);
     }
 
     private async Task SendPlaybackAsync(PlaybackCommand cmd)

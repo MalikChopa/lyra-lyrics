@@ -23,6 +23,17 @@ internal sealed class KaraokeBrush
     public double Duration { get; private set; }
     public bool Playing { get; private set; }
     private double _startedAt;
+    private readonly KaraokeSpace.Box _frame;
+
+    /// <summary>Rectangles des lignes rendues (repère du bloc), tels que donnés à la construction.</summary>
+    public IReadOnlyList<Rect> LineRects => _rects;
+
+    /// <summary>Rectangle d'une ligne dans le repère du contenu du pinceau (identité avec le cadre absolu : <see cref="KaraokeSpace.ToFill"/>).</summary>
+    private Rect Fill(Rect r)
+    {
+        var m = KaraokeSpace.ToFill(new KaraokeSpace.Box(r.X, r.Y, r.Width, r.Height), _frame, _frame);
+        return new Rect(m.X, m.Y, m.Width, m.Height);
+    }
 
     /// <param name="size">Taille du bloc de texte (le pinceau est ajusté à cette zone).</param>
     /// <param name="lineRects">Un rectangle par ligne rendue ; vide = le bloc entier.</param>
@@ -30,15 +41,21 @@ internal sealed class KaraokeBrush
     {
         _rects = lineRects.Count > 0 ? lineRects.ToList() : new List<Rect> { new(0, 0, size.Width, size.Height) };
         _cumulative = KaraokeFill.Cumulative(_rects.Select(r => r.Width).ToList());
+        // Unités ABSOLUES (voir KaraokeSpace) : viewbox = viewport = le bloc agrandi d'une marge, dans le repère du bloc de texte, là où GetCharacterRect mesure les
+        // lignes. Avec RelativeToBoundingBox le pinceau était étiré sur la boîte englobante du texte peint, et la zone partait trop tard de la marge gauche d'une ligne centrée.
+        var f = KaraokeSpace.Frame(size.Width, size.Height);
+        var frame = new Rect(f.X, f.Y, f.Width, f.Height);
         var group = new DrawingGroup();
-        group.Children.Add(new GeometryDrawing(new SolidColorBrush(baseColor), null, new RectangleGeometry(new Rect(0, 0, size.Width, size.Height))));
+        group.Children.Add(new GeometryDrawing(new SolidColorBrush(baseColor), null, new RectangleGeometry(frame)));
         var geo = new GeometryGroup();
-        foreach (var r in _rects) { var g = new RectangleGeometry(new Rect(r.X, r.Y, 0, r.Height)); _pieces.Add(g); geo.Children.Add(g); }
+        _frame = f;
+        foreach (var r0 in _rects) { var r = Fill(r0); var g = new RectangleGeometry(new Rect(r.X, r.Y, 0, r.Height)); _pieces.Add(g); geo.Children.Add(g); }
         group.Children.Add(new GeometryDrawing(new SolidColorBrush(accent), null, geo));
         Brush = new DrawingBrush(group)
         {
-            Stretch = Stretch.Fill, ViewboxUnits = BrushMappingMode.Absolute, Viewbox = new Rect(0, 0, size.Width, size.Height),
-            ViewportUnits = BrushMappingMode.RelativeToBoundingBox, Viewport = new Rect(0, 0, 1, 1),
+            Stretch = Stretch.Fill, TileMode = TileMode.None,
+            ViewboxUnits = BrushMappingMode.Absolute, Viewbox = frame,
+            ViewportUnits = BrushMappingMode.Absolute, Viewport = frame,
         };
     }
 
@@ -49,7 +66,7 @@ internal sealed class KaraokeBrush
         StartFraction = Math.Min(1, Math.Max(0, fraction)); Duration = duration; Playing = playing; _startedAt = Services.Clock.Seconds();
         for (var i = 0; i < _pieces.Count; i++)
         {
-            var r = _rects[i];
+            var r = Fill(_rects[i]);
             var p = KaraokeFill.Schedule(_cumulative, i, StartFraction, duration, playing, animated);
             var from = new Rect(r.X, r.Y, r.Width * p.Start, r.Height);
             _pieces[i].Rect = from;

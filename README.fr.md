@@ -21,6 +21,11 @@ Pas de compte, pas de connexion, pas de serveur à nous : l'app parle à ton lec
 
 ## Fonctions
 
+### Nouveautés de la 1.3.1
+
+- **Corrections Windows** après le premier essai sur un vrai PC : la Scène ne se ferme plus toute seule au premier changement de ligne, le remplissage karaoké part du début de la ligne, la pastille blanche se voit dans les réglages.
+- **Raccourci** ⌃⌥⌘L / Ctrl+Alt+Maj+L : il active et coupe le clic-à-travers (et montre la fenêtre si elle est cachée) ; montrer / cacher la fenêtre passe par le menu de l'icône.
+
 ### Nouveautés de la 1.3.0
 
 - **La Scène plein écran arrive sur Windows (bêta)** : mêmes réglages et mêmes règles que sur Mac (écran au choix, mise en page « Avec la pochette » ou « Paroles seules », carte du titre, passages sans paroles animés, grain et vignette, barre de commandes avec Espace, flèches et Échap, sortie des lignes mot à mot) ; double-clic sur la petite fenêtre, bouton plein écran de la barre ou menu de l'icône. Aussi sur Windows : fond de pochette animé et remplissage karaoké en option (désactivés par défaut). Rendu jamais vu sur un vrai PC avant la publication.
@@ -56,8 +61,8 @@ Pas de compte, pas de connexion, pas de serveur à nous : l'app parle à ton lec
 - **Trois fonds** : uni, verre dépoli, transparent (texte avec une ombre douce).
 - **Réglages** : police, graisse, taille max, couleur du texte, halo, opacité du fond.
 - **Décalage manuel** de −5 s à +5 s, pour le titre en cours seulement, quand des paroles sont un peu en avance ou en retard.
-- **Mode clic-à-travers** : les clics traversent la fenêtre vers l'app dessous. L'activer ferme le volet de réglages et un avis de 3 secondes dans la fenêtre rappelle comment revenir. Pour en sortir, appuie sur le raccourci (voir [Raccourci clavier](#raccourci-clavier)) : il désactive le clic-à-travers et montre la fenêtre. L'icône de la barre de menus marche aussi, mais sur un MacBook à encoche elle peut être cachée derrière l'encoche quand la barre est pleine ; le raccourci est le chemin de retour.
-- **Raccourci global** : ⌃⌥⌘L par défaut, modifiable dans les réglages.
+- **Mode clic-à-travers** : les clics traversent la fenêtre vers l'app dessous. L'activer ferme le volet de réglages et un avis de 3 secondes dans la fenêtre rappelle comment revenir. Pour l'activer ou le couper, appuie sur le raccourci (voir [Raccourci clavier](#raccourci-clavier)) : il bascule le clic-à-travers dans les deux sens et montre la fenêtre si elle est cachée. L'icône de la barre de menus (« Clic-à-travers », avec une coche) marche aussi, mais sur un MacBook à encoche elle peut être cachée derrière l'encoche quand la barre est pleine ; le raccourci est le chemin de retour.
+- **Raccourci global** : ⌃⌥⌘L par défaut (bascule le clic-à-travers), modifiable dans les réglages.
 - **Icône dans la barre de menus**, icône du Dock facultative (décochée par défaut).
 - Bouton **« Vider le cache »**, et un message clair pour chaque situation : rien en lecture, recherche, pas de paroles, instrumental, service occupé, hors connexion, autorisation nécessaire, titre illisible.
 - **Accessibilité** : libellés VoiceOver (boutons de lecture compris) ; « Réduire les animations » et « Réduire la transparence » de macOS sont respectés.
@@ -173,7 +178,7 @@ macOS ne laisse une fenêtre flotter au-dessus d'une app en plein écran que si 
 
 ## Raccourci clavier
 
-Sur Windows, le raccourci par défaut est **Ctrl+Alt+Maj+L** (modifiable dans les réglages) ; il cache ou montre la fenêtre et sort aussi du clic-à-travers. Sur Mac, **⌃⌥⌘L** (Contrôle, Option, Commande, L) cache ou montre la fenêtre. **En mode clic-à-travers, il fait autre chose :** il désactive le clic-à-travers et montre la fenêtre (il ne la cache jamais), parce que dans ce mode la fenêtre ne reçoit plus aucun clic et que tu ne pourrais pas ouvrir les réglages ; et sur un MacBook à encoche, l'icône de la barre de menus peut être cachée derrière l'encoche quand la barre est pleine. Clic-à-travers désactivé, il cache ou montre comme d'habitude. Relancer l'app (Spotlight, Finder) sort aussi du clic-à-travers. Il se change dans le volet de réglages (bouton ⚙ de la fenêtre, visible quand le pointeur la survole). Si le système ne peut pas enregistrer la combinaison, le volet affiche « raccourci indisponible » et l'ancienne reste active.
+Sur Windows, le raccourci par défaut est **Ctrl+Alt+Maj+L** (modifiable dans les réglages), sur Mac **⌃⌥⌘L** (Contrôle, Option, Commande, L). Il **bascule le clic-à-travers, dans les deux sens** : un appui l'active, un second le coupe. Si la fenêtre est cachée, il la montre aussi (avec le clic-à-travers dans son nouvel état), pour qu'un appui ne semble jamais ne rien faire ; il ne la cache jamais. Pour cacher ou montrer la fenêtre, utilise le menu : « Montrer / Cacher la fenêtre » dans le menu de l'icône de la barre de menus (Mac) ou de la zone de notification (Windows) ; l'entrée « Clic-à-travers » y a une coche. Pourquoi : en clic-à-travers la fenêtre ne reçoit plus aucun clic et tu ne pourrais pas ouvrir les réglages ; et sur un MacBook à encoche, l'icône de la barre de menus peut être cachée derrière l'encoche quand la barre est pleine. Relancer l'app (Spotlight, Finder) sort aussi du clic-à-travers. Il se change dans le volet de réglages (bouton ⚙ de la fenêtre, visible quand le pointeur la survole). Si le système ne peut pas enregistrer la combinaison, le volet affiche « raccourci indisponible » et l'ancienne reste active.
 
 ## Compiler depuis les sources
 

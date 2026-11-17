@@ -112,6 +112,12 @@ internal sealed class SceneController
         return new RectD(local.X / screen.Scale, local.Y / screen.Scale, local.Width / screen.Scale, local.Height / screen.Scale);
     }
 
+    /// <summary>Ferme la fenêtre de zoom une seule fois : le filet de sécurité (1,5 s) la refermait après le premier dessin de la Scène (fermer une fenêtre déjà fermée lève une exception).</summary>
+    private static void CloseZoom(Window zoom)
+    {
+        try { zoom.Close(); } catch (InvalidOperationException) { }
+    }
+
     private void ShowSceneNow(bool hideSmall)
     {
         if (State != SceneState.Entering || _scene is null) return;
@@ -125,10 +131,10 @@ internal sealed class SceneController
             {
                 // la photo du zoom reste jusqu'à ce que la vraie Scène ait été dessinée : pas de clignotement
                 EventHandler? handler = null;
-                handler = (_, _) => { _scene!.ContentRendered -= handler; zoom.Close(); };
+                handler = (_, _) => { _scene!.ContentRendered -= handler; CloseZoom(zoom); };
                 _scene.ContentRendered += handler;
                 var failsafe = new DispatcherTimer(DispatcherPriority.Background, _scene.Dispatcher) { Interval = TimeSpan.FromSeconds(1.5) };
-                failsafe.Tick += (_, _) => { failsafe.Stop(); zoom.Close(); };
+                failsafe.Tick += (_, _) => { failsafe.Stop(); CloseZoom(zoom); };
                 failsafe.Start();
             }
             State = SceneState.Shown;

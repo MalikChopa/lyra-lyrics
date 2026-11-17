@@ -11,7 +11,7 @@ struct MenuActions {
     var quit: @MainActor () -> Void
     /// (fenêtre visible, clic-à-travers, style choisi)
     var state: @MainActor () -> (Bool, Bool, BackgroundStyle)
-    /// Raccourci « Cacher / montrer » tel qu'affiché (⌃⌥⌘L) : en clic-à-travers, c'est la sortie.
+    /// Raccourci global tel qu'affiché (⌃⌥⌘L) : il bascule le clic-à-travers.
     var hotKeyDisplay: @MainActor () -> String
     // 1.1.0
     var openScene: @MainActor () -> Void
@@ -22,7 +22,7 @@ struct MenuActions {
     var updateTag: @MainActor () -> String?
 }
 
-/// Icône de barre de menus et son menu : Afficher/Cacher, Clic-à-travers, Style, Réglages…, À propos et droits, Quitter.
+/// Icône de barre de menus et son menu : Montrer / Cacher la fenêtre, Clic-à-travers (coche), Style, Réglages…, À propos et droits, Quitter.
 @MainActor
 final class StatusItemController: NSObject, NSMenuDelegate {
     fileprivate let statusItem: NSStatusItem
@@ -53,7 +53,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
     private func buildMenu() -> NSMenu {
         let menu = NSMenu()
         menu.delegate = self
-        visibilityItem.title = "Cacher les paroles"; visibilityItem.action = #selector(toggleVisibility); visibilityItem.target = self
+        visibilityItem.title = "Montrer / Cacher la fenêtre"; visibilityItem.action = #selector(toggleVisibility); visibilityItem.target = self
         clickThroughItem.title = "Clic-à-travers"; clickThroughItem.action = #selector(toggleClickThrough); clickThroughItem.target = self
         menu.addItem(visibilityItem)
         menu.addItem(clickThroughItem)
@@ -83,9 +83,10 @@ final class StatusItemController: NSObject, NSMenuDelegate {
     func menuNeedsUpdate(_ menu: NSMenu) { refresh() }
 
     func refresh() {
-        let (visible, clickThrough, style) = actions.state()
-        visibilityItem.title = visible ? "Cacher les paroles" : "Afficher les paroles"
-        clickThroughItem.title = "Clic-à-travers (sortie : \(actions.hotKeyDisplay()))"
+        let (_, clickThrough, style) = actions.state()
+        visibilityItem.title = "Montrer / Cacher la fenêtre"          // libellé fixe, le même que sous Windows (le raccourci ne cache plus, décision du 2026-11-17)
+        visibilityItem.state = .off
+        clickThroughItem.title = "Clic-à-travers"
         clickThroughItem.state = clickThrough ? .on : .off
         for (s, i) in styleItems { i.state = s == style ? .on : .off }
         if let tag = actions.updateTag() { updateItem.title = "Nouvelle version disponible : \(tag)"; updateItem.isHidden = false } else { updateItem.isHidden = true }

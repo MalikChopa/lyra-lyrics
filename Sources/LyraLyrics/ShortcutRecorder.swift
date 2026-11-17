@@ -2,7 +2,7 @@ import AppKit
 import Observation
 import AppSupport
 
-/// Enregistrement d'une nouvelle combinaison pour le raccourci Cacher / montrer (volet de réglages).
+/// Enregistrement d'une nouvelle combinaison pour le raccourci global (bascule du clic-à-travers) (volet de réglages).
 /// Refuse une combinaison sans ⌃, ⌥ ou ⌘ ; affiche « raccourci indisponible » si l'enregistrement échoue.
 @MainActor
 @Observable

@@ -132,7 +132,7 @@ final class AppModel {
     @ObservationIgnored weak var unsyncedView: UnsyncedScrollLayerView?
 
     // MARK: Avis passager (1.0.1)
-    /// Courte phrase affichée en haut de la fenêtre de paroles (≈ 3 s) : « Clic-à-travers activé · ⌃⌥⌘L pour revenir », ou l'explication
+    /// Courte phrase affichée en haut de la fenêtre de paroles (≈ 3 s) : « Clic-à-travers activé · ⌃⌥⌘L pour le couper », ou l'explication
     /// de l'autorisation Spotify pour les boutons de lecture.
     private(set) var notice: String?
     /// Bouton éventuel de l'avis (ex. « Ouvrir les Réglages »).

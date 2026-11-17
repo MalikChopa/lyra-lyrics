@@ -126,6 +126,43 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
 
+      # Essai de charge de la Scène (1.3.1) : le mode caché `--scene-stress <dossier>` ouvre la VRAIE Scène à l'écran avec des paroles INVENTÉES et fait défiler les
+      # lignes (4 essais d'environ 9 s : deux mises en page, karaoké éteint puis allumé). But : voir si le plantage silencieux de la sortie de ligne (1.3.0) se produit.
+      # NON BLOQUANT (continue-on-error, délai de 150 s) : sans bureau interactif sur l'exécuteur la fenêtre peut ne pas s'ouvrir, le rapport le dit ; l'étape ne touche
+      # ni l'installateur ni la release. Un code de sortie négatif ou de forme NTSTATUS (0xC...) est écrit en hexadécimal : plantage natif. Rapport recopié dans le résumé.
+      - name: Essai de charge de la Scène (non bloquant)
+        id: stress
+        continue-on-error: true
+        timeout-minutes: 4
+        run: |
+          $dir = Join-Path $env:RUNNER_TEMP 'lyra-stress'
+          New-Item -ItemType Directory -Force $dir | Out-Null
+          $exe = Join-Path $env:GITHUB_WORKSPACE 'publish\LyraLyrics.exe'
+          $p = Start-Process -FilePath $exe -ArgumentList @('--scene-stress', "`"$dir`"") -PassThru
+          if (-not $p.WaitForExit(150000)) { try { $p.Kill() } catch { }; $verdict = 'délai de 150 s dépassé (processus arrêté)'; $code = 'aucun' }
+          else {
+            $code = $p.ExitCode
+            if ($code -eq 0) { $verdict = 'terminé sans exception' }
+            elseif ($code -lt 0 -or $code -gt 255) { $verdict = ('PLANTAGE NATIF probable, code 0x{0:X8}' -f $code) }
+            else { $verdict = "terminé avec le code $code (1 = exception, 2 = délai interne)" }
+          }
+          Write-Host "Essai de charge de la Scène : $verdict"
+          $report = Join-Path $dir 'stress-rapport.txt'
+          $tail = if (Test-Path $report) { Get-Content $report } else { @('aucun rapport écrit (la fenêtre n''a probablement pas pu s''ouvrir sur cet exécuteur)') }
+          $tail | Select-Object -Last 60
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Value @('', "Essai de charge de la Scène : **$verdict**", '', '```', ($tail | Select-Object -Last 25), '```')
+          if ($code -ne 0) { throw "essai de charge : $verdict" }
+
+      - name: Artefact (rapport de l'essai de charge)
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: lyra-lyrics-windows-stress
+          path: ${{ runner.temp }}/lyra-stress/stress-rapport.txt
+          if-no-files-found: ignore
+          retention-days: 14
+
       - name: Installateur (Inno Setup)
         id: installer
         env:
