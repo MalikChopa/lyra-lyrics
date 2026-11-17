@@ -126,32 +126,29 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
 
-      # Essai de charge de la Scène (1.3.1) : le mode caché `--scene-stress <dossier>` ouvre la VRAIE Scène à l'écran avec des paroles INVENTÉES et fait défiler les
-      # lignes (4 essais d'environ 9 s : deux mises en page, karaoké éteint puis allumé). But : voir si le plantage silencieux de la sortie de ligne (1.3.0) se produit.
-      # NON BLOQUANT (continue-on-error, délai de 150 s) : sans bureau interactif sur l'exécuteur la fenêtre peut ne pas s'ouvrir, le rapport le dit ; l'étape ne touche
-      # ni l'installateur ni la release. Un code de sortie négatif ou de forme NTSTATUS (0xC...) est écrit en hexadécimal : plantage natif. Rapport recopié dans le résumé.
-      - name: Essai de charge de la Scène (non bloquant)
+      # Essai de charge (1.3.1) : le mode caché `--scene-stress <dossier>` lance 5 essais, CHACUN dans un processus enfant (`--scene-stress-one <n> <dossier>`) : la VRAIE Scène
+      # à l'écran (4 essais : deux mises en page, karaoké éteint puis allumé) puis la petite fenêtre karaoké allumé, paroles INVENTÉES, au moins 10 changements de ligne par essai.
+      # Un plantage natif d'un essai ne coupe pas les suivants ; le rapport donne le code de chaque enfant (hexadécimal si NTSTATUS) et finit par `RESULTAT essais=N plantages=K`,
+      # recopié dans le résumé. NON BLOQUANT (continue-on-error) : sans bureau interactif la fenêtre peut ne pas s'ouvrir, le rapport le dit ; ne touche ni l'installateur ni la release.
+      - name: Essai de charge (non bloquant)
         id: stress
         continue-on-error: true
-        timeout-minutes: 4
+        timeout-minutes: 9
         run: |
           $dir = Join-Path $env:RUNNER_TEMP 'lyra-stress'
           New-Item -ItemType Directory -Force $dir | Out-Null
           $exe = Join-Path $env:GITHUB_WORKSPACE 'publish\LyraLyrics.exe'
           $p = Start-Process -FilePath $exe -ArgumentList @('--scene-stress', "`"$dir`"") -PassThru
-          if (-not $p.WaitForExit(150000)) { try { $p.Kill() } catch { }; $verdict = 'délai de 150 s dépassé (processus arrêté)'; $code = 'aucun' }
-          else {
-            $code = $p.ExitCode
-            if ($code -eq 0) { $verdict = 'terminé sans exception' }
-            elseif ($code -lt 0 -or $code -gt 255) { $verdict = ('PLANTAGE NATIF probable, code 0x{0:X8}' -f $code) }
-            else { $verdict = "terminé avec le code $code (1 = exception, 2 = délai interne)" }
-          }
-          Write-Host "Essai de charge de la Scène : $verdict"
+          if (-not $p.WaitForExit(450000)) { try { $p.Kill() } catch { }; $verdict = 'délai de 450 s dépassé (processus arrêté)'; $code = 'aucun' }
+          else { $code = $p.ExitCode; $verdict = "processus parent terminé avec le code $code" }
           $report = Join-Path $dir 'stress-rapport.txt'
           $tail = if (Test-Path $report) { Get-Content $report } else { @('aucun rapport écrit (la fenêtre n''a probablement pas pu s''ouvrir sur cet exécuteur)') }
-          $tail | Select-Object -Last 60
-          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Value @('', "Essai de charge de la Scène : **$verdict**", '', '```', ($tail | Select-Object -Last 25), '```')
-          if ($code -ne 0) { throw "essai de charge : $verdict" }
+          $result = ($tail | Where-Object { $_ -like 'RESULTAT essais=*' } | Select-Object -Last 1)
+          if (-not $result) { $result = 'RESULTAT essais=? plantages=? (ligne finale absente : ' + $verdict + ')' }
+          Write-Host $result
+          $tail | Select-Object -Last 120
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Value @('', "Essai de charge : **$result**", '', '```', ($tail | Select-String -Pattern 'CODE essai|LANCEMENT|RESULTAT|EXCEPTION|DELAI|FIN ' | ForEach-Object { $_.Line }), '```')
+          if ($code -ne 0) { throw "essai de charge : $result" }
 
       - name: Artefact (rapport de l'essai de charge)
         if: always()

@@ -573,7 +573,7 @@ internal sealed partial class SceneWindow : Window
         public ScaleTransform Scale = new(1, 1);
         public TranslateTransform Move = new();
         public bool Leaving;
-        public KaraokeBrush? Fill;
+        public KaraokeLayer? Fill;
     }
 
     private double MeasureHeight(string text, double size, double width)

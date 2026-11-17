@@ -746,7 +746,7 @@ internal sealed partial class LyricsWindow : Window
             _slots.Add(tb);
         }
         while (_slots.Count > count) _slots.RemoveAt(_slots.Count - 1);
-        if (_lines.Children.Count != count || !_lines.Children.Cast<UIElement>().SequenceEqual(_slots))
+        if (!_lines.Children.Cast<UIElement>().Where(e => LinePanel.GetOverlayOf(e) is null).SequenceEqual(_slots))
         {
             _lines.Children.Clear();
             foreach (var t in _slots) _lines.Children.Add(t);

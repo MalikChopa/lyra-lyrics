@@ -48,6 +48,25 @@ internal sealed partial class SceneWindow
 
     // ---- État
     private readonly DispatcherTimer _tick, _cloakTimer, _cardTimer;
+    /// <summary>Minuterie unique du remplissage karaoké (≈ 30 Hz) : met à jour À LA MAIN le découpage de la couche d'accent (aucune horloge dans un pinceau).</summary>
+    private DispatcherTimer? _fillFrameTimer;
+    private DispatcherTimer _fillFrame => _fillFrameTimer ??= MakeFillFrame();
+    private DispatcherTimer MakeFillFrame()
+    {
+        var t = new DispatcherTimer(DispatcherPriority.Render, Dispatcher) { Interval = TimeSpan.FromMilliseconds(33) };
+        t.Tick += (_, _) =>
+        {
+            if (_closed || Paused) { t.Stop(); return; }
+            try
+            {
+                var any = false;
+                foreach (var l in _lines.Values) if (l.Fill is { } f && !l.Leaving) { f.Update(); any = true; }
+                if (!any) t.Stop();
+            }
+            catch (Exception e) { Log.WriteException("erreur", "scène : remplissage (minuterie)", e); t.Stop(); }
+        };
+        return t;
+    }
     private readonly List<AnimationClock> _fxClocks = new();
     private IReadOnlyList<LyricLineTime> _times = Array.Empty<LyricLineTime>();
     private object? _timesSource;
@@ -151,6 +170,7 @@ internal sealed partial class SceneWindow
         _tick.Stop(); _cloakTimer.Stop(); _cardTimer.Stop(); _idleTimer.Stop();
         StopGapMotion();
         StopShimmerMotion();
+        _fillFrame.Stop();
         foreach (var l in _lines.Values) l.Fill?.Dispose();
         Microsoft.Win32.SystemEvents.DisplaySettingsChanged -= OnDisplaySettingsChanged;
     }
@@ -158,8 +178,7 @@ internal sealed partial class SceneWindow
     private void FxPause(bool paused)
     {
         foreach (var c in _fxClocks) { if (paused) c.Controller?.Pause(); else c.Controller?.Resume(); }
-        foreach (var l in _lines.Values) { if (paused) l.Fill?.PauseClocks(); else l.Fill?.ResumeClocks(); }
-        if (paused) _tick.Stop();
+        if (paused) { _tick.Stop(); _fillFrame.Stop(); }
         else if (_started) { _tick.Start(); PrepareFill(); OnTick(); }
     }
 
@@ -237,6 +256,7 @@ internal sealed partial class SceneWindow
     {
         Crumb("karaoké : retrait");
         l.Fill?.Dispose(); l.Fill = null;
+        if (!_lines.Values.Any(x => x.Fill is not null)) _fillFrame.Stop();
         // une ligne qui vient d'être chantée garde la couleur d'accent en partant ; les autres redeviennent unies
         l.Block.Foreground = new SolidColorBrush(l.Index < _model.CurrentIndex ? AccentColor() : _textColor);
     }
@@ -257,12 +277,17 @@ internal sealed partial class SceneWindow
             {
                 var rects = TextRects.Lines(cur.Block);
                 var c = _textColor;
-                cur.Fill = new KaraokeBrush(new Size(cur.Block.Width, cur.Block.Height), rects, Color.FromArgb(199, c.R, c.G, c.B), AccentColor());   // 0,78 : ligne nette sous le remplissage (SceneFrame.Target)
-                cur.Block.Foreground = cur.Fill.Brush;
+                var layer = new KaraokeLayer(cur.Block, rects, AccentColor());
+                cur.Block.Foreground = new SolidColorBrush(Color.FromArgb(199, c.R, c.G, c.B));   // 0,78 : ligne nette sous le remplissage (SceneFrame.Target)
+                layer.Follow(cur.Block);
+                Canvas.SetLeft(layer.Accent, Canvas.GetLeft(cur.Block)); Canvas.SetTop(layer.Accent, Canvas.GetTop(cur.Block));
+                var at = _linesLayer.Children.IndexOf(cur.Block);
+                if (at >= 0) _linesLayer.Children.Insert(at + 1, layer.Accent); else _linesLayer.Children.Add(layer.Accent);
+                cur.Fill = layer;
             }
             Crumb("karaoké : pose");
-            cur.Fill.Set(sp.Fraction, sp.Duration, sp.Playing, animated: true);
-            if (Paused) cur.Fill.PauseClocks();
+            cur.Fill.Set(sp.Fraction, sp.Duration, sp.Playing);
+            if (Paused) _fillFrame.Stop(); else if (!_fillFrame.IsEnabled) _fillFrame.Start();
         }
         catch (Exception e) { Log.WriteException("erreur", "scène : remplissage", e); }
     }

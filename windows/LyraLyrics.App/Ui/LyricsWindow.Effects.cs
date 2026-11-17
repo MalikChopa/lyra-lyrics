@@ -26,8 +26,10 @@ internal sealed partial class LyricsWindow
     private int _driftArtRevision = -1;
     private string _driftKey = "";
 
-    private KaraokeBrush? _fill;
+    private KaraokeLayer? _fill;
+    private SolidColorBrush? _fillBase;                  // couleur atténuée de la couche de base pendant le remplissage
     private TextBlock? _fillSlot;
+    private DispatcherTimer? _fillFrame;                 // minuterie unique (≈ 30 Hz) qui met à jour À LA MAIN le découpage de la couche d'accent
     private string _fillKey = "";
     private DispatcherTimer? _fillTimer;
 
@@ -92,9 +94,9 @@ internal sealed partial class LyricsWindow
 
     private void ClearFill()
     {
-        _fillTimer?.Stop();
+        _fillTimer?.Stop(); _fillFrame?.Stop();
         if (_fill is null) return;
-        _fill.Dispose(); _fill = null;
+        _fill.Dispose(); _fill = null; _fillBase = null;
         if (_fillSlot is { } slot) slot.Foreground = new SolidColorBrush(LineColor());   // la ligne reprend sa couleur unie
         _fillSlot = null; _fillKey = "";
     }
@@ -115,17 +117,28 @@ internal sealed partial class LyricsWindow
         var accent = s.ArtworkColors && _model.Palette is { } p ? C(p.Accent) : LineColor();
         var key = $"{_model.TrackEpoch}|{_model.CurrentIndex}|{slot.Text}|{slot.FontSize}|{slot.ActualWidth:0}x{slot.ActualHeight:0}|{accent}|{LineColor()}";
         var rebuilt = false;
-        if (_fill is null || !ReferenceEquals(slot, _fillSlot) || key != _fillKey || !ReferenceEquals(slot.Foreground, _fill.Brush))
+        if (_fill is null || !ReferenceEquals(slot, _fillSlot) || key != _fillKey || !ReferenceEquals(slot.Foreground, _fillBase) || !ReferenceEquals(_fill.Accent.Parent, _lines))
         {
             ClearFill();
             if (slot.ActualWidth < 1 || slot.ActualHeight < 1) return;           // pas encore mise en page : la prochaine mise à jour réessaie
             var c = LineColor();
             var rects = TextRects.Lines(slot);
-            _fill = new KaraokeBrush(new Size(slot.ActualWidth, slot.ActualHeight), rects, Color.FromArgb(140, c.R, c.G, c.B), accent);       // 0,55 : texte non rempli, comme le Mac
-            slot.Foreground = _fill.Brush; _fillSlot = slot; _fillKey = key; rebuilt = true;
+            _fill = new KaraokeLayer(slot, rects, accent);
+            _fillBase = new SolidColorBrush(Color.FromArgb(140, c.R, c.G, c.B));       // 0,55 : texte non rempli, comme le Mac
+            slot.Foreground = _fillBase; _fillSlot = slot; _fillKey = key; rebuilt = true;
+            _fill.Follow(slot);
+            LinePanel.SetOverlayOf(_fill.Accent, slot);
+            _lines.Children.Add(_fill.Accent);                                         // après toutes les lignes : rangé sur le rectangle de la ligne
+            _lines.InvalidateMeasure();
         }
-        if (rebuilt || KaraokeFill.NeedsResync(_fill.Playing, _fill.Expected(), sp.Playing, sp.Fraction)) _fill.Set(sp.Fraction, sp.Duration, sp.Playing, animated: !snapshot);
+        if (rebuilt || KaraokeFill.NeedsResync(_fill.Playing, _fill.Expected(), sp.Playing, sp.Fraction)) _fill.Set(sp.Fraction, sp.Duration, snapshot ? false : sp.Playing);
         if (snapshot) return;                                                      // pas de minuterie en mode captures
+        if (_fillFrame is null)
+        {
+            _fillFrame = new DispatcherTimer(DispatcherPriority.Render, Dispatcher) { Interval = TimeSpan.FromMilliseconds(33) };
+            _fillFrame.Tick += (_, _) => { try { if (!IsVisible || _fill is null) _fillFrame?.Stop(); else _fill.Update(); } catch (Exception e) { Log.WriteException("erreur", "petite fenêtre : remplissage (minuterie)", e); _fillFrame?.Stop(); } };
+        }
+        if (!_fillFrame.IsEnabled) _fillFrame.Start();
         if (_fillTimer is null) { _fillTimer = new DispatcherTimer(DispatcherPriority.Background, Dispatcher) { Interval = TimeSpan.FromMilliseconds(250) }; _fillTimer.Tick += (_, _) => RefreshEffects(); }
         if (!_fillTimer.IsEnabled) _fillTimer.Start();
     }

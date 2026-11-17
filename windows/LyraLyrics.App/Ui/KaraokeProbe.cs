@@ -8,8 +8,9 @@ namespace LyraLyrics.App.Ui;
 
 /// <summary>
 /// Contrôle des captures : mesure, en PIXELS RENDUS, si la zone remplie du karaoké commence à la première lettre de chaque ligne et finit à la dernière.
-/// Le bloc est peint deux fois par un <see cref="VisualBrush"/> (échelle 2) : une fois en blanc uni (l'encre de la ligne), une fois avec un pinceau karaoké dont le fond est
-/// transparent et la zone remplie à 100 % (la zone remplie, vue à travers les lettres). Les bords gauche et droit de chaque ligne doivent coïncider à 1 DIP près.
+/// Deux peintures par un <see cref="VisualBrush"/> (échelle 2) : le bloc en blanc uni (l'encre de la ligne), puis la COUCHE d'accent du karaoké (<see cref="KaraokeLayer"/>, texte blanc,
+/// zone découpée à 100 % de chaque ligne, sans marge de débordement) peinte sous son découpage (appliqué à la main, pour ne pas dépendre de la façon dont un pinceau traite un
+/// <c>Clip</c>). Les bords gauche et droit de chaque ligne doivent coïncider à 1 DIP près : mesure en pixels réellement rendus.
 /// Ni texte ni identifiant : seulement des nombres. Non vérifié sur Windows (rendu seulement compilé).
 /// </summary>
 internal static class KaraokeProbe
@@ -37,10 +38,13 @@ internal static class KaraokeProbe
 
         void Probe()
         {
-            var ink = Render(block, w, h, Brushes.White);
-            var probe = new KaraokeBrush(new Size(w, h), lines, Colors.Transparent, Colors.White);
-            probe.Set(1, 1, playing: false, animated: false);                 // figé, tout rempli
-            var fill = Render(block, w, h, probe.Brush);
+            var ink = Render(block, w, h, Brushes.White, null);
+            var probe = new KaraokeLayer(block, lines, Colors.White, overhang: false);
+            probe.Set(1, 1, playing: false);                                  // figé, tout rempli
+            var clip = probe.Accent.Clip; probe.Accent.Clip = null;
+            probe.Accent.Width = w; probe.Accent.Height = h;
+            probe.Accent.Measure(new Size(w, h)); probe.Accent.Arrange(new Rect(0, 0, w, h)); probe.Accent.UpdateLayout();
+            var fill = Render(probe.Accent, w, h, Brushes.White, clip);
             foreach (var r in lines)
             {
                 var a = Columns(ink, r); var b = Columns(fill, r);
@@ -60,12 +64,17 @@ internal static class KaraokeProbe
 
     private sealed record Pixels(byte[] Data, int Width, int Height, int Stride);
 
-    private static Pixels Render(TextBlock block, double w, double h, Brush foreground)
+    private static Pixels Render(TextBlock block, double w, double h, Brush foreground, Geometry? clip)
     {
         block.Foreground = foreground;
         var pw = (int)Math.Ceiling(w * Scale); var ph = (int)Math.Ceiling(h * Scale);
         var visual = new DrawingVisual();
-        using (var dc = visual.RenderOpen()) dc.DrawRectangle(new VisualBrush(block) { Stretch = Stretch.None, AlignmentX = AlignmentX.Left, AlignmentY = AlignmentY.Top }, null, new Rect(0, 0, w, h));
+        using (var dc = visual.RenderOpen())
+        {
+            if (clip is not null) dc.PushClip(clip);
+            dc.DrawRectangle(new VisualBrush(block) { Stretch = Stretch.None, AlignmentX = AlignmentX.Left, AlignmentY = AlignmentY.Top }, null, new Rect(0, 0, w, h));
+            if (clip is not null) dc.Pop();
+        }
         var rtb = new RenderTargetBitmap(pw, ph, 96 * Scale, 96 * Scale, PixelFormats.Pbgra32);
         visual.Transform = null;
         rtb.Render(visual);
