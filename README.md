@@ -234,3 +234,7 @@ The WPF app only runs on Windows. The installer is an Inno Setup 6 script (`wind
 ## Licence
 
 [MIT](LICENSE), Copyright (c) 2026 Chopa. See also the [changelog](CHANGELOG.md).
+
+---
+
+Made by **Malik Moussaoui** (Chopa), developer based in Toulouse, France · [all my projects](https://malikchopa.github.io/) · [GitHub](https://github.com/MalikChopa)

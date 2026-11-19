@@ -234,3 +234,7 @@ L'app WPF ne s'exécute que sous Windows. L'installateur est un script Inno Setu
 ## Licence
 
 [MIT](LICENSE), Copyright (c) 2026 Chopa. Voir aussi le [journal des versions](CHANGELOG.md) (en anglais).
+
+---
+
+Créé par **Malik Moussaoui** (Chopa), développeur à Toulouse · [tous mes projets](https://malikchopa.github.io/) · [GitHub](https://github.com/MalikChopa)
